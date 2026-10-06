@@ -54,8 +54,9 @@ cd packages/<pkg-id>/frontend && npm run dev
 # 2. 另一个终端：静态服务 dist/（本机 IP 需测试底座球端可直达）
 cd packages/<pkg-id>/frontend/dist && python3 -m http.server 5173
 
-# 3. 把已发布版本的 manifest entries 指向本机（宿主再拉 manifest 即加载本机产物）
-./tools/publish.sh packages/<pkg-id> --dev-url http://<本机IP>:5173
+# 3. 把已发布版本的入口指向本机（1.0.2 起同步改写 esm-js 资源记录——宿主 list 接口
+#    以 DB 资源记录构造 entries.esm.url，只改 manifest.json 无效；--dev-url 参数给完整 ESM 文件 URL）
+./tools/publish.sh packages/<pkg-id> --dev-url http://<本机IP>:5173/tool.es.js  # 完整 ESM 文件 URL
 
 # 4. 球端 18880 强制刷新 → 面板加载本机产物，改代码即生效（watch 自动重编）
 

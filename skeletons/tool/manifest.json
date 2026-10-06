@@ -1,0 +1,26 @@
+{
+  "id": "example-tool",
+  "name": "示例工具（骨架）",
+  "version": "0.1.0",
+  "description": "工具轨能力包最小骨架：球端面板，可选管理页/薄后端；复制本骨架改名即用",
+  "type": "extension",
+  "track": "tool",
+  "tier": "business",
+  "delivery": "optional",
+  "platformVersionRange": "^1.3.0",
+  "author": "插件团队 <plugin-dev@example.com>",
+  "icon": "MapLocation",
+  "entries": {
+    "esm": { "url": "", "type": "module" },
+    "umd": { "url": "", "type": "script" }
+  },
+  "components": {
+    "frontend": true,
+    "backend": [],
+    "adminUi": false,
+    "menu": { "enabled": false },
+    "data": false
+  },
+  "backendServices": [],
+  "defaultConfig": {}
+}

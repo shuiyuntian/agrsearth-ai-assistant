@@ -1,0 +1,39 @@
+# 文件作用：wind-field-server 微服务引导配置（扩展包后端骨架模板）
+# 作者：JasonLee <shuiyuntian@foxmail.com>
+# 创建日期：2026-10-04
+# 版本：1.0.1
+# 修改记录：
+#   - 1.0.0 (2026-10-04) 初始创建
+#   - 1.0.1 (2026-10-06) nacos 默认地址改指插件测试底座（192.168.1.22:18810，可环境变量覆盖）
+#
+# 版权所有 (C) 2026 CesiumAI 项目
+
+server:
+  # TODO: 端口按服务分配后改默认值并同步 container/wind-field-server/Dockerfile 的 EXPOSE
+  # （既有扩展服务用 94xx 段，端口台账见 docs/运维手册/1-环境与部署架构/SERVER_INVENTORY.md）
+  port: ${WIND_FIELD_SERVER_SERVER_PORT:8080}
+
+spring:
+  application:
+    # 应用名 = manifest.backendServices[].serviceId（Nacos 注册名；网关按 apiPrefix 路由到它）
+    name: wind-field-server
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        # 默认指向插件测试底座 nacos（地址表见 test-env/README.md，可用环境变量覆盖；
+        # 平台仓本地开发经 ssh 隧道连测试底座，见 KNOWN_ISSUES 末行）
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:192.168.1.22:18810}
+      config:
+        server-addr: ${SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR:192.168.1.22:18810}
+  config:
+    file-extension: yml
+    import:
+      # nacos 配置中心为交付标准形态（AGENTS.md §8）；本地缺 dataId 也能起（optional）
+      - optional:nacos:application-${spring.profiles.active}.${spring.config.file-extension}
+      - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.config.file-extension}
+
+# actuator 默认仅暴露 /actuator/health——正是 manifest.backendServices[].healthEndpoint 的约定端点；
+# 需要更多端点时放到 nacos 的 ${spring.application.name}-<profile>.yml 里开
+# management.endpoints.web.exposure.include，不要写进本文件

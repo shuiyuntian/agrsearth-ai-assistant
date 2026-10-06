@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+  <rect width="960" height="540" fill="#ffffff"/>
+  <rect x="8" y="8" width="944" height="60" fill="#fdf6ec" stroke="#f56c6c" stroke-dasharray="6 4"/>
+  <text x="24" y="34" font-size="13" fill="#f56c6c">反例①：无查询区/工具栏，按钮直接堆在表格上方，主次不分（全部主色实心）</text>
+  <text x="24" y="56" font-size="13" fill="#f56c6c">反例②：列宽挤爆/文字溢出无 tooltip，操作列左对齐参差</text>
+  <g fill="#409eff">
+    <rect x="16" y="90" width="120" height="30" rx="3"/><rect x="146" y="90" width="120" height="30" rx="3"/>
+    <rect x="276" y="90" width="120" height="30" rx="3"/><rect x="406" y="90" width="120" height="30" rx="3"/>
+  </g>
+  <g stroke="#ebeef5">
+    <line x1="8" y1="170" x2="952" y2="170"/><line x1="8" y1="230" x2="952" y2="230"/>
+    <line x1="8" y1="290" x2="952" y2="290"/><line x1="8" y1="350" x2="952" y2="350"/>
+  </g>
+  <g fill="#dcdfe6">
+    <rect x="16" y="182" width="600" height="16"/><rect x="16" y="242" width="720" height="16"/>
+    <rect x="16" y="302" width="560" height="16"/><rect x="16" y="362" width="680" height="16"/>
+  </g>
+  <text x="620" y="196" font-size="12" fill="#909399">← 溢出被截断无提示</text>
+  <text x="30" y="420" font-size="13" fill="#f56c6c">反例③：白色默认背景未适配（管理页应浅色容器 app-container + el-card 层次，而非裸白无边界）</text>
+  <text x="30" y="446" font-size="13" fill="#f56c6c">反例④：无空态/加载态，接口慢时页面疑似卡死</text>
+  <rect x="0" y="500" width="960" height="40" fill="#fff7e6"/>
+  <text x="16" y="525" font-size="14" fill="#b8860b">占位图 · 批次2实拍替换（反例：管理页典型问题组合示意）</text>
+</svg>

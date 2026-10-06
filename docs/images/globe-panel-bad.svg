@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+  <rect width="960" height="540" fill="#233447"/>
+  <rect x="60" y="40" width="620" height="440" rx="4" fill="#ffffff"/>
+  <text x="84" y="80" font-size="14" fill="#333">反例①：白色背景面板漂浮在深色素材上，刺眼且无边界层次</text>
+  <g fill="#e8e8e8"><rect x="84" y="110" width="560" height="30"/><rect x="84" y="152" width="560" height="30"/><rect x="84" y="194" width="560" height="30"/></g>
+  <text x="84" y="260" font-size="13" fill="#f56c6c">反例②：位置压顶（y≈8 贴住顶部标题栏）且右缘悬空未对齐工具条</text>
+  <text x="84" y="286" font-size="13" fill="#f56c6c">反例③：宽度 700+ 未遵 400~460 约定，遮挡大片地图视野</text>
+  <text x="84" y="312" font-size="13" fill="#f56c6c">反例④：可拖拽可缩放（draggable/resizable=true），用户拖乱后无恢复手段</text>
+  <text x="84" y="338" font-size="13" fill="#f56c6c">反例⑤：Element Plus 默认浅色组件未做深色覆盖（"面板里一块白"）</text>
+  <text x="84" y="364" font-size="13" fill="#f56c6c">反例⑥：shadow 模式塞大数据列表，Shadow DOM 卡顿</text>
+  <rect x="700" y="60" width="230" height="150" rx="4" fill="#ffffff" stroke="#f56c6c" stroke-dasharray="6 4"/>
+  <text x="716" y="140" font-size="12" fill="#f56c6c">反例⑦：弹窗/POPUP</text>
+  <text x="716" y="160" font-size="12" fill="#f56c6c">尺寸溢出遮挡目标要素</text>
+  <rect x="0" y="500" width="960" height="40" fill="#fff7e6"/>
+  <text x="16" y="525" font-size="14" fill="#b8860b">占位图 · 批次2实拍替换（反例：球端面板典型问题组合示意）</text>
+</svg>

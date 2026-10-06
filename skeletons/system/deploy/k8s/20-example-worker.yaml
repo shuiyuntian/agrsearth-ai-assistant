@@ -1,0 +1,42 @@
+# 文件作用：example-worker k8s 工作负载样例（后台工作器 Deployment；dependsOn example-server，拓扑序在其后）
+# 作者：JasonLee <shuiyuntian@foxmail.com>
+# 创建日期：2026-09-14
+# 版本：1.0.2
+# 修改记录：
+#   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
+#   - 1.0.1 (2026-10-05) 镜像命名补 tier 段；「域内互调」注释改包内互调
+#   - 1.0.2 (2026-10-06) 去内部命名空间字面量（namespace 由部署服务端覆写，注释占位）
+#
+# 版权所有 (C) 2026 CesiumAI 项目
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-worker
+  # namespace 不写真（部署服务端强制覆写为目标环境命名空间）
+  labels:
+    app: example-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-worker
+  template:
+    metadata:
+      labels:
+        app: example-worker
+    spec:
+      containers:
+        - name: example-worker
+          image: localhost:32000/gis-platform/system/business/example-system/example-worker:0.1.0
+          env:
+            # 时区一票否决项：必须显式声明
+            - name: TZ
+              value: Asia/Shanghai
+            # 包内互调走 Service DNS，不经网关
+            - name: EXAMPLE_SERVER_BASE
+              value: http://example-server:8080
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 512Mi

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+  <rect width="960" height="540" fill="#f5f7fa"/>
+  <rect x="0" y="0" width="960" height="540" fill="#000000" opacity="0.30"/>
+  <rect x="180" y="70" width="600" height="400" rx="4" fill="#ffffff" stroke="#ebeef5"/>
+  <rect x="180" y="70" width="600" height="48" fill="#f5f7fa"/>
+  <text x="196" y="100" font-size="14" fill="#303133" font-weight="bold">外层 dialog（角色编辑）</text>
+  <rect x="260" y="140" width="440" height="270" rx="4" fill="#ffffff" stroke="#f56c6c" stroke-width="2"/>
+  <rect x="260" y="140" width="440" height="40" fill="#fdf6ec"/>
+  <text x="276" y="166" font-size="13" fill="#f56c6c" font-weight="bold">内层 dialog（分配用户）← 违禁：dialog 套 dialog</text>
+  <g fill="#dcdfe6">
+    <rect x="276" y="196" width="240" height="12"/><rect x="276" y="222" width="200" height="12"/>
+    <rect x="276" y="248" width="260" height="12"/><rect x="276" y="274" width="180" height="12"/>
+  </g>
+  <text x="276" y="330" font-size="12" fill="#f56c6c">双层遮罩叠加 · 内层被外层视觉裁切</text>
+  <text x="276" y="352" font-size="12" fill="#f56c6c">ESC/关闭链混乱，一次关不干净</text>
+  <rect x="620" y="360" width="64" height="26" rx="3" fill="#409eff"/>
+  <text x="634" y="378" font-size="12" fill="#ffffff">确 定</text>
+  <text x="180" y="500" font-size="13" fill="#f56c6c">整改方向：内层二次浮层改 el-drawer（55% 宽全高），抽屉内至多再叠一层 dialog</text>
+  <rect x="0" y="0" width="960" height="34" fill="#fff7e6"/>
+  <text x="16" y="23" font-size="14" fill="#b8860b">占位图 · 批次2实拍替换（反例：dialog 套 dialog 双层遮罩示意）</text>
+</svg>

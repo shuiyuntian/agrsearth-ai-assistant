@@ -1,0 +1,6 @@
+upstream-repo: AGRSCesiumAI (git@github.com:shuiyuntian/AGRSCesiumAI.git)
+upstream-path: extensions/_template/
+upstream-head: 8d9162040d6f639484dd05749376a7a4c055c99b
+exported-at:   2026-10-06 19:51:00 +0800
+exported-by:   shuiyuntian
+suite-version: 1.0.0

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+  <rect width="960" height="540" fill="#f5f7fa"/>
+  <rect x="8" y="8" width="600" height="524" fill="#ffffff" stroke="#ebeef5"/>
+  <g stroke="#ebeef5">
+    <line x1="8" y1="120" x2="608" y2="120"/><line x1="8" y1="200" x2="608" y2="200"/>
+    <line x1="8" y1="280" x2="608" y2="280"/><line x1="8" y1="360" x2="608" y2="360"/>
+  </g>
+  <g fill="#dcdfe6">
+    <rect x="20" y="140" width="420" height="16"/><rect x="20" y="220" width="520" height="16"/>
+    <rect x="20" y="300" width="380" height="16"/><rect x="20" y="380" width="480" height="16"/>
+  </g>
+  <rect x="608" y="0" width="352" height="540" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+  <rect x="608" y="0" width="352" height="540" fill="#000000" opacity="0.02"/>
+  <rect x="608" y="0" width="352" height="56" fill="#f5f7fa"/>
+  <text x="624" y="36" font-size="15" fill="#303133" font-weight="bold">分配用户 - 管理员</text>
+  <line x1="920" y1="20" x2="944" y2="44" stroke="#909399" stroke-width="2"/>
+  <line x1="944" y1="20" x2="920" y2="44" stroke="#909399" stroke-width="2"/>
+  <text x="624" y="96" font-size="12" fill="#67c23a">← 宽 55%、全高右侧滑出，不套 dialog 居中 CSS</text>
+  <rect x="624" y="116" width="152" height="330" fill="#f5f7fa" stroke="#ebeef5"/>
+  <rect x="792" y="116" width="152" height="330" fill="#f5f7fa" stroke="#ebeef5"/>
+  <g fill="#dcdfe6">
+    <rect x="634" y="130" width="132" height="12"/><rect x="634" y="156" width="110" height="12"/>
+    <rect x="634" y="182" width="126" height="12"/><rect x="802" y="130" width="132" height="12"/>
+    <rect x="802" y="156" width="104" height="12"/><rect x="802" y="182" width="120" height="12"/>
+  </g>
+  <text x="634" y="470" font-size="12" fill="#909399">候选用户表</text>
+  <text x="802" y="470" font-size="12" fill="#909399">已选用户表</text>
+  <rect x="624" y="492" width="320" height="34" fill="#ffffff"/>
+  <rect x="856" y="496" width="76" height="26" rx="3" fill="#409eff"/>
+  <rect x="772" y="496" width="76" height="26" rx="3" fill="none" stroke="#dcdfe6"/>
+  <text x="876" y="514" font-size="12" fill="#ffffff">确 定</text>
+  <text x="794" y="514" font-size="12" fill="#606266">取 消</text>
+  <text x="624" y="514" font-size="12" fill="#67c23a">确定/取消固定底部，表体内部滚动</text>
+  <rect x="0" y="500" width="608" height="40" fill="#f0f9eb"/>
+  <text x="16" y="525" font-size="14" fill="#529b2e">占位图 · 批次2实拍替换（正例：分配类行操作走 55% 宽全高抽屉）</text>
+</svg>

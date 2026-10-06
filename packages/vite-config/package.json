@@ -1,0 +1,34 @@
+{
+  "name": "@cesiumai/vite-config",
+  "version": "1.0.0",
+  "description": "能力包公共 Vite Library 配置（球端 tool.* / 管理端 admin.* 双模板；模板仓 vendored 共享包，源：平台仓 extensions/_shared/vite-config）",
+  "type": "module",
+  "main": "./dist/vite.base.js",
+  "types": "./src/vite.base.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/vite.base.js",
+      "types": "./src/vite.base.ts"
+    },
+    "./admin": {
+      "import": "./dist/vite.admin.base.js",
+      "types": "./src/vite.admin.base.ts"
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "vite": "^5.3.1",
+    "@vitejs/plugin-vue": "^5.0.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.4.5",
+    "unplugin-auto-import": "^0.18.6",
+    "unplugin-vue-setup-extend-plus": "^1.0.1",
+    "vite": "^5.3.1"
+  }
+}

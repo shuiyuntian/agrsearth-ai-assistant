@@ -1,0 +1,23 @@
+{
+  "name": "@cesiumai/ui-utils",
+  "version": "1.0.0",
+  "description": "GIS 平台前端共享 UI 工具（简繁转换等；模板仓 vendored 共享包，源：平台仓 extensions/_shared/ui-utils）",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "opencc-js": "^1.4.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vue": "^3.4.29"
+  }
+}

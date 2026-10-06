@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "文件作用": "管理面宿主 ruoyi-admin 向扩展远程管理页（admin.es.js / admin.umd.js，ADR-007）提供的共享运行时依赖契约：声明宿主实际提供的共享依赖及版本、扩展声明区间必须落入的接受范围、提供通道（import map / window 全局 / 能力桥接别名）。构建期由 extensions/_shared/vite-config/host-contract.js 硬校验，违例即构建失败。",
+    "作者": "JasonLee <shuiyuntian@foxmail.com>",
+    "创建日期": "2026-10-04",
+    "版本": "1.0.0",
+    "修改记录": [
+      "1.0.0 (2026-10-04) 初始创建（批4-P0 共享依赖 host-contract 契约；echarts 代际分裂治理：管理面钉 5.6.0 / 球端 6.1.0）"
+    ],
+    "版权所有": "(C) 2026 CesiumAI 项目"
+  },
+  "host": "ruoyi-admin",
+  "contractVersion": "1.0.0",
+  "updatedAt": "2026-10-04",
+  "notes": [
+    "本文件是管理面宿主-扩展共享运行时的唯一事实源；新增/升降共享依赖必须先改本文件，再同步 index.html import map、src/main.ts window 暴露与 vite.config.ts copy-esm-libs 插件。",
+    "version 为宿主 node_modules 实际安装版本；accepts 为扩展 admin-ui package.json（dependencies/devDependencies/peerDependencies）声明区间必须落入的范围（子集校验）。",
+    "via=importmap 的依赖 ESM 产物经 /esm-libs/*.mjs 共享（vue/vue-router/pinia/element-plus/icons 为 re-export window 全局的 shim，echarts/opencc-js/marked 为真实 ESM 复制，echarts.mjs 是补 default 导出的包装层）。",
+    "bridge=true 为宿主能力桥接别名（非 npm 包，无版本）：经 import map 别名映射到 /esm-libs/admin-*.mjs，源码零改写桥接宿主 axios 实例与 iconlib。",
+    "echarts 钉 5.6.0 代际低于球端 6.x：双产物包（frontend+admin-ui）两侧声明区间各自对准本侧宿主；管理页 import echarts 主题等子路径仅限 echarts 5 形态。",
+    "dayjs 不共享（element-plus 内部自携带），扩展需用日期库自行打包。"
+  ],
+  "shared": {
+    "vue": {
+      "version": "3.5.26",
+      "accepts": ">=3.4.0 <4.0.0",
+      "via": ["importmap:/esm-libs/vue.mjs", "window:Vue"]
+    },
+    "vue-router": {
+      "version": "4.6.4",
+      "accepts": ">=4.0.0 <5.0.0",
+      "via": ["importmap:/esm-libs/vue-router.mjs", "window:VueRouter"]
+    },
+    "pinia": {
+      "version": "3.0.4",
+      "accepts": ">=3.0.0 <4.0.0",
+      "via": ["importmap:/esm-libs/pinia.mjs", "window:Pinia"]
+    },
+    "element-plus": {
+      "version": "2.13.1",
+      "accepts": ">=2.13.0 <3.0.0",
+      "via": ["importmap:/esm-libs/element-plus.mjs", "window:ElementPlus"]
+    },
+    "@element-plus/icons-vue": {
+      "version": "2.3.2",
+      "accepts": ">=2.3.0 <3.0.0",
+      "via": ["importmap:/esm-libs/icons-vue.mjs", "window:ElementPlusIconsVue"]
+    },
+    "echarts": {
+      "version": "5.6.0",
+      "accepts": ">=5.4.0 <6.0.0",
+      "via": ["importmap:/esm-libs/echarts.mjs", "window:echarts"],
+      "notes": "管理面钉 echarts 5.6.0（球端为 6.x）；admin-ui 侧 echarts 声明区间必须留在 5.x。"
+    },
+    "opencc-js": {
+      "version": "1.4.2",
+      "accepts": ">=1.0.0 <2.0.0",
+      "via": ["importmap:/esm-libs/opencc-js.mjs", "window:OpenCC"]
+    },
+    "marked": {
+      "version": "18.0.14",
+      "accepts": ">=15.0.0 <19.0.0",
+      "via": ["importmap:/esm-libs/marked.mjs", "window:marked"]
+    },
+    "@/utils/request": {
+      "bridge": true,
+      "via": ["importmap:/esm-libs/admin-request.mjs", "window:__AdminRequestModule"],
+      "notes": "宿主 axios 实例桥接别名，非 npm 包，不参与版本校验。"
+    },
+    "@/utils/iconlib": {
+      "bridge": true,
+      "via": ["importmap:/esm-libs/admin-iconlib.mjs", "window:__AdminIconlib"],
+      "notes": "宿主 iconlib 实现桥接别名，非 npm 包，不参与版本校验。"
+    }
+  }
+}

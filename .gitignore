@@ -1,0 +1,8 @@
+# 插件模板仓独立成仓时的本地忽略规则（位于平台仓内时由仓根 .gitignore 统一覆盖）
+node_modules/
+dist/
+docs/html/
+*.tar.gz
+.DS_Store
+# vendored Maven 仓构件（pom/jar/sha1）必须随仓入库——豁免仓根 .gitignore 的 *.jar 排除
+!maven-repo/**/*.jar

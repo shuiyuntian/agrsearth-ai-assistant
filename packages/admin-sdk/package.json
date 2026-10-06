@@ -1,0 +1,20 @@
+{
+  "name": "@cesiumai/admin-sdk",
+  "version": "1.0.0",
+  "description": "管理端远程扩展页运行时契约（管理面远程化 ADR-007；模板仓 vendored 共享包，源：平台仓 extensions/_shared/admin-sdk）",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vue": "^3.4.29"
+  }
+}

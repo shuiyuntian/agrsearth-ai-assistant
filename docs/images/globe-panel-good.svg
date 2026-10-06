@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" font-family="sans-serif">
+  <rect width="960" height="540" fill="#1d2733"/>
+  <rect x="0" y="0" width="960" height="48" fill="#16202b"/>
+  <text x="16" y="30" font-size="13" fill="#8fa3b8">顶部标题栏（高 80px 留白区下沿）</text>
+  <rect x="880" y="96" width="40" height="360" rx="8" fill="#22303f"/>
+  <g fill="#3a4c61"><circle cx="900" cy="120" r="10"/><circle cx="900" cy="160" r="10"/><circle cx="900" cy="200" r="10"/><circle cx="900" cy="240" r="10"/></g>
+  <rect x="896" y="120" width="8" height="270" rx="4" fill="#2f9e44" opacity="0.0"/>
+  <rect x="456" y="80" width="424" height="348" rx="6" fill="#11161d" opacity="0.95" stroke="#33465e"/>
+  <rect x="456" y="80" width="424" height="40" rx="6" fill="#1c2836"/>
+  <rect x="468" y="94" width="16" height="12" rx="2" fill="#5b8dc9"/>
+  <text x="492" y="105" font-size="13" fill="#dbe4ee">面板标题（标题栏固定 40px）</text>
+  <g fill="#1e2a38"><rect x="472" y="136" width="392" height="36" rx="4"/><rect x="472" y="182" width="392" height="36" rx="4"/><rect x="472" y="228" width="392" height="36" rx="4"/></g>
+  <g fill="#7f95ab" font-size="12">
+    <text x="484" y="159">列表行 · 文字 text-gray-300 / 边框 gray-700</text>
+    <text x="484" y="205">高亮/激活态用主色或 text-blue-400</text>
+    <text x="484" y="251">弱信息 text-gray-400/500（占位/说明）</text>
+  </g>
+  <text x="472" y="300" font-size="11" fill="#55677c">x = vw - 440 - 64（右缘贴齐工具条）</text>
+  <text x="472" y="318" font-size="11" fill="#55677c">y = 80；高 = vh - 80 - 112</text>
+  <text x="472" y="336" font-size="11" fill="#55677c">native 模式 · draggable/resizable = false</text>
+  <line x1="456" y1="416" x2="880" y2="416" stroke="#33465e"/>
+  <text x="472" y="398" font-size="11" fill="#55677c">窗口 resize 跟随（destroy 移除监听）</text>
+  <rect x="0" y="500" width="960" height="40" fill="#fff7e6"/>
+  <text x="16" y="525" font-size="14" fill="#b8860b">占位图 · 批次2实拍替换（正例：球端工具面板，几何约定见 L10-B）</text>
+</svg>

@@ -1,0 +1,37 @@
+{
+  "id": "example-system",
+  "name": "示例系统（骨架）",
+  "version": "0.1.0",
+  "description": "系统轨能力包最小骨架：管理面远程页 + 多后端服务 + k8s-bundle；复制本骨架改名即用",
+  "type": "extension",
+  "track": "system",
+  "tier": "business",
+  "platformVersionRange": "^1.3.0",
+  "author": "插件团队 <plugin-dev@example.com>",
+  "icon": "Collection",
+  "components": {
+    "frontend": false,
+    "backend": ["example-server", "example-worker"],
+    "adminUi": true,
+    "menu": { "enabled": true, "menuPath": "example-system" },
+    "data": true
+  },
+  "backendServices": [
+    {
+      "serviceId": "example-server",
+      "name": "示例主服务",
+      "required": true,
+      "apiPrefix": "/example-server",
+      "healthEndpoint": "/example-server/actuator/health",
+      "imageSource": "self"
+    },
+    {
+      "serviceId": "example-worker",
+      "name": "示例工作器",
+      "required": true,
+      "imageSource": "self",
+      "dependsOn": ["example-server"]
+    }
+  ],
+  "defaultConfig": {}
+}

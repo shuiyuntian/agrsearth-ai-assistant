@@ -1,0 +1,19 @@
+# 文件作用：example-system 包级共享配置骨架（非密配置；值会被包内所有 envFrom 引用它的组件看到，勿放口令/key）
+# 作者：JasonLee <shuiyuntian@foxmail.com>
+# 创建日期：2026-09-14
+# 版本：1.0.1
+# 修改记录：
+#   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
+#   - 1.0.1 (2026-10-05) 域分组机制撤回对齐：改包级命名、去 gis-platform/domain 标签
+#   - 1.0.2 (2026-10-06) 去内部命名空间字面量（namespace 由部署服务端覆写，注释占位）
+#
+# 版权所有 (C) 2026 CesiumAI 项目
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-system-shared
+  # namespace 不写真（部署服务端强制覆写为目标环境命名空间）
+data:
+  # 示例：包内组件的集群内地址（Service DNS，不经网关）
+  # EXAMPLE_SERVER_BASE: "http://example-server:8080"
+  PLACEHOLDER_REMOVE_ME: "edit-or-delete-this-file"

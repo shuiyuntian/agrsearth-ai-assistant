@@ -6,6 +6,3 @@ docs/html/
 .DS_Store
 # vendored Maven 仓构件（pom/jar/sha1）必须随仓入库——豁免仓根 .gitignore 的 *.jar 排除
 !maven-repo/**/*.jar
-
-# 导出时间戳产物（sync/export 脚本每次刷新，不入库）
-.upstream

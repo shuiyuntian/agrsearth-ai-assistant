@@ -6,7 +6,7 @@
 #          权限对账/双环境，只打测试底座，prod 一律拒绝）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.2
+# 版本：1.0.1
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：测试环境默认值按 DGX 测试底座
 #     端点写死、全部可环境变量覆盖；凭据必须经环境变量注入，脚本内无任何默认口令）
@@ -15,10 +15,6 @@
 #     覆盖指引」，HTTP 4xx/5xx 指认凭据/bucket 权限（不再抛裸 Python traceback）；
 #     ② api_call 增加 --connect-timeout 10/--max-time 60 并检测 curl 退出码——RM 不可达
 #     时报「无法连接 resource-manager + RM_API_BASE 覆盖指引」（不再空响应泛化报错）
-#   - 1.0.2 (2026-10-06) --dev-url 实战修复：同步改写 esm-js 资源记录 artifactUrl——
-#     RM buildManifest 以 DB 资源记录构造 entries.esm.url（manifest.json 服务端仅登记
-#     不解析），只改 manifest.json 的回路无效（2026-10-06 测试底座端到端演练实测）；
-#     --reset 同步恢复 esm-js 记录至正式产物 URL
 #
 # 版权所有 (C) 2026 CesiumAI 项目
 #
@@ -462,27 +458,6 @@ if [ "${DEV_MODE}" = "true" ]; then
         echo "  resource-manager manifest-json 资源记录已刷新"
     else
         echo "提示：未找到 manifest-json 资源记录（该版本可能未发布过）——先正常发布一次再进 dev-url 模式"
-    fi
-    # dev-url 必须同步改写 esm-js 资源记录：RM buildManifest 以 DB 资源记录构造 entries.esm.url
-    # （manifest.json 内容服务端仅登记不解析，见 PackageServiceImpl.mergeManifestJson），
-    # 只改 manifest.json 不改资源记录，宿主 list 接口拿到的入口地址不会变（2026-10-06 实测）
-    ESM_ROW=$(jq -c '.data // [] | map(select(.artifactType == "esm-js")) | .[0] // empty' <<< "${EXISTING}" 2>/dev/null || true)
-    if [ -n "${ESM_ROW}" ]; then
-        ESM_NAME=$(jq -r '.resourceName' <<< "${ESM_ROW}")
-        if [ "${DEV_RESET}" = "false" ]; then
-            ESM_URL="${DEV_URL}"
-            ESM_ACTION="已指向 dev"
-        else
-            ESM_URL="${MINIO_PUBLIC_URL}/${OBJECT_PREFIX}/${ESM_NAME}"
-            ESM_ACTION="已恢复正式产物 URL"
-        fi
-        ESM_BODY=$(jq -n \
-            --arg pid "${PACKAGE_ID}" --arg v "${VERSION}" --arg rn "${ESM_NAME}" --arg url "${ESM_URL}" \
-            '{packageId: $pid, version: $v, resourceType: "frontend", resourceName: $rn, artifactType: "esm-js", artifactUrl: $url, required: 1}')
-        api_call PUT "/${PACKAGE_ID}/version/${VERSION}/resource" "${ESM_BODY}" >/dev/null
-        echo "  esm-js 资源记录 ${ESM_ACTION}：${ESM_URL}"
-    else
-        echo "提示：未找到 esm-js 资源记录，跳过入口改写（宿主将仍用既有入口）"
     fi
     if [ "${DEV_RESET}" = "false" ]; then
         echo "------------------------------------------"

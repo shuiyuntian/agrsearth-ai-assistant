@@ -1,7 +1,9 @@
-# 插件测试底座（agrslab-dev）使用说明
+# 插件测试底座（DGX ext-test）使用说明
 
-> 测试底座是平台方部署的独立测试环境，与生产完全隔离（独立 DB / MinIO bucket / 清单）。
+> 测试底座是平台方部署在 DGX（192.168.1.22）microk8s 独立 namespace `ext-test` 的插件测试环境，
+> 与生产环境完全隔离（独立 DB / MinIO bucket / 清单 / SSO 全链）。
 > 团队自助发布**只进本环境**；生产发布由平台管理员执行。
+> 平台方运维口径见平台仓 `platform/deploy/environments/test/dgx/README.md`。
 
 ## 1. 地址表（默认端点，全部可环境变量覆盖）
 
@@ -23,7 +25,7 @@
 2. 平台管理员开通 **ext-developer 角色**并下发：
    - MinIO 凭据（`MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`）；
    - 管理端登录 token 获取方式（`RM_TOKEN`，管理面登录后从会话获取）；
-   - 球端/管理面测试入口的登录账号（SSO 开发者账号）。
+   - 球端/管理面测试入口的登录账号（SSO 开发者账号，ext-demo 或团队专属账号）。
 3. 凭据只进本机环境变量或本地 `.env`（gitignored），**禁止写进包代码/文档/提测单**。
 
 ## 3. 发布通道（tools/publish.sh）
@@ -54,9 +56,8 @@ cd packages/<pkg-id>/frontend && npm run dev
 # 2. 另一个终端：静态服务 dist/（本机 IP 需测试底座球端可直达）
 cd packages/<pkg-id>/frontend/dist && python3 -m http.server 5173
 
-# 3. 把已发布版本的入口指向本机（1.0.2 起同步改写 esm-js 资源记录——宿主 list 接口
-#    以 DB 资源记录构造 entries.esm.url，只改 manifest.json 无效；--dev-url 参数给完整 ESM 文件 URL）
-./tools/publish.sh packages/<pkg-id> --dev-url http://<本机IP>:5173/tool.es.js  # 完整 ESM 文件 URL
+# 3. 把已发布版本的 manifest entries 指向本机（宿主再拉 manifest 即加载本机产物）
+./tools/publish.sh packages/<pkg-id> --dev-url http://<本机IP>:5173
 
 # 4. 球端 18880 强制刷新 → 面板加载本机产物，改代码即生效（watch 自动重编）
 

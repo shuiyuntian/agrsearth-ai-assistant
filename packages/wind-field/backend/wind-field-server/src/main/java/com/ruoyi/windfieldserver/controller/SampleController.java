@@ -41,7 +41,7 @@ public class SampleController {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("service", "wind-field-server");
         data.put("extension", "wind-field");
-        data.put("version", "0.1.0");
+        data.put("version", "0.1.1"); // 与 container/wind-field-server/VERSION 同步（组件版本轴）
         data.put("time", LocalDateTime.now().toString());
         return R.ok(data);
     }

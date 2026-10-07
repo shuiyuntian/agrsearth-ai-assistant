@@ -1,0 +1,89 @@
+# 文件作用：example-server k8s 工作负载样例（tool 轨单后端包：ConfigMap + Deployment + Service，
+#          publish 打包为 k8s-bundle 一键安装；基线取自 wind-field 实测清单）
+# 作者：JasonLee <shuiyuntian@foxmail.com>
+# 创建日期：2026-10-07
+# 版本：1.0.0
+# 修改记录：
+#   - 1.0.0 (2026-10-07) 初始创建（tool 轨后端部署样例补齐；imagePullPolicy Always +
+#     limits.memory 1536Mi 为 Spring Boot 4 实测基线，512Mi 会 OOMKilled）
+#
+# 版权所有 (C) 2026 CesiumAI 项目
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-server-config
+  # namespace 不写真（部署服务端强制覆写为目标环境命名空间）
+data:
+  SERVER_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: "prod"
+  # 集群内依赖走短名 Service DNS，不经网关；按需增删，凭据禁写这里（见 README 白名单）
+  SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: "nacos:8848"
+  SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: "nacos:8848"
+  SPRING_DATA_REDIS_HOST: "redis"
+  SPRING_DATA_REDIS_PORT: "6379"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-server
+  # namespace 不写真（部署服务端强制覆写为目标环境命名空间）
+  labels:
+    app: example-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-server
+  template:
+    metadata:
+      labels:
+        app: example-server
+    spec:
+      containers:
+        - name: example-server
+          # 镜像 tag = 组件版本轴（container/example-server/VERSION），publish 部署段自动 patch
+          image: localhost:32000/gis-platform/tool/business/example-tool/example-server:0.1.0
+          # 同 tag 迭代必须 Always，否则节点缓存旧镜像（IfNotPresent 陷阱）
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            # 时区一票否决项：必须显式声明（勿只经 envFrom 间接注入）
+            - name: TZ
+              value: Asia/Shanghai
+          # 非密应用配置整体引入；凭据一律 secretKeyRef 引用平台方预建 Secret（只引用不创建）
+          envFrom:
+            - configMapRef:
+                name: example-server-config
+          readinessProbe:
+            httpGet:
+              # 健康端点约定 = manifest.backendServices[].healthEndpoint
+              path: /example-server/actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              # 必须 ≥ -Xmx + non-heap 余量，否则 OOMKilled(137)
+              memory: 1536Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-server
+  # namespace 不写真（部署服务端强制覆写为目标环境命名空间）
+  labels:
+    app: example-server
+spec:
+  type: ClusterIP
+  selector:
+    app: example-server
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

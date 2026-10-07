@@ -18,7 +18,7 @@
 | `tools/md-to-html.py` | 公共文档工具（README/CHANGELOG/DESIGN/REPORT 一键转 HTML 评审件） |
 | `maven-repo/` | vendored file:// Maven 仓：插件后端骨架实际依赖的 com.ruoyi 构件闭包（**com.ruoyi 不在 Maven 中央仓**）；后端 `mvn package` 免平台仓，清单与扩充方式见 `maven-repo/README.md` |
 | `test-env/` | 测试底座（DGX ext-test）使用说明：地址表、ext-developer 账号申请、发布通道、`--dev-url` HMR 步骤，见 `test-env/README.md` |
-| `skeletons/tool/` | 工具轨最小骨架：manifest（含 components 显式声明段）+ VERSION + 四必备 + 可构建 frontend + data/menu.json 样例 |
+| `skeletons/tool/` | 工具轨最小骨架：manifest（含 components 显式声明段）+ VERSION + 四必备 + 可构建 frontend + data/menu.json 样例 + deploy/k8s 单后端部署样例（--with-backend 时随包生效） |
 | `skeletons/system/` | 系统轨最小骨架：manifest（backendServices 多组件声明）+ container/ 镜像目录 + deploy/k8s 白名单样例 + data/menu.json 样例（backend 源码不入骨架，由 `tools/create-extension.sh` 从 `backend/svc-placeholder/` 实例化） |
 | `skeletons/admin-ui/` | 通用管理面远程页骨架（ADR-007；两轨复用，复制为包内 `admin-ui/`） |
 | `backend/svc-placeholder/` | 后端微服务骨架模板：最小可运行 Spring Boot 模块（bootstrap.yml + 启动类 + /info 示例控制器；pom 由脚手架改造为 `maven-repo/` file 仓）；占位符表与实例化后必做见其 README |

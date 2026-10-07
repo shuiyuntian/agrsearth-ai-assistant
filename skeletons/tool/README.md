@@ -14,6 +14,7 @@
 | `frontend/package.json` | `name: "cesiumai-plugin-tool-example"` | 包名（平台仓惯例 `@agrscesiumai/<pkg>`） |
 | `frontend/src/manifest.ts` | `id/name/version/description` | 与 manifest.json 一致 |
 | `frontend/vite.config.ts` | `name: 'Capability_example'` | `Capability_<pkg-id 去中划线>`，全局唯一 |
+| `deploy/k8s/10-example-server.yaml` | `example-server`/`example-tool` 资源名与镜像路径 | 与 `--backend` 服务 id / 包 id 一致（仅带后端的包需要本目录） |
 
 ## components 显式声明段（契约，禁止推导）
 
@@ -35,6 +36,8 @@
 - `frontend/src/utils/cesium.ts`  Cesium 取用工具（window.Cesium；**禁止裸 import 'cesium'**——
   宿主 import map 无 cesium 键，ESM 产物裸引用会运行时加载失败）
 - `data/menu.json`     管理面菜单声明样例（adminUi + menu.enabled=true 时启用；号段须平台方分配，publish 时 menu-provision 幂等落地）
+- `deploy/k8s/`        【仅带后端的包】后端部署样例（`10-<svc>.yaml`：ConfigMap+Deployment+Service；
+  脚手架 `--with-backend` 自动生成，publish 打包 k8s-bundle；基线见 deploy/k8s/README.md）
 
 ## 开发
 

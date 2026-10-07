@@ -5,7 +5,7 @@
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.1
+# 版本：1.0.2
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：占位符替换与 skeleton 实际占位符全集
 #     对齐；backend 从 backend/svc-placeholder 实例化并改造 pom：relativePath 置空 +
@@ -13,6 +13,9 @@
 #   - 1.0.1 (2026-10-06) 实战检验修复：① manifest.json description 骨架文案纳入占位符替换
 #     （工具轨/系统轨两句长 token），消除「包清单描述残留骨架句」；② 实例化 pom 时同步改写
 #     「集成约定」注释（模板仓 vendored 形态 4 层，原注释残留平台仓 6 层表述误导）+ 改写校验
+#   - 1.0.2 (2026-10-07) tool 轨 --with-backend 同步带出 deploy/k8s 部署样例（skeletons/tool
+#     随骨架复制进包；example-server 资源名/文件名对齐 --backend 服务 id，镜像路径 track/tier
+#     段按入参覆写；无后端的包移除 deploy/ 目录）
 #
 # 版权所有 (C) 2026 CesiumAI 项目
 #
@@ -286,6 +289,14 @@ if [ "${TRACK}" = "tool" ]; then
     fi
     if [ "${#BACKEND_SVCS[@]}" -gt 0 ]; then
         instantiate_backend_skeleton "${BACKEND_SVCS[0]}" "8080"
+        # deploy/k8s 样例随骨架复制进包（skeletons/tool/deploy/k8s/，包级替换已改 example-tool）：
+        # 资源名/文件名对齐 --backend 服务 id，镜像路径 track/tier 段按入参覆写
+        k8s_skel="${PKG_DIR}/deploy/k8s/10-example-server.yaml"
+        sed_i \
+            -e "s|example-server|${BACKEND_SVCS[0]}|g" \
+            -e "s|gis-platform/tool/business/|gis-platform/${TRACK}/${TIER}/|g" \
+            "${k8s_skel}"
+        mv "${k8s_skel}" "${PKG_DIR}/deploy/k8s/10-${BACKEND_SVCS[0]}.yaml"
         # manifest components.backend / backendServices 与骨架服务一致
         jq --arg sid "${BACKEND_SVCS[0]}" \
             '.components.backend = [$sid]
@@ -294,6 +305,9 @@ if [ "${TRACK}" = "tool" ]; then
                                     imageSource: "self"}]' \
             "${PKG_DIR}/manifest.json" > "${PKG_DIR}/manifest.json.tmp" \
             && mv "${PKG_DIR}/manifest.json.tmp" "${PKG_DIR}/manifest.json"
+    else
+        # 无后端的工具包不带部署样例（deploy/ 仅随后端出现）
+        rm -rf "${PKG_DIR}/deploy"
     fi
 else
     cp -R "${REPO_ROOT}/skeletons/system/." "${PKG_DIR}/"
@@ -346,7 +360,7 @@ ${TRACK} 轨能力包（track: ${TRACK}，tier: ${TIER}${DELIVERY:+，delivery: 
 - frontend/          球端 Capability 工程（cd frontend && npm run build）
 $(if [ "${WITH_ADMIN_UI}" -eq 1 ] || [ "${TRACK}" = "system" ]; then echo "- admin-ui/          管理面远程页（cd admin-ui && npm run build）"; fi)
 $(if [ "${#BACKEND_SVCS[@]}" -gt 0 ]; then echo "- backend/<svc>/     后端微服务（mvn package；com.ruoyi 构件由仓根 maven-repo/ 供给）"; echo "- container/<svc>/   镜像构建（Dockerfile+build.sh+VERSION 组件版本轴）"; fi)
-$(if [ "${TRACK}" = "system" ]; then echo "- deploy/k8s/        k8s-bundle（publish 打包一键安装）"; fi)
+$(if [ "${TRACK}" = "system" ] || [ "${#BACKEND_SVCS[@]}" -gt 0 ]; then echo "- deploy/k8s/        k8s-bundle（publish 打包一键安装）"; fi)
 - data/menu.json     管理面菜单声明样例（号段向平台方申请后替换；tools/menujson.py validate 本地校验）
 
 ## 开发 → 发布

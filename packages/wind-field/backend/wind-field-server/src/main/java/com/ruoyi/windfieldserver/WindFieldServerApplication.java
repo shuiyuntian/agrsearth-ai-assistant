@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
@@ -22,10 +23,12 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * <p>
  * Nacos 注册名取 spring.application.name（= manifest.backendServices[].serviceId = wind-field-server）。
  * scanBasePackages 保留 com.ruoyi 以装入 ruoyi-common-* 的自动配置 Bean。
+ * ruoyi-common-security 传递引入 mybatis/HikariCP——本服务无数据库，排除
+ * DataSourceAutoConfiguration（否则启动失败：Failed to determine a suitable driver class）。
  * </p>
  */
 @EnableDiscoveryClient
-@SpringBootApplication(scanBasePackages = {"com.ruoyi"})
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}, scanBasePackages = {"com.ruoyi"})
 public class WindFieldServerApplication {
 
     private static final Logger log = LoggerFactory.getLogger(WindFieldServerApplication.class);

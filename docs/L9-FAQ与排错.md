@@ -67,3 +67,30 @@ A：告警不阻断——确认 `data/menu.json` 已随包发布并经 menu-prov
 
 **Q：部署后接口 404？**
 A：网关路由未加 apiPrefix——提测单已要求声明「网关路由新增需求」，找平台方补。
+
+## 9.5 后端与部署（wind-field 实战落账 2026-10-07）
+
+**Q：后端启动即失败「Failed to determine a suitable driver class」？**
+A：骨架依赖 ruoyi-common-security 传递引入 mybatis/HikariCP，无库服务必须在启动类排除
+`DataSourceAutoConfiguration`（注意平台为 Spring Boot 4，类在 `org.springframework.boot.jdbc.autoconfigure`
+包下，不是老教程的 `autoconfigure.jdbc`）。0.1.1 起骨架已内置 exclude；服务需要数据库时删除
+exclude 并配置数据源。
+
+**Q：接口返回里混着 `nodeType`/`array`/`empty` 之类的垃圾字段？**
+A：平台 Spring Boot 4 的 MVC 序列化走 Jackson 3（`tools.jackson`），你 `new ObjectMapper()`
+产出的是 Jackson 2 的 `JsonNode`——Jackson 3 不认识它，当 POJO 反射输出了全部 getter。
+出参前 `objectMapper.convertValue(node, Map.class)` 转成 Map 再放进 `R.ok(...)`。
+
+**Q：改了代码重建镜像、重新部署，行为没变？**
+A：同 tag 重推 + `imagePullPolicy: IfNotPresent` = 节点用缓存旧镜像。开发期 deployment 用
+`imagePullPolicy: Always`（本仓 deploy/k8s 样例即此）；正式发布走组件版本轴
+（`container/<svc>/VERSION` bump 新 tag），不要同 tag 覆盖生产引用。
+
+**Q：pod 反复 OOMKilled（Exit Code 137）？**
+A：k8s `resources.limits.memory` 必须 ≥ 镜像 `JAVA_OPTS` 的 `-Xmx` + non-heap 余量。
+骨架 Dockerfile 默认 `-Xmx1024m`，配套 limit 至少 1536Mi（768Mi 实测必死）。
+
+**Q：发布后管理页调后端 404「No static resource <svc>/...」？**
+A：网关路由表里缺你服务的 `/<svcId>/**` 段——提测单声明「网关路由新增需求」由平台方补；
+测试底座的现成样例见 wind-field-server 段（`Path=/wind-field-server/**` + `StripPrefix=1`，
+controllers 不带服务前缀时 StripPrefix 不可省）。

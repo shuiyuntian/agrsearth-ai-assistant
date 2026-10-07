@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * 风场样例数据元信息端点（管理页「数据更新时间」等展示的数据源）。
@@ -42,11 +43,13 @@ public class WindSampleController {
      * @return meta 段：name/source/validTime/unit/grid/speedRange
      */
     @GetMapping("/sample-meta")
-    public R<JsonNode> sampleMeta() {
+    public R<Map<String, Object>> sampleMeta() {
         ClassPathResource resource = new ClassPathResource("wind-sample.json");
         try (InputStream in = resource.getInputStream()) {
             JsonNode root = objectMapper.readTree(in);
-            return R.ok(root.get("meta"));
+            // 平台为 Spring Boot 4（MVC 序列化走 Jackson 3），Jackson 2 的 JsonNode
+            // 会被当 POJO 输出 nodeType 等垃圾字段——必须先转成 Map 再出参
+            return R.ok(objectMapper.convertValue(root.get("meta"), Map.class));
         } catch (IOException e) {
             return R.fail("样例数据读取失败：" + e.getMessage());
         }

@@ -30,7 +30,10 @@
       "perms": "",
       "icon": "guide",
       "remark": "示例工具管理目录（path = components.menu.menuPath）",
-      "roleIds": [1, 106]
+      "roleIds": [
+        1,
+        5
+      ]
     },
     {
       "menuId": 2004001,
@@ -49,7 +52,10 @@
       "perms": "example:data:list",
       "icon": "list",
       "remark": "示例工具数据管理页",
-      "roleIds": [1, 106]
+      "roleIds": [
+        1,
+        5
+      ]
     },
     {
       "menuId": 2004002,
@@ -68,7 +74,10 @@
       "perms": "example:data:add",
       "icon": "#",
       "remark": "",
-      "roleIds": [1, 106]
+      "roleIds": [
+        1,
+        5
+      ]
     }
   ]
 }

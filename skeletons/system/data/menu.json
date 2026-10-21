@@ -31,10 +31,7 @@
       "perms": "",
       "icon": "guide",
       "remark": "示例系统管理目录（path = components.menu.menuPath）",
-      "roleIds": [
-        1,
-        5
-      ]
+      "roleIds": [1, 5]
     },
     {
       "menuId": 3004001,
@@ -53,10 +50,7 @@
       "perms": "example-system:data:list",
       "icon": "list",
       "remark": "示例系统数据管理页",
-      "roleIds": [
-        1,
-        5
-      ]
+      "roleIds": [1, 5]
     },
     {
       "menuId": 3004002,
@@ -75,10 +69,7 @@
       "perms": "example-system:data:add",
       "icon": "#",
       "remark": "",
-      "roleIds": [
-        1,
-        5
-      ]
+      "roleIds": [1, 5]
     }
   ]
 }

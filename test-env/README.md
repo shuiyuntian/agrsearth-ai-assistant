@@ -1,6 +1,6 @@
-# 插件测试底座（DGX ext-test）使用说明
+# 插件测试底座（DGX agrslab-dev）使用说明
 
-> 测试底座是平台方部署在 DGX（192.168.1.22）microk8s 独立 namespace `ext-test` 的插件测试环境，
+> 测试底座是平台方部署在 DGX（192.168.1.22）microk8s 独立 namespace `agrslab-dev` 的插件测试环境，
 > 与生产环境完全隔离（独立 DB / MinIO bucket / 清单 / SSO 全链）。
 > 团队自助发布**只进本环境**；生产发布由平台管理员执行。
 > 平台方运维口径见平台仓 `platform/deploy/environments/test/dgx/README.md`。

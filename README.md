@@ -25,6 +25,7 @@
 | `container/svc-placeholder/` | 镜像构建骨架模板：eclipse-temurin:17-jre jar 模式 Dockerfile + build.sh（OCI Label 注入）+ VERSION 组件版本轴，镜像名 `gis-platform/<track>/<tier>/<pkg>/<svc>` |
 | `docs/` | L1-L10 分层开发指南（给人看的；截图位为占位图，标注「批次2实拍替换」） |
 | `.kimi-code/skills/cesiumai-plugin-dev/` | AI Coding 技能（触发条件 + 契约红线 + recipe 索引 + 每步验收 checklist） |
+| `AGENTS.md` / `CLAUDE.md` | 跨工具 AI 编码契约（Codex/qoder/Claude Code 等打开本仓即读；红线与 skill 同源，改红线两处同步） |
 
 ## 快速开始
 

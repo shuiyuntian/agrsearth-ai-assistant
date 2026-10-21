@@ -34,6 +34,8 @@
         <poi.version>4.1.2</poi.version>
         <springdoc.version>3.0.2</springdoc.version>
         <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
+        <!-- Casdoor 统一认证 SDK（SSO 平台能力，ADR-008；版本锁定见方案 §2，禁用停更的 casdoor-spring-boot-starter） -->
+        <casdoor-java-sdk.version>1.45.1</casdoor-java-sdk.version>
     </properties>
 
     <!-- 依赖声明 -->
@@ -138,6 +140,13 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Casdoor 统一认证 SDK（ruoyi-auth /auth/casdoor/callback 使用） -->
+            <dependency>
+                <groupId>org.casbin</groupId>
+                <artifactId>casdoor-java-sdk</artifactId>
+                <version>${casdoor-java-sdk.version}</version>
             </dependency>
 
             <!-- 线程传递值 -->

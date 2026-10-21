@@ -4,7 +4,7 @@
 # 版本：1.0.1
 # 修改记录：
 #   - 1.0.0 (2026-10-04) 初始创建
-#   - 1.0.1 (2026-10-06) nacos 默认地址改指插件测试底座（192.168.1.22:18810，可环境变量覆盖）
+#   - 1.0.1 (2026-10-06) nacos 默认地址改指 aiearth02 共享开发调试环境（10.82.11.52:18810，可环境变量覆盖）
 #
 # 版权所有 (C) 2026 CesiumAI 项目
 
@@ -22,11 +22,11 @@ spring:
   cloud:
     nacos:
       discovery:
-        # 默认指向插件测试底座 nacos（地址表见 test-env/README.md，可用环境变量覆盖；
+        # 默认指向 aiearth02 共享调试环境 nacos（地址表见 test-env/README.md，可用环境变量覆盖；
         # 平台仓本地开发经 ssh 隧道连测试底座，见 KNOWN_ISSUES 末行）
-        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:192.168.1.22:18810}
+        server-addr: ${SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR:10.82.11.52:18810}
       config:
-        server-addr: ${SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR:192.168.1.22:18810}
+        server-addr: ${SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR:10.82.11.52:18810}
   config:
     file-extension: yml
     import:

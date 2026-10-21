@@ -8,7 +8,7 @@
 ## 这是什么仓
 
 航遥业务中台（CesiumAI）的**插件（能力包）开发模板仓**。你在这里开发的每个包最终会被发布到
-平台测试底座（ext-test）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
+共享开发调试环境（aiearth02 ext-dev，公司网）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
 `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L1-L10` 是分层指南，
 冲突时以契约本体为准。
 
@@ -20,8 +20,27 @@
 - `tools/` — create-extension.sh（建包）、publish.sh（发测试底座）、check-extension-versions.sh、menujson.py
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
-- `test-env/` — 测试底座地址表与账号申请说明
+- `test-env/` — 共享开发调试环境（aiearth02 ext-dev）地址表与账号申请说明
 - `docs/L1-L10` — 分层开发指南；`RELEASE_CHECKLIST.md` — 提测前自检清单
+
+## AI 工具接入（dev-mcp，推荐）
+
+本仓附带 `tools/dev-mcp/`——插件开发辅助 MCP server（stdio）。接入后你的 AI 工具可直接
+查契约文档、跑脚手架、做发布预检、一键发布到共享调试环境、自助查实例/日志。
+
+- **Kimi Code**：开箱即用（仓根 `.kimi-code/mcp.json` 已注册 `cesiumai-dev`，按需加载）。
+- **Codex**（`~/.codex/config.toml`）：
+  ```toml
+  [mcp_servers.cesiumai-dev]
+  command = "node"
+  args = ["tools/dev-mcp/server.mjs"]
+  ```
+- **Claude Code**：`claude mcp add cesiumai-dev -- node tools/dev-mcp/server.mjs`
+- **其他支持 stdio MCP 的客户端**：入口 `node tools/dev-mcp/server.mjs`，工作目录 = 仓根。
+
+首次使用先 `cd tools/dev-mcp && npm install`；查实例/日志类工具需团队 token
+（`CESIUMAI_TOKEN` 环境变量或仓根 `.env.local`，获取方式见 `test-env/README.md` §2）。
+**`tools/dev-mcp/` 是导出产物，禁止直接改**——问题回报平台方，源头在平台仓 `mcps/cesiumai-dev/`。
 
 ## 契约红线（违反即验收打回；交付前必须 grep 自查）
 

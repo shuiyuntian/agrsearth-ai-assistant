@@ -6,7 +6,7 @@
 #          权限对账/双环境，只打测试底座，prod 一律拒绝）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.1
+# 版本：1.1.0
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：测试环境默认值按 DGX 测试底座
 #     端点写死、全部可环境变量覆盖；凭据必须经环境变量注入，脚本内无任何默认口令）
@@ -15,6 +15,9 @@
 #     覆盖指引」，HTTP 4xx/5xx 指认凭据/bucket 权限（不再抛裸 Python traceback）；
 #     ② api_call 增加 --connect-timeout 10/--max-time 60 并检测 curl 退出码——RM 不可达
 #     时报「无法连接 resource-manager + RM_API_BASE 覆盖指引」（不再空响应泛化报错）
+#   - 1.1.0 (2026-10-22) 默认端点改指 aiearth02 共享开发调试环境（公司网 LAN
+#     10.82.11.52，bucket gis-platform-resources-dev；双 MCP 体系 M3 批，原 DGX
+#     ext-test 默认值废止——DGX 为业主家庭网预发位，不对团队开放）
 #
 # 版权所有 (C) 2026 CesiumAI 项目
 #
@@ -39,11 +42,11 @@
 #      本机 dev server 地址后重传 MinIO（宿主再拉 manifest 即指向本机产物）；
 #      --dev-url --reset：按正式产物 URL 重写并重传（恢复线上形态）
 #
-# 环境变量（测试底座默认值，全部可覆盖）：
-#   MINIO_ENDPOINT   http://192.168.1.22:18814
-#   MINIO_BUCKET     gis-platform-resources-test
-#   MINIO_PUBLIC_URL http://192.168.1.22:18880/plugins
-#   RM_API_BASE      http://192.168.1.22:18801/resource-manager/api/v1/package
+# 环境变量（aiearth02 共享开发调试环境默认值，全部可覆盖）：
+#   MINIO_ENDPOINT   http://10.82.11.52:18814
+#   MINIO_BUCKET     gis-platform-resources-dev
+#   MINIO_PUBLIC_URL http://10.82.11.52:18880/plugins
+#   RM_API_BASE      http://10.82.11.52:18801/resource-manager/api/v1/package
 #   MINIO_ACCESS_KEY / MINIO_SECRET_KEY  必填（无默认值；向平台管理员申请 ext-developer 凭据）
 #   RM_TOKEN         管理端登录 token（可选；缺省匿名调用，服务端拒绝时按报错处理）
 #   REGISTRY         localhost:32000（自构镜像引用推导用）
@@ -223,10 +226,10 @@ else
 fi
 
 # ---------- 端点（测试底座默认值，全部可环境变量覆盖；凭据必填、无默认口令）----------
-MINIO_ENDPOINT="${MINIO_ENDPOINT:-http://192.168.1.22:18814}"
-MINIO_BUCKET="${MINIO_BUCKET:-gis-platform-resources-test}"
-MINIO_PUBLIC_URL="${MINIO_PUBLIC_URL:-http://192.168.1.22:18880/plugins}"
-RM_API_BASE="${RM_API_BASE:-http://192.168.1.22:18801/resource-manager/api/v1/package}"
+MINIO_ENDPOINT="${MINIO_ENDPOINT:-http://10.82.11.52:18814}"
+MINIO_BUCKET="${MINIO_BUCKET:-gis-platform-resources-dev}"
+MINIO_PUBLIC_URL="${MINIO_PUBLIC_URL:-http://10.82.11.52:18880/plugins}"
+RM_API_BASE="${RM_API_BASE:-http://10.82.11.52:18801/resource-manager/api/v1/package}"
 REGISTRY="${REGISTRY:-localhost:32000}"
 if [ -z "${MINIO_ACCESS_KEY:-}" ] || [ -z "${MINIO_SECRET_KEY:-}" ]; then
     echo "错误：请经环境变量提供 MinIO 凭据：MINIO_ACCESS_KEY / MINIO_SECRET_KEY"

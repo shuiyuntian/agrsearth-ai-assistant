@@ -13,7 +13,7 @@
 |:---|:---|:---|:---|
 | L1 | [L1-平台介绍.md](./L1-平台介绍.md) | 定位/架构/环境拓扑/双轨模型/名词表 | 首次接触平台 |
 | L2 | [L2-接入准备-SSO与开发环境.md](./L2-接入准备-SSO与开发环境.md) | SSO 开发者账号、角色、登录、API token | 开工前 |
-| L3 | [L3-QuickStart-30分钟跑通.md](./L3-QuickStart-30分钟跑通.md) | 对着 DGX ext-test 测试底座跑通样例 | 第一个插件 |
+| L3 | [L3-QuickStart-30分钟跑通.md](./L3-QuickStart-30分钟跑通.md) | 对着 aiearth02 ext-dev 共享调试环境跑通样例 | 第一个插件 |
 | L4 | [L4-概念手册.md](./L4-概念手册.md) | capability 框架/生命周期/分组隔离/远程页 | 理解机制 |
 | L5 | [L5-开发Recipes.md](./L5-开发Recipes.md) | 任务级 how-to（7 条），每条带验收 checklist | 干活时随查 |
 | L6 | [L6-参考契约.md](./L6-参考契约.md) | ctx API 表/manifest schema（含 components 段）/SDK 包 | 查契约 |

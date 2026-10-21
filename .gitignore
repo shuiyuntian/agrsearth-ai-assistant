@@ -2,6 +2,7 @@
 node_modules/
 dist/
 docs/html/
+logs/
 target/
 *.tar.gz
 .DS_Store

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cesiumai-dev": {
+      "command": "node",
+      "args": ["tools/dev-mcp/server.mjs"],
+      "deferred": true,
+      "startupTimeoutMs": 15000,
+      "toolTimeoutMs": 1800000
+    }
+  }
+}

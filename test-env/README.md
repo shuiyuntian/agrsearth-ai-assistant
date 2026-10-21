@@ -1,23 +1,25 @@
-# 插件测试底座（DGX agrslab-dev）使用说明
+# 共享开发调试环境（aiearth02 ext-dev）使用说明
 
-> 测试底座是平台方部署在 DGX（192.168.1.22）microk8s 独立 namespace `agrslab-dev` 的插件测试环境，
-> 与生产环境完全隔离（独立 DB / MinIO bucket / 清单 / SSO 全链）。
+> 共享开发调试环境是平台方部署在公司网 aiearth02（LAN 10.82.11.52 / Tailscale 100.64.0.5）
+> microk8s 独立 namespace `ext-dev` 的插件开发调试环境，与生产环境完全隔离
+> （独立 DB / MinIO bucket / 清单 / SSO 全链）。
 > 团队自助发布**只进本环境**；生产发布由平台管理员执行。
-> 平台方运维口径见平台仓 `platform/deploy/environments/test/dgx/README.md`。
+> 平台方运维口径见平台仓 `platform/deploy/environments/dev/aiearth02/README.md`。
 
 ## 1. 地址表（默认端点，全部可环境变量覆盖）
 
 | 组件 | 地址 | 用途 |
 |:---|:---|:---|
-| GIS 球平台 | http://192.168.1.22:18880 | 插件面板联调入口 |
-| 管理面 | http://192.168.1.22:18850 | 扩展管理/菜单对账 |
-| 网关 | http://192.168.1.22:18801 | 业务 API 统一入口 |
-| MinIO S3 | http://192.168.1.22:18814 | 产物存储（bucket `gis-platform-resources-test`） |
-| 产物公共前缀 | http://192.168.1.22:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
-| resource-manager API | http://192.168.1.22:18801/resource-manager/api/v1/package | 包/版本/资源注册（走网关） |
+| GIS 球平台 | http://10.82.11.52:18880 | 插件面板联调入口 |
+| 管理面 | http://10.82.11.52:18850 | 扩展管理/菜单对账 |
+| 网关 | http://10.82.11.52:18801 | 业务 API 统一入口 |
+| MinIO S3 | http://10.82.11.52:18814 | 产物存储（bucket `gis-platform-resources-dev`） |
+| 产物公共前缀 | http://10.82.11.52:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
+| resource-manager API | http://10.82.11.52:18801/resource-manager/api/v1/package | 包/版本/资源注册（走网关） |
 
 `tools/publish.sh` 已按上表写死默认值；如需覆盖，用环境变量
 `MINIO_ENDPOINT / MINIO_BUCKET / MINIO_PUBLIC_URL / RM_API_BASE`。
+公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.52` 换成 `100.64.0.5`。
 
 ## 2. 账号申请流程
 
@@ -28,8 +30,14 @@
    - 球端/管理面测试入口的登录账号（SSO 开发者账号，ext-demo 或团队专属账号）。
 3. 凭据只进本机环境变量或本地 `.env`（gitignored），**禁止写进包代码/文档/提测单**。
 
-## 3. 发布通道（tools/publish.sh）
+## 2.5 AI 辅助开发（dev-mcp，推荐）
 
+本仓附带 `tools/dev-mcp/`——面向 AI 编码工具（Kimi Code / Codex / Claude Code / qoder）
+的插件开发辅助 MCP：契约文档取读、脚手架建包、发布预检、一键发布到本环境、实例/日志
+自助诊断、HMR 联调指引。接入方式与各工具配置片段见仓根 `AGENTS.md`「AI 工具接入」节
+与 `tools/dev-mcp/README.md`；Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。
+
+## 3. 发布通道（tools/publish.sh）
 ```bash
 # 1. 自助发布：构建 → MinIO 上传 → resource-manager 注册（仅测试底座）
 MINIO_ACCESS_KEY=... MINIO_SECRET_KEY=... RM_TOKEN=... \

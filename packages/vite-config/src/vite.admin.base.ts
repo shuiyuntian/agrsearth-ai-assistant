@@ -1,5 +1,5 @@
 /**
- * 文件作用：管理端远程扩展页（admin-ui）公共 Vite Library 配置（模板仓 vendored 共享包 @cesiumai/vite-config/admin）
+ * 文件作用：管理端远程扩展页（admin-ui）公共 Vite Library 配置（模板仓 vendored 共享包 @agrsearth/vite-config/admin）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
  * 版本：1.1.1
@@ -10,13 +10,13 @@
  *   - 1.1.0 (2026-10-04) 同步平台仓 _shared 1.1.0：接入 host-contract 构建期硬校验（契约取本包
  *                       contracts/ vendored 快照）；补齐 marked external/globals（修与 _shared 的漂移）
  *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/vite-config vendor：改包名
- *                       @cesiumai/vite-config（admin 子路径导出），用法示例改 workspace 包引用
+ *                       @agrsearth/vite-config（admin 子路径导出），用法示例改 workspace 包引用
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  *
  * 扩展包的 admin-ui/vite.config.ts 中这样使用：
  *
- *   import { defineAdminUiConfig } from '@cesiumai/vite-config/admin'
+ *   import { defineAdminUiConfig } from '@agrsearth/vite-config/admin'
  *   export default defineAdminUiConfig({ entry: './src/index.ts', name: 'AdminUI_example' })
  *
  * 加载机制：同 vite.base.ts——Node 直接 import 本包，入口为 esbuild 预编译产物 dist/*.js。

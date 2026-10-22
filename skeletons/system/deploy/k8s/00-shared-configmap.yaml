@@ -7,7 +7,7 @@
 #   - 1.0.1 (2026-10-05) 域分组机制撤回对齐：改包级命名、去 gis-platform/domain 标签
 #   - 1.0.2 (2026-10-06) 去内部命名空间字面量（namespace 由部署服务端覆写，注释占位）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -1,5 +1,5 @@
 {
-  "name": "@cesiumai/ui-utils",
+  "name": "@agrsearth/ui-utils",
   "version": "1.0.0",
   "description": "GIS 平台前端共享 UI 工具（简繁转换等；模板仓 vendored 共享包，源：平台仓 extensions/_shared/ui-utils）",
   "type": "module",

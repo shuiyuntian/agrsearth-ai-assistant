@@ -1,5 +1,5 @@
 {
-  "name": "cesiumai-plugin-tool-example",
+  "name": "agrsearth-plugin-tool-example",
   "version": "0.1.0",
   "description": "工具轨能力包前端骨架（复制为包 frontend/ 后按 README 改名清单替换占位符）",
   "type": "module",
@@ -14,8 +14,8 @@
     "element-plus": "^2.7.6"
   },
   "devDependencies": {
-    "@cesiumai/sdk-types": "*",
-    "@cesiumai/vite-config": "*",
+    "@agrsearth/sdk-types": "*",
+    "@agrsearth/vite-config": "*",
     "@vitejs/plugin-vue": "^5.0.5",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",

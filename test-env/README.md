@@ -41,14 +41,14 @@
 ```bash
 # 1. 自助发布：构建 → MinIO 上传 → resource-manager 注册（仅测试底座）
 MINIO_ACCESS_KEY=... MINIO_SECRET_KEY=... RM_TOKEN=... \
-    ./tools/publish.sh packages/<pkg-id>
+    ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
 
 # 2. 联调部署（触发版本部署接口，逐组件打印结果）
-./tools/publish.sh packages/<pkg-id> --deploy
+./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --deploy
 
 # 3. 菜单布设随发布自动执行（menu-provision 幂等 upsert）；
 #    号段必须已向平台方申请（sys_config menu.segment.<pkg> 台账），本地先过校验：
-python3 tools/menujson.py validate packages/<pkg-id>/data/menu.json --package <pkg-id>
+python3 tools/menujson.py validate extensions/<track>/<tier>/<pkg-id>/data/menu.json --package <pkg-id>
 ```
 
 发布冒烟（产物 URL 可达 + manifest 字段比对）不通过即非零退出；重跑即可（资源/菜单均幂等）。
@@ -59,18 +59,18 @@ python3 tools/menujson.py validate packages/<pkg-id>/data/menu.json --package <p
 
 ```bash
 # 1. 前端 watch 构建（产物持续输出到 dist/）
-cd packages/<pkg-id>/frontend && npm run dev
+cd extensions/<track>/<tier>/<pkg-id>/frontend && npm run dev
 
 # 2. 另一个终端：静态服务 dist/（本机 IP 需测试底座球端可直达）
-cd packages/<pkg-id>/frontend/dist && python3 -m http.server 5173
+cd extensions/<track>/<tier>/<pkg-id>/frontend/dist && python3 -m http.server 5173
 
 # 3. 把已发布版本的 manifest entries 指向本机（宿主再拉 manifest 即加载本机产物）
-./tools/publish.sh packages/<pkg-id> --dev-url http://<本机IP>:5173
+./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --dev-url http://<本机IP>:5173
 
 # 4. 球端 18880 强制刷新 → 面板加载本机产物，改代码即生效（watch 自动重编）
 
 # 5. 调试完恢复正式产物 URL
-./tools/publish.sh packages/<pkg-id> --dev-url --reset
+./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --dev-url --reset
 ```
 
 注意：

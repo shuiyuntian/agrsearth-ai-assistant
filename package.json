@@ -1,18 +1,18 @@
 {
-  "name": "cesiumai-plugin-template",
+  "name": "agrsearth-plugin-template",
   "version": "1.0.0",
-  "description": "航遥业务中台插件开发模板仓（同步源：平台仓 extensions/_template/）：@cesiumai/* 本地 workspace 共享包 + tool/system 双轨最小骨架 + L1-L10 分层开发指南",
+  "description": "航遥业务中台插件开发模板仓（同步源：平台仓 extensions/_template/）：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨最小骨架 + L1-L10 分层开发指南",
   "private": true,
   "workspaces": [
     "packages/*",
-    "packages/*/frontend",
-    "packages/*/admin-ui",
+    "extensions/*/*/*/frontend",
+    "extensions/*/*/*/admin-ui",
     "skeletons/tool/frontend",
     "skeletons/admin-ui"
   ],
   "scripts": {
-    "build": "npm run build -w @cesiumai/vite-config && npm run build --workspaces --if-present",
-    "check": "npm run build -w @cesiumai/vite-config && npm run build --workspaces --if-present",
+    "build": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
+    "check": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "docs:html": "mkdir -p docs/html && for f in docs/L*.md; do python3 tools/md-to-html.py \"$f\" \"docs/html/$(basename \"$f\" .md).html\"; done"
   }
 }

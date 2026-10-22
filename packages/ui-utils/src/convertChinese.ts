@@ -1,5 +1,5 @@
 /**
- * 文件作用：简繁转换统一封装（模板仓 vendored 共享包 @cesiumai/ui-utils）
+ * 文件作用：简繁转换统一封装（模板仓 vendored 共享包 @agrsearth/ui-utils）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
  * 版本：1.0.0
@@ -7,7 +7,7 @@
  *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/ui-utils/src/convertChinese.ts vendor
  *                       （内容同源；opencc-js 字典由平台宿主统一提供，构建时将 opencc-js 列为 external）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
 import OpenCC from 'opencc-js'
 

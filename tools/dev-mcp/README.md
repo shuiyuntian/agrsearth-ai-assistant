@@ -1,9 +1,9 @@
-# mcps/cesiumai-dev — CesiumAI 插件开发辅助 MCP
+# mcps/agrsearth-dev — AGRSEarth 插件开发辅助 MCP
 
 > 面向**第三方插件开发团队**的 MCP server（stdio，Node，运行在团队本机）。
-> 唯一事实源在平台仓 `mcps/cesiumai-dev/`；模板仓 `tools/dev-mcp/` 是导出产物
+> 唯一事实源在平台仓 `mcps/agrsearth-dev/`；模板仓 `tools/dev-mcp/` 是导出产物
 > （等价 vendored，**禁止直接改**，问题回报平台方）。
-> 与 `cesiumai-ops`（业主运维）是两个 server：本 server 只触达 aiearth02 共享开发
+> 与 `agrsearth-ops`（业主运维）是两个 server：本 server 只触达 aiearth02 共享开发
 > 调试环境，永不出现家庭网地址，本体零密钥。
 
 ## 工具清单（7 个，v0.1.0）
@@ -27,12 +27,12 @@ cd tools/dev-mcp && npm install   # 仅首次
 
 - **Codex**（`~/.codex/config.toml`）：
   ```toml
-  [mcp_servers.cesiumai-dev]
+  [mcp_servers.agrsearth-dev]
   command = "node"
   args = ["tools/dev-mcp/server.mjs"]
   ```
 - **Claude Code**（`claude mcp add`）：
-  `claude mcp add cesiumai-dev -- node tools/dev-mcp/server.mjs`
+  `claude mcp add agrsearth-dev -- node tools/dev-mcp/server.mjs`
 - **qoder / 其他**：任意支持 stdio MCP 的客户端，入口 `node tools/dev-mcp/server.mjs`，
   工作目录 = 模板仓根。
 
@@ -42,8 +42,8 @@ cd tools/dev-mcp && npm install   # 仅首次
 二选一配置（server 本体不存任何密钥）：
 
 ```bash
-export CESIUMAI_TOKEN=<token>
-# 或写仓根 .env.local（gitignored）：CESIUMAI_TOKEN=<token>
+export AGRSEARTH_TOKEN=<token>
+# 或写仓根 .env.local（gitignored）：AGRSEARTH_TOKEN=<token>
 ```
 
 token 获取：浏览器登录 aiearth02 管理后台 `http://10.82.11.52:18850` 后从开发者工具
@@ -53,8 +53,8 @@ token 获取：浏览器登录 aiearth02 管理后台 `http://10.82.11.52:18850`
 
 | 环境变量 | 默认值 | 说明 |
 |---|---|---|
-| `CESIUMAI_DEV_BASE` | `http://10.82.11.52:18801` | aiearth02 网关（公司网 LAN）；Tailscale 可达时可用 `http://100.64.0.5:18801` |
-| `CESIUMAI_TOKEN` | 无 | 团队账号 Bearer token |
+| `AGRSEARTH_DEV_BASE` | `http://10.82.11.52:18801` | aiearth02 网关（公司网 LAN）；Tailscale 可达时可用 `http://100.64.0.5:18801` |
+| `AGRSEARTH_TOKEN` | 无 | 团队账号 Bearer token |
 
 ## 审计与红线
 

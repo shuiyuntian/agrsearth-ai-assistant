@@ -42,5 +42,5 @@
 ## 开发
 
 1. 后端本地开发/构建（平台铁律：本地优先），镜像构建后推 `localhost:32000`
-2. 管理页：`admin-ui/` 内 `npm install && npm run build`（依赖 @cesiumai/* workspace 包）
+2. 管理页：`admin-ui/` 内 `npm install && npm run build`（依赖 @agrsearth/* workspace 包）
 3. 发布权在平台方：自测通过 → 按 `docs/L8-提测与发布.md` 提交提测单

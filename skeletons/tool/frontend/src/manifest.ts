@@ -6,9 +6,9 @@
  * 修改记录：
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本（复制后改 id/name/version，version 与包 VERSION 一致）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
-import type { CapabilityManifest } from '@cesiumai/sdk-types'
+import type { CapabilityManifest } from '@agrsearth/sdk-types'
 
 export const manifest: CapabilityManifest = {
   id: 'example-tool',

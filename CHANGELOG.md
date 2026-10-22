@@ -1,8 +1,32 @@
 # 模板仓套件变更记录
 
-> 本文件版本 = 模板仓套件版本（_template/VERSION），含义：导出工具链 + skeletons + packages 供给物 + docs 的整体版本。平台方重发模板仓时随导出脚本 tag（`v<套件版本>+<主仓短 sha>`）。
+> 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
-## [Unreleased]
+## [2.0.0] - 2026-10-22
+
+**布局终态 + 品牌统一（breaking）**：
+
+- **fork 模型定版**：本仓为纯模板，不再接收团队插件包；团队经「Use this template」生成
+  自有仓，在 `extensions/<track>/<tier>/<pkg>/` 开发；验收后平台管理员纯拷贝移植进平台仓
+  同名路径。模板升级走 git upstream 合并（上游不触碰团队包目录）。
+- **目录职责对调**：用户工作区自 `packages/` 迁至 `extensions/<track>/<tier>/<pkg>/`；
+  `packages/` 纯化为 `@agrsearth/*` 平台供给包（新增 icon-kit/layer-factory/ts-config 三个
+  供给包随同步下发）。迁移：在旧版副本内 `mkdir -p extensions/<track>/<tier> &&
+  git mv packages/<你的包> extensions/<track>/<tier>/<你的包>`（track/tier 取 manifest 值）。
+- **官方演示包**：`packages/wind-field/` → `extensions/tool/business/wind-field-demo/`
+  （贯穿式改名，含后端服务 wind-field-demo-server；demo 包禁止提测）。
+- **品牌统一 AGRSEarth**：npm scope `@cesiumai/*`/`@agrscesiumai/*` → `@agrsearth/*`；
+  MCP `cesiumai-dev` → `agrsearth-dev`；skill `cesiumai-plugin-dev` → `agrsearth-plugin-dev`；
+  环境变量 `CESIUMAI_TOKEN`/`CESIUMAI_DEV_BASE` → `AGRSEARTH_TOKEN`/`AGRSEARTH_DEV_BASE`；
+  OCI Label `com.cesiumai.*` → `com.agrsearth.*`。
+- **工具链**：publish.sh 新增「目录==track/tier」闸口 + demo 包提示；create-extension.sh
+  落位 extensions/ 三层目录；check-extension-versions.sh 改 extensions/ 发现制；
+  vite-config 改 TS 直引 exports（`@agrsearth/vite-config[/admin]`），不再产出 dist。
+- **泄漏闸口**：新增 `.githooks/pre-push`（启用 `git config core.hooksPath .githooks`），
+  公开仓推送前扫描内网地址/凭据。
+- **同步机制**：导出脚本退役，平台侧改 `sync-template.sh` 单向同步（见 `.upstream`）。
+
+## [Unreleased]（历史注记：以下为 1.x 时期未发布段，随 2.0.0 一并发出）
 
 - 实战检验修复（2026-10-06 wind-field 外部开发者演练产出；组件级版本见各文件头）：
   ① `tools/publish.sh` 1.0.1——测试底座不可达场景报错体验（s3_upload 30s 超时 + 友好指认
@@ -12,7 +36,7 @@
   ③ `skeletons/admin-ui` 示例页 `<script setup>` 补 `lang="ts"`（原按 JS 解析，TS 语法报莫名
   babel 错——最阴踩坑点）；
   ④ 双端骨架 `vite.config.ts` 增 `exports: 'named'`（消除 Vite named/default 混合导出警告，
-  宿主加载器双兼容读取不变）；`@cesiumai/vite-config` admin 工厂补 exports 透传 1.1.1；
+  宿主加载器双兼容读取不变）；`@agrsearth/vite-config` admin 工厂补 exports 透传 1.1.1；
   ⑤ 工具轨骨架内置 `frontend/src/utils/cesium.ts`（window.Cesium 取用；L5-R2 补
   「禁止裸 import 'cesium'」红线说明——宿主 import map 无 cesium 键）。
 

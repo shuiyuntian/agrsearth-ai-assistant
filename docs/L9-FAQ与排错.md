@@ -2,16 +2,16 @@
 
 ## 9.1 构建期
 
-**Q：`npm run build` 报找不到 `@cesiumai/*`？**
+**Q：`npm run build` 报找不到 `@agrsearth/*`？**
 A：包未加入仓根 `package.json` 的 `workspaces`，或加完没重跑 `npm install`。workspace 成员必须
-在 `workspaces` 数组内（如 `"packages/my-tool/frontend"`）。
+在 `workspaces` 数组内（`extensions/*/*/*/frontend` glob 已覆盖，无需手改）。
 
 **Q：vue-tsc 报 CapabilityManifest 类型不存在？**
-A：确认 `import type { CapabilityManifest } from '@cesiumai/sdk-types'` 为 type-only 导入；
+A：确认 `import type { CapabilityManifest } from '@agrsearth/sdk-types'` 为 type-only 导入；
  sdk-types 的 `main/types` 指向 TS 源，moduleResolution 须为 `bundler`（骨架 tsconfig 已配）。
 
 **Q：产物体积异常大（>500KB）？**
-A：九成是宿主依赖被打进产物。查 `vite.config.ts` 是否经 `@cesiumai/vite-config` 引入 external；
+A：九成是宿主依赖被打进产物。查 `vite.config.ts` 是否经 `@agrsearth/vite-config` 引入 external；
 若引入了 ui-utils（opencc-js），记得把 `opencc-js` 加入 extraExternals（骨架默认不含）。
 
 ## 9.2 球端运行期

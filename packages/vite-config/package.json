@@ -1,5 +1,5 @@
 {
-  "name": "@cesiumai/vite-config",
+  "name": "@agrsearth/vite-config",
   "version": "1.0.0",
   "description": "能力包公共 Vite Library 配置（球端 tool.* / 管理端 admin.* 双模板；模板仓 vendored 共享包，源：平台仓 extensions/_shared/vite-config）",
   "type": "module",

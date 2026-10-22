@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // =============================================================================
-// 文件作用：CesiumAI 插件开发辅助 MCP server（stdio）——面向第三方插件开发团队
+// 文件作用：AGRSEarth 插件开发辅助 MCP server（stdio）——面向第三方插件开发团队
 //   的 AI 编码工具（Kimi Code / Codex / Claude Code / qoder 等）。六组工具：
 //   契约文档取读 / 脚手架建包 / 发布预检 / 发布到共享调试环境 / 实例自助诊断 /
 //   HMR 联调指引。
-//   双形态同源：平台仓 mcps/cesiumai-dev/（唯一事实源）与模板仓导出产物
+//   双形态同源：平台仓 mcps/agrsearth-dev/（唯一事实源）与模板仓导出产物
 //   tools/dev-mcp/（禁止直接改，问题回报平台方）。两种落位脚本均在仓根下两层，
 //   ROOT 同为 ../..；按目录标记自动判别平台仓/模板仓模式。
 //   边界红线：只触达 aiearth02 共享开发调试环境（公司网，默认 LAN
 //   10.82.11.52）；永不出现家庭网地址；鉴权只用团队 ext-developer 账号 token
-//   （环境变量 CESIUMAI_TOKEN 或仓根 .env.local，server 本体零密钥）；
+//   （环境变量 AGRSEARTH_TOKEN 或仓根 .env.local，server 本体零密钥）；
 //   写操作仅 publish_to_dev 一个，强制 reason 事由并审计留痕。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
@@ -19,7 +19,7 @@
 //     20261019-方案-双MCP体系 §3；M2 裁定零改动——实例/日志用 RM 现有只读端点，
 //     不做团队过滤）
 //
-// 版权所有 (C) 2026 CesiumAI 项目
+// 版权所有 (C) 2026 AGRSEarth 项目
 // =============================================================================
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -36,7 +36,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 const MODE = await fs.stat(path.join(ROOT, "skeletons")).then(() => "template", () => "platform");
 
 // ---------- 环境配置（唯一目标：aiearth02 共享开发调试环境）----------
-const DEV_BASE = process.env.CESIUMAI_DEV_BASE || "http://10.82.11.52:18801";
+const DEV_BASE = process.env.AGRSEARTH_DEV_BASE || "http://10.82.11.52:18801";
 const RM_API = `${DEV_BASE}/resource-manager/api/v1`;
 
 // ---------- 仓根 .env.local 读取（团队 token，gitignored 不落仓）----------
@@ -50,9 +50,9 @@ try {
 } catch { /* .env.local 不存在时静默 */ }
 
 function devToken() {
-  const t = process.env.CESIUMAI_TOKEN || LOCAL_ENV.CESIUMAI_TOKEN;
+  const t = process.env.AGRSEARTH_TOKEN || LOCAL_ENV.AGRSEARTH_TOKEN;
   if (!t) {
-    throw new Error("缺少团队账号 token：请设环境变量 CESIUMAI_TOKEN，或在仓根 .env.local 写 CESIUMAI_TOKEN=<token>（token 获取见 README：18850 登录后复制 / 向平台管理员申请）");
+    throw new Error("缺少团队账号 token：请设环境变量 AGRSEARTH_TOKEN，或在仓根 .env.local 写 AGRSEARTH_TOKEN=<token>（token 获取见 README：18850 登录后复制 / 向平台管理员申请）");
   }
   return t;
 }
@@ -151,7 +151,7 @@ async function audit(entry) {
 
 // ---------- server ----------
 const server = new McpServer({
-  name: "cesiumai-dev",
+  name: "agrsearth-dev",
   version: "0.1.0",
 });
 
@@ -292,7 +292,7 @@ server.registerTool("dev_precheck", {
 // ===== 4. 发布（唯一写操作） =====
 
 server.registerTool("publish_to_dev", {
-  description: "【写操作，需审批】发布扩展包到 aiearth02 共享开发调试环境（tools/publish.sh：构建 → MinIO 直传 → resource-manager 登记+菜单 provision → 冒烟）。prod 一律拒绝；deploy=true 追加触发部署。平台仓模式下本工具不可用（平台侧发布走 cesiumai-ops 的 publish_extension）。",
+  description: "【写操作，需审批】发布扩展包到 aiearth02 共享开发调试环境（tools/publish.sh：构建 → MinIO 直传 → resource-manager 登记+菜单 provision → 冒烟）。prod 一律拒绝；deploy=true 追加触发部署。平台仓模式下本工具不可用（平台侧发布走 agrsearth-ops 的 publish_extension）。",
   inputSchema: {
     pkgDir: pkgDirField,
     skipBuild: z.boolean().default(false).describe("跳过前端构建（复用已有产物）"),
@@ -301,7 +301,7 @@ server.registerTool("publish_to_dev", {
   },
 }, async ({ pkgDir, skipBuild, deploy, reason }) => {
   if (MODE !== "template") {
-    return fail("平台仓模式下请使用 cesiumai-ops 的 publish_extension 工具；publish_to_dev 面向模板仓（第三方团队）");
+    return fail("平台仓模式下请使用 agrsearth-ops 的 publish_extension 工具；publish_to_dev 面向模板仓（第三方团队）");
   }
   assertPkgDir(pkgDir);
   const args = ["tools/publish.sh", pkgDir];
@@ -389,7 +389,7 @@ docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节�
 
 排障清单：
 - 宿主没加载本机产物 → 强刷球端页面（manifest 有缓存）；确认本机IP在公司网可达
-- dev server 跨域报错 → vite 配置需走 @cesiumai/vite-config（已内置 cors/headers）
+- dev server 跨域报错 → vite 配置需走 @agrsearth/vite-config（已内置 cors/headers）
 - 球端样式丢失 → 宿主 Tailwind 产物需含本包工具类（平台侧闸口，向平台方反馈）
 - 忘记 reset → 其他团队看到 404 加载失败；收工前务必执行 ③`);
 });

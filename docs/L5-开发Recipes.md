@@ -6,7 +6,7 @@
 ## R1 新建插件（选轨与骨架）
 
 1. 按体量判轨（L1.3）：≤1 个自建后端微服务 → 工具轨（`skeletons/tool`）；多服务/子系统级 → 系统轨（`skeletons/system`）。
-2. `cp -R skeletons/<track> packages/<pkg-id>`，按骨架 README「改名清单」替换占位符。
+2. 脚手架生成 `./tools/create-extension.sh <pkg-id> --track <track> --tier <tier>`（落位 `extensions/<track>/<tier>/<pkg-id>/`），按骨架 README「改名清单」替换占位符。
 3. 包目录加入仓根 `package.json` 的 `workspaces` 后 `npm install`。
 
 **验收**：`npm run check` 通过；manifest `track`/`tier`（+按需 `delivery`）与轨一致；`components` 段与实际结构一致。
@@ -29,7 +29,7 @@
 
 ## R3 加管理页（admin-ui + 菜单注册）
 
-1. `cp -R skeletons/admin-ui packages/<pkg>/admin-ui`（系统轨则复制进包内 `admin-ui/`），改名（UMD 名 `AdminUI_<pkg>`、manifest.id）；
+1. 脚手架 `--with-admin-ui` 生成包内 `admin-ui/`（或 `cp -R skeletons/admin-ui extensions/<track>/<tier>/<pkg>/admin-ui`），改名（UMD 名 `AdminUI_<pkg>`、manifest.id）；
 2. 页面：`src/views/<view>/index.vue`（骨架 = 查询区/工具栏/表格/分页/对话框，风格见 L10-A）；
 3. API：`src/api/*.ts` 用 `@/utils/request`；类型 `import type ... from '@/types'`；
 4. 入口：`src/index.ts` 的 `adminViews` 键 = viewPath；

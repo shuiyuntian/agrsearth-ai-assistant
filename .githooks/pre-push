@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# 文件作用：模板仓 pre-push 泄漏闸口——本仓为公开仓，推送前扫描暂存区/工作区的
+#          内网地址/路径/凭据（192.168.1.*、dgx01、/Users/rsom、minioadmin 等），
+#          命中即拒绝推送。启用：git config core.hooksPath .githooks
+# 作者：JasonLee <shuiyuntian@foxmail.com>
+# 创建日期：2026-10-22
+# 版本：1.0.0
+# 修改记录：
+#   - 1.0.0 (2026-10-22) 初版（fork 模型定版：模板仓升格为模板内容唯一事实源，
+#                       泄漏闸口自平台仓导出脚本移至本仓 pre-push）
+# 版权所有 (C) 2026 AGRSEarth 项目
+#
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+HITS="$(grep -rEn \
+    --exclude='.upstream' \
+    --exclude-dir='node_modules' \
+    --exclude-dir='.git' \
+    --exclude-dir='logs' \
+    --exclude-dir='maven-repo' \
+    --exclude-dir='html' \
+    --exclude-dir='docs-html' \
+    '192\.168\.1\.|dgx01|/Users/rsom|minioadmin' \
+    "${REPO_ROOT}" 2>/dev/null || true)"
+
+if [ -n "${HITS}" ]; then
+    echo "✗ pre-push 泄漏闸口：检出内网地址/路径/凭据引用，推送已拒绝。命中文件："
+    echo "${HITS}" | cut -d: -f1 | sort -u | sed 's/^/  - /'
+    echo "本仓为公开模板仓——请改用 ext-dev（aiearth02）地址表口径（见 test-env/README.md）后重推。"
+    exit 1
+fi
+echo "✓ pre-push 泄漏闸口通过"

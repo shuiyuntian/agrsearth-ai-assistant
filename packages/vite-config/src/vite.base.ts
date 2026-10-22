@@ -1,19 +1,19 @@
 /**
- * 文件作用：能力包公共 Vite Library 配置（球端面板产物 tool.*.js，模板仓 vendored 共享包 @cesiumai/vite-config）
+ * 文件作用：能力包公共 Vite Library 配置（球端面板产物 tool.*.js，模板仓 vendored 共享包 @agrsearth/vite-config）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
  * 版本：1.1.0
  * 修改记录：
  *   - 1.1.0 (2026-10-04) 同步平台仓 _shared 1.1.0：接入 host-contract 构建期硬校验（契约取本包
  *                       contracts/ vendored 快照，须随平台 host-contract.json 升级同步）
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/vite-config vendor：改包名 @cesiumai/vite-config，
+ *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/vite-config vendor：改包名 @agrsearth/vite-config，
  *                       用法示例由相对路径改为 workspace 包引用，external/globals 约定同源
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  *
  * 扩展包的 vite.config.ts 中这样使用：
  *
- *   import { defineExtensionConfig } from '@cesiumai/vite-config'
+ *   import { defineExtensionConfig } from '@agrsearth/vite-config'
  *   export default defineExtensionConfig({ entry: './src/index.ts', name: 'Capability_example' })
  *
  * 加载机制：Vite 加载 vite.config.ts 时 packages:'external' 由 Node 直接 import 本包，

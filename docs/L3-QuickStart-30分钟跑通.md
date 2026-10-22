@@ -15,7 +15,7 @@
 ./tools/create-extension.sh my-first-tool --track tool --tier business --name 我的第一个工具
 
 # 等价手工方式：整目录复制后按步骤 2 改名清单替换
-cp -R skeletons/tool packages/my-first-tool     # 包 id = my-first-tool（小写字母/数字/中划线）
+./tools/create-extension.sh my-first-tool --track tool --tier business   # 落位 extensions/tool/business/my-first-tool/
 ```
 
 ## 步骤 2：按改名清单替换占位符（10 分钟）
@@ -24,18 +24,18 @@ cp -R skeletons/tool packages/my-first-tool     # 包 id = my-first-tool（小�
 
 | 文件 | 改成 |
 |:---|:---|
-| `packages/my-first-tool/manifest.json` | `id: "my-first-tool"`、`name: "我的第一个工具"`、`author: 你的团队署名` |
-| `packages/my-first-tool/VERSION` | `0.1.0`（保持） |
-| `packages/my-first-tool/frontend/package.json` | `name: "@agrscesiumai/ext-my-first-tool"` |
-| `packages/my-first-tool/frontend/src/manifest.ts` | id/name 同上，version 保持 `0.1.0` |
-| `packages/my-first-tool/frontend/vite.config.ts` | `name: 'Capability_my_first_tool'` |
+| `extensions/tool/business/my-first-tool/manifest.json` | `id: "my-first-tool"`、`name: "我的第一个工具"`、`author: 你的团队署名` |
+| `extensions/tool/business/my-first-tool/VERSION` | `0.1.0`（保持） |
+| `extensions/tool/business/my-first-tool/frontend/package.json` | `name: "@agrsearth/ext-my-first-tool"` |
+| `extensions/tool/business/my-first-tool/frontend/src/manifest.ts` | id/name 同上，version 保持 `0.1.0` |
+| `extensions/tool/business/my-first-tool/frontend/vite.config.ts` | `name: 'Capability_my_first_tool'` |
 
-> npm workspace 已由仓根 `package.json` 的 glob（`packages/*/frontend`、`packages/*/admin-ui`）
+> npm workspace 已由仓根 `package.json` 的 glob（`extensions/*/*/*/frontend`、`extensions/*/*/*/admin-ui`）
 > 全覆盖，脚手架/手工建包后**无需手改 workspaces 数组**，直接 `npm install` 即可。
 
 ## 步骤 3：改面板内容并本地构建（5 分钟）
 
-1. 打开 `packages/my-first-tool/frontend/src/index.ts`，把 `ExamplePanel` 文案改成你的内容；
+1. 打开 `extensions/tool/business/my-first-tool/frontend/src/index.ts`，把 `ExamplePanel` 文案改成你的内容；
 2. 构建：
 
 ```bash
@@ -43,7 +43,7 @@ npm install && npm run build    # 或 npm run check
 # 期望：vue-tsc 无报错，产出 dist/tool.es.js / tool.umd.js
 ```
 
-**验收点**：`packages/my-first-tool/frontend/dist/tool.es.js` 存在，且文件头部只从
+**验收点**：`extensions/tool/business/my-first-tool/frontend/dist/tool.es.js` 存在，且文件头部只从
 `"vue"` 做 external import（无 element-plus/cesium 被打进产物）。
 
 ## 步骤 4：提测，让插件在测试底座可见（平台方接力）
@@ -57,6 +57,6 @@ npm install && npm run build    # 或 npm run check
 
 ## 常见卡点（详见 L9）
 
-- `npm run build` 报 `@cesiumai/*` 找不到 → 包没加进 `workspaces` 或没重跑 `npm install`；
+- `npm run build` 报 `@agrsearth/*` 找不到 → 包没加进 `workspaces` 或没重跑 `npm install`；
 - 面板点了没反应 → 看 L9「远程加载失败」排查清单；
 - 工具栏图标出现但点击空白 → admin-ui/球端主题问题，见 L10 与 L9。

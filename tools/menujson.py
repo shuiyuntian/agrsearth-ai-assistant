@@ -6,7 +6,7 @@
 # 修改记录：
 #   - 1.0.0 (2026-10-04) 初始创建（批4 publish 链路治理：from-db / from-sql / validate 三子命令）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 """
 menu.json 工具（批4「publish 链路治理」）
 

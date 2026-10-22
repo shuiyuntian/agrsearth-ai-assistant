@@ -6,7 +6,7 @@
 #   - 1.0.0 (2026-10-04) 初始创建
 #   - 1.0.1 (2026-10-06) nacos 默认地址改指 aiearth02 共享开发调试环境（10.82.11.52:18810，可环境变量覆盖）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 
 server:
   # TODO: 端口按服务分配后改默认值并同步 container/__SVC_ID__/Dockerfile 的 EXPOSE

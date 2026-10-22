@@ -7,7 +7,7 @@
 #   - 1.0.0 (2026-10-07) 初始创建（tool 轨后端部署样例补齐；imagePullPolicy Always +
 #     limits.memory 1536Mi 为 Spring Boot 4 实测基线，512Mi 会 OOMKilled）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 apiVersion: v1
 kind: ConfigMap
 metadata:

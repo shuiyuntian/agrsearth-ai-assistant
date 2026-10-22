@@ -9,9 +9,9 @@
   `remote:<packageId>/<viewPath>` 的 `<viewPath>`（如 `example/index`）
 - 菜单登记：`sys_menu.component = 'remote:<packageId>/<viewPath>'`（声明在 skeletons/*/data/menu.json 样例，批4 通道）
 - 页面内 `import request from '@/utils/request'` 原样可用（宿主 import map 别名桥接，token/401/防重全继承）；
-  `@/types` 构建期解析到本包 `src/types/index.ts`（re-export `@cesiumai/admin-sdk`）
+  `@/types` 构建期解析到本包 `src/types/index.ts`（re-export `@agrsearth/admin-sdk`）
 - **禁止**自建 `createApp`（丢失宿主 app context）；**禁止** `import.meta.env.*` 烘焙
-  （API 前缀用 `@cesiumai/admin-sdk` 的 `getBaseApi()` 运行时读取）；
+  （API 前缀用 `@agrsearth/admin-sdk` 的 `getBaseApi()` 运行时读取）；
   **禁止** import 宿主内部组件/layout/store
 - element-plus/vue/vue-router/pinia/echarts/opencc-js 经 import map 与宿主单例共享（构建已 external）
 - `v-hasPermi`、`$modal`、`parseTime`、`Pagination`/`RightToolbar` 全局组件、tagsView keep-alive
@@ -20,7 +20,7 @@
 ## 文件
 
 - `src/index.ts`               入口契约（manifest + adminViews）
-- `src/types/index.ts`         类型契约桥（`export * from '@cesiumai/admin-sdk'`）
+- `src/types/index.ts`         类型契约桥（`export * from '@agrsearth/admin-sdk'`）
 - `src/api/example.ts`         API 封装样例（经 '@/utils/request'）
 - `src/views/example/index.vue` 页面骨架（查询区/工具栏/表格/分页/对话框，风格规范见 docs/L10-UI规范.md）
 

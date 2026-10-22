@@ -46,14 +46,14 @@
 
 ```bash
 # 方式 A：平台方下发模板仓压缩包/目录（export-plugin-template.sh 产物）
-unzip AGRSCesiumAI-plugin-template.zip && cd AGRSCesiumAI-plugin-template
+unzip agrsearth-plugin-template.zip && cd agrsearth-plugin-template
 
 # 方式 B：平台方建立团队可见的模板仓克隆后 fork
-git clone <团队 fork 地址> && cd AGRSCesiumAI-plugin-template
+git clone <团队 fork 地址> && cd agrsearth-plugin-template
 
-npm install        # 安装全部 workspace 依赖（含 @cesiumai/* 本地包）
+npm install        # 安装全部 workspace 依赖（含 @agrsearth/* 本地包）
 npm run check      # 骨架自检：全部骨架可构建即通过
 ```
 
 > 模板仓是**同步源** `extensions/_template/` 的导出产物；平台方升级模板后按同样方式重新下发。
-> 团队定制只发生在自己包目录内，`packages/` 与 `skeletons/` 保持原样以便 diff 跟进升级。
+> 团队定制只发生在自己包目录内（`extensions/<track>/<tier>/<pkg>/`），`packages/`（平台供给包）与 `skeletons/` 保持原样以便 diff 跟进升级。

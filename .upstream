@@ -1,4 +1,4 @@
-upstream-repo: AGRSCesiumAI (git@github.com:shuiyuntian/AGRSCesiumAI.git)
+upstream-repo: AGRSEarth (git@github.com:shuiyuntian/AGRSEarth.git)
 upstream-path: extensions/_template/
 upstream-head: 81668ee772ae5dced64f943c8d45729bc9e9f456
 exported-at:   2026-10-22 07:29:50 +0800

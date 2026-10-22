@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "cesiumai-dev": {
+    "agrsearth-dev": {
       "command": "node",
       "args": ["tools/dev-mcp/server.mjs"],
       "deferred": true,

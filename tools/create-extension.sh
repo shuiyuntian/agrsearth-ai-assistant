@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# 文件作用：模板仓本地脚手架——从 skeletons 生成插件包到 packages/<id>/（外部团队独立仓自用，
-#          从平台仓 scripts/create-extension.sh 提炼：布局适配 packages/<id>/ + 后端 pom 改造
+# 文件作用：模板仓本地脚手架——从 skeletons 生成插件包到 extensions/<track>/<tier>/<id>/（fork 仓自用，
+#          从平台仓 scripts/create-extension.sh 提炼：布局适配 extensions/<track>/<tier>/<id>/ + 后端 pom 改造
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
@@ -14,16 +14,16 @@
 #     （工具轨/系统轨两句长 token），消除「包清单描述残留骨架句」；② 实例化 pom 时同步改写
 #     「集成约定」注释（模板仓 vendored 形态 4 层，原注释残留平台仓 6 层表述误导）+ 改写校验
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 #
 # 用法：./tools/create-extension.sh <pkg-id> --track tool|system --tier platform|business
 #          [--delivery bundled|optional] [--name <中文名>] [--icon <图标>]
 #          [--with-backend] [--backend <service-id>]（可重复；tool 轨至多 1 个）
 #          [--with-admin-ui]
 #
-# 生成位置：packages/<pkg-id>/（与 @cesiumai/* 平台供给包同处 packages/，勿改 @cesiumai 前缀目录）
+# 生成位置：extensions/<track>/<tier>/<pkg-id>/（与平台仓布局同构，验收后管理员纯拷贝移植；packages/ 为平台供给包目录，勿改）
 # 生成后：npm install（根 workspace glob 自动覆盖新包）→ 开发 → tools/check-extension-versions.sh
-#         → tools/publish.sh packages/<pkg-id>（仅测试底座）
+#         → tools/publish.sh extensions/<track>/<tier>/<pkg-id>（仅测试底座）
 #
 set -euo pipefail
 
@@ -115,9 +115,10 @@ for cmd in jq; do
     fi
 done
 
-PKG_DIR="${REPO_ROOT}/packages/${PKG_ID}"
+PKG_DIR="${REPO_ROOT}/extensions/${TRACK}/${TIER}/${PKG_ID}"
+mkdir -p "$(dirname "${PKG_DIR}")"
 if [ -e "${PKG_DIR}" ]; then
-    echo "错误：目录已存在：packages/${PKG_ID}"
+    echo "错误：目录已存在：extensions/${TRACK}/${TIER}/${PKG_ID}"
     exit 1
 fi
 mkdir -p "${PKG_DIR}"
@@ -230,21 +231,21 @@ s = re.sub(
 repos = (
     "    <repositories>\n"
     "        <repository>\n"
-    "            <id>cesiumai-vendored</id>\n"
-    "            <name>CesiumAI vendored com.ruoyi artifacts</name>\n"
+    "            <id>agrsearth-vendored</id>\n"
+    "            <name>AGRSEarth vendored com.ruoyi artifacts</name>\n"
     "            <url>file://${project.basedir}/../../../../maven-repo</url>\n"
     "        </repository>\n"
     "    </repositories>\n"
     "\n"
     "</project>"
 )
-if 'cesiumai-vendored' not in s:
+if 'agrsearth-vendored' not in s:
     if '</project>' not in s:
         sys.exit(f'错误：pom 缺少 </project> 结束标签：{p}')
     s = s.replace('</project>', repos, 1)
 open(p, 'w', encoding='utf-8').write(s)
 PYEOF
-    if ! grep -q 'cesiumai-vendored' "${pom}" || ! grep -q 'maven-repo/com/ruoyi/ruoyi' "${pom}"; then
+    if ! grep -q 'agrsearth-vendored' "${pom}" || ! grep -q 'maven-repo/com/ruoyi/ruoyi' "${pom}"; then
         echo "错误：pom 改造失败（relativePath 直指 vendored 根 pom / repositories 注入）：${pom}"
         exit 1
     fi
@@ -266,14 +267,14 @@ if [ "${TRACK}" = "tool" ]; then
         -e "s|示例工具|${PKG_NAME}|g" \
         -e "s|example-tool|${PKG_ID}|g" \
         -e "s|example:data|${PKG_ID}:data|g" \
-        -e "s|cesiumai-plugin-tool-example|@agrscesiumai/ext-${PKG_ID}|g" \
+        -e "s|agrsearth-plugin-tool-example|@agrsearth/ext-${PKG_ID}|g" \
         -e "s|Capability_example|${GLOBAL_NAME}|g" \
         -e "s|工具轨能力包骨架（复制后修改）|${PKG_NAME}（工具轨能力包）|g"
     if [ "${WITH_ADMIN_UI}" -eq 1 ]; then
         cp -R "${REPO_ROOT}/skeletons/admin-ui" "${PKG_DIR}/admin-ui"
         rm -rf "${PKG_DIR}/admin-ui/dist"
         replace_tokens "${PKG_DIR}/admin-ui" \
-            -e "s|cesiumai-plugin-admin-ui-example|@agrscesiumai/ext-${PKG_ID}-admin|g" \
+            -e "s|agrsearth-plugin-admin-ui-example|@agrsearth/ext-${PKG_ID}-admin|g" \
             -e "s|AdminUI_example|${ADMIN_GLOBAL_NAME}|g"
         # admin-ui 入口 manifest 同步本包 id/中文名
         sed_i \
@@ -315,7 +316,7 @@ else
     cp -R "${REPO_ROOT}/skeletons/admin-ui" "${PKG_DIR}/admin-ui"
     rm -rf "${PKG_DIR}/admin-ui/dist"
     replace_tokens "${PKG_DIR}/admin-ui" \
-        -e "s|cesiumai-plugin-admin-ui-example|@agrscesiumai/ext-${PKG_ID}-admin|g" \
+        -e "s|agrsearth-plugin-admin-ui-example|@agrsearth/ext-${PKG_ID}-admin|g" \
         -e "s|AdminUI_example|${ADMIN_GLOBAL_NAME}|g"
     sed_i \
         -e "s|id: 'example-tool'|id: '${PKG_ID}'|" \
@@ -354,7 +355,7 @@ $(if [ "${TRACK}" = "system" ]; then echo "- deploy/k8s/        k8s-bundle（pub
 1. 仓根 npm install（workspace glob 自动覆盖本包 frontend/admin-ui）
 2. 开发自测（RELEASE_CHECKLIST.md）
 3. ./tools/check-extension-versions.sh
-4. ./tools/publish.sh packages/${PKG_ID}（仅测试底座；生产发布由平台管理员执行）
+4. ./tools/publish.sh extensions/${TRACK}/${TIER}/${PKG_ID}（仅测试底座；生产发布由平台管理员执行）
 EOF
 
 cat > "${PKG_DIR}/CHANGELOG.md" <<EOF
@@ -366,11 +367,11 @@ cat > "${PKG_DIR}/CHANGELOG.md" <<EOF
 EOF
 
 echo "=========================================="
-echo "脚手架已生成：packages/${PKG_ID}（${TRACK} 轨）"
+echo "脚手架已生成：extensions/${TRACK}/${TIER}/${PKG_ID}"
 find "${PKG_DIR}" -type f | sed "s|${REPO_ROOT}/||" | sort | sed 's/^/  /'
 echo "------------------------------------------"
 echo "下一步："
 echo "  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）"
 echo "  2. 仓根 npm install && ./tools/check-extension-versions.sh"
-echo "  3. 发布：./tools/publish.sh packages/${PKG_ID}"
+echo "  3. 发布：./tools/publish.sh extensions/${TRACK}/${TIER}/${PKG_ID}"
 echo "=========================================="

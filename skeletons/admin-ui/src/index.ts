@@ -6,7 +6,7 @@
  * 修改记录：
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本（复制后改 manifest.id/name/version，adminViews 键与菜单 viewPath 对齐）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
 import ExampleIndex from './views/example/index.vue'
 

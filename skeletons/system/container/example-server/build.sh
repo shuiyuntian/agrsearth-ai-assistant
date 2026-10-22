@@ -8,7 +8,7 @@
 #   - 1.0.0 (2026-09-14) 模板仓骨架初始版本（占位，集成期由平台方按 CONTAINER_IMAGE_SPEC 补全）
 #   - 1.0.1 (2026-10-05) 镜像命名补 tier 段（gis-platform/<track>/<tier>/<pkg>/<svc>）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 #
 set -euo pipefail
 

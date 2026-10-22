@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "packageId": "wind-field-demo",
+  "_comment": [
+    "管理面菜单声明（批4 起替代菜单登记 SQL，规约见 docs/L6-参考契约.md 菜单章节；权威本体=平台仓 PLUGIN_DEVELOPMENT.md）。",
+    "适用：components.adminUi=true 且 components.menu.enabled=true 的包；发布时 tools/publish.sh",
+    "上传本文件并调 resource-manager menu-provision 幂等 upsert sys_menu/sys_role_menu。",
+    "号段：menuId 当前为示意值（2004000 段）；正式号段提测时由平台管理员分配",
+    "（sys_config menu.segment.wind-field-demo 台账，tool 扩展在 2000000-2999999 按包千段），",
+    "分配后替换本文件全部 menuId 再提测。",
+    "component 写 remote:<packageId>/<viewPath>（管理面远程化 ADR-007，viewPath 与 adminViews 键一致）。",
+    "roleIds：新菜单至少绑 1=平台超管；开发者自助可见再加 106=dev-platform。",
+    "本页为只读概览页，无写操作——按权限两层模型不声明 F 型按钮菜单（避免悬空按钮）。",
+    "校验：python3 tools/menujson.py validate data/menu.json --package wind-field-demo"
+  ],
+  "menus": [
+    {
+      "menuId": 2004000,
+      "menuName": "风场",
+      "parentId": 0,
+      "orderNum": 9,
+      "path": "wind-field-demo",
+      "component": null,
+      "query": null,
+      "routeName": null,
+      "isFrame": 1,
+      "isCache": 0,
+      "menuType": "M",
+      "visible": "0",
+      "status": "0",
+      "perms": "",
+      "icon": "guide",
+      "remark": "风场管理目录（path = components.menu.menuPath）",
+      "roleIds": [1]
+    },
+    {
+      "menuId": 2004001,
+      "menuName": "数据概览",
+      "parentId": 2004000,
+      "orderNum": 1,
+      "path": "overview",
+      "component": "remote:wind-field-demo/windfield/index",
+      "query": null,
+      "routeName": null,
+      "isFrame": 1,
+      "isCache": 0,
+      "menuType": "C",
+      "visible": "0",
+      "status": "0",
+      "perms": "wind-field-demo:data:list",
+      "icon": "data",
+      "remark": "风场数据概览页（插件信息/运行状态/数据更新时间）",
+      "roleIds": [1]
+    }
+  ]
+}

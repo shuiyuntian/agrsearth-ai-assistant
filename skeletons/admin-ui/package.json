@@ -1,5 +1,5 @@
 {
-  "name": "cesiumai-plugin-admin-ui-example",
+  "name": "agrsearth-plugin-admin-ui-example",
   "version": "0.1.0",
   "description": "管理端远程页面骨架（ADR-007；复制为包内 admin-ui/ 后按 README 改名清单替换占位符）",
   "type": "module",
@@ -10,12 +10,12 @@
     "dev": "vite build --watch --mode development"
   },
   "dependencies": {
-    "@cesiumai/admin-sdk": "*",
+    "@agrsearth/admin-sdk": "*",
     "@element-plus/icons-vue": "^2.3.1",
     "element-plus": "^2.13.1"
   },
   "devDependencies": {
-    "@cesiumai/vite-config": "*",
+    "@agrsearth/vite-config": "*",
     "@vitejs/plugin-vue": "^5.0.5",
     "typescript": "^5.4.5",
     "unplugin-auto-import": "^0.18.6",

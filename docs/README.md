@@ -3,7 +3,7 @@
 > 航遥业务中台 · 插件多团队并行开发支撑体系（专项 5）· 双受众分层文档
 >
 > - **给人看的**：本目录 L1-L10 图文并茂（截图素材随批次 2 实拍替换，占位图已标注）；
-> - **给 AI Coding 看的**：`.kimi-code/skills/cesiumai-plugin-dev/SKILL.md`（触发条件 + 契约红线 + recipe 索引 + 每步验收 checklist）。
+> - **给 AI Coding 看的**：`.kimi-code/skills/agrsearth-plugin-dev/SKILL.md`（触发条件 + 契约红线 + recipe 索引 + 每步验收 checklist）。
 >
 > 权威详版始终是平台仓 `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本文档面向插件开发团队，冲突时以平台仓最新版为准。
 
@@ -35,9 +35,9 @@ npm run docs:html                                                  # 本指南�
 ## 模板仓结构
 
 ```text
-├── packages/          @cesiumai/* 本地 workspace 共享包（sdk-types/vite-config/ui-utils/admin-sdk）
+├── packages/          @agrsearth/* 本地 workspace 共享包（sdk-types/vite-config/ui-utils/admin-sdk）
 ├── skeletons/         tool / system 双轨最小骨架 + 通用 admin-ui 骨架（复制即用）
 ├── tools/             md-to-html.py 公共文档工具
 ├── docs/              本指南（images/ 为截图素材目录）
-└── .kimi-code/skills/ cesiumai-plugin-dev（AI Coding 契约红线与 recipe 索引）
+└── .kimi-code/skills/ agrsearth-plugin-dev（AI Coding 契约红线与 recipe 索引）
 ```

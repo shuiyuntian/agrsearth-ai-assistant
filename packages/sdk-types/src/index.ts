@@ -1,13 +1,13 @@
 /**
- * 文件作用：Capability 插件平台类型定义（模板仓 vendored 共享包 @cesiumai/sdk-types）
+ * 文件作用：Capability 插件平台类型定义（模板仓 vendored 共享包 @agrsearth/sdk-types）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/sdk-types vendor：包名改为 @cesiumai/sdk-types，
+ *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/sdk-types vendor：包名改为 @agrsearth/sdk-types，
  *                       类型内容同源；消灭 ../../_shared 相对路径，模板仓内经 npm workspace 引用
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
 import type { Component } from 'vue'
 

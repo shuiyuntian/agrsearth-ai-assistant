@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # 文件作用：模板仓扩展包版本与文档一致性校验（CI / publish 前置；主仓
-#          scripts/check-extension-versions.sh 的模板仓适配版：包发现=packages/*/，
+#          scripts/check-extension-versions.sh 的模板仓适配版：包发现=extensions/<track>/<tier>/<pkg>/，
 #          去掉镜像 NAMESPACE 闸口与 platform/ 树扫描）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
@@ -9,9 +9,9 @@
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 #
-# 校验内容（packages/*/ 下 manifest.json 含 track 字段者为受管包）：
+# 校验内容（extensions/*/*/*/ 下 manifest.json 含 track 字段者为受管包；packages/ 供给包无 manifest 天然豁免）：
 #   1. 版本一致：VERSION == manifest.json == frontend/package.json
 #      == frontend/src/manifest.ts（如有）== container/*/build.sh SERVICE_VERSION（如有）
 #      （组件版本轴例外：container/<svc>/VERSION 存在时该组件走自有版本轴）
@@ -46,7 +46,7 @@ has_status_line() {
 }
 
 echo "=============================================="
-echo "扩展包版本与文档一致性检查（packages/）"
+echo "扩展包版本与文档一致性检查（extensions/）"
 echo "=============================================="
 printf '%-32s %-10s %-8s %-8s %-8s %s\n' "包" "版本一致" "四必备" "状态行" "menu.json" "结论"
 printf '%-32s %-10s %-8s %-8s %-8s %s\n' "--------------------------------" "--------" "------" "------" "---------" "--------"
@@ -151,7 +151,7 @@ while IFS= read -r manifest_file; do
         PASS_COUNT=$((PASS_COUNT + 1))
         printf '%-32s %-10s %-8s %-8s %-8s %s\n' "${pkg_name}" "${version_ok}" "${docs_ok}" "${status_ok}" "${menu_ok}" "✔ 通过"
     fi
-done < <(find "${REPO_ROOT}/packages" -maxdepth 2 -name manifest.json -not -path "*/node_modules/*" 2>/dev/null | sort | \
+done < <(find "${REPO_ROOT}/extensions" -mindepth 4 -maxdepth 4 -name manifest.json -not -path "*/node_modules/*" 2>/dev/null | sort | \
     while IFS= read -r mf; do
         if jq -e 'has("track")' "${mf}" >/dev/null 2>&1; then
             echo "${mf}"

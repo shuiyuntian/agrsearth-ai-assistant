@@ -19,7 +19,7 @@
 #     10.82.11.52，bucket gis-platform-resources-dev；双 MCP 体系 M3 批，原 DGX
 #     ext-test 默认值废止——DGX 为业主家庭网预发位，不对团队开放）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 #
 # 用法：./tools/publish.sh <package-dir> [--skip-build] [--deploy]
 #          [--dev-url <url> | --dev-url --reset]
@@ -27,7 +27,7 @@
 # 流程：
 #   0. pre-check：manifest id/name/version/track/tier 必填 + delivery 合法 +
 #      components 段与实际结构一致性 + data/menu.json 本地校验（tools/menujson.py validate）；
-#      无「目录==track/tier」闸口（模板仓布局 packages/<id>/），服务端号段台账/权限对账
+#      含「目录==track/tier」闸口（模板仓布局 extensions/<track>/<tier>/<id>/），服务端号段台账/权限对账
 #      在主仓侧提测评审时由平台管理员执行
 #   1. 构建：frontend/ 与 admin-ui/ 存在则 npm run build（--skip-build 跳过）
 #   2. MinIO 上传（SigV4 直传，python3 标准库实现，无新依赖）：
@@ -104,8 +104,8 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "${PLUGIN_DIR}" ]; then
-    echo "错误：请指定包目录（如 packages/<pkg-id>）"
-    echo "用法：$(basename "$0") <package-dir> [--skip-build] [--deploy] [--dev-url <url> | --dev-url --reset]"
+    echo "错误：请指定包目录（如 extensions/<track>/<tier>/<pkg-id>）"
+    echo "用法：$(basename "$0") extensions/<track>/<tier>/<pkg-id> [--skip-build] [--deploy] [--dev-url <url> | --dev-url --reset]"
     exit 1
 fi
 if [ "${DEV_MODE}" = "true" ] && [ "${DEV_RESET}" = "false" ] && [ -z "${DEV_URL}" ]; then
@@ -136,7 +136,7 @@ if [ "${MANIFEST_TYPE}" = "core" ]; then PACKAGE_TYPE="0"; else PACKAGE_TYPE="1"
 if [ "${MANIFEST_TYPE}" = "suite" ]; then PACKAGE_TYPE="2"; fi
 PKG_DOMAIN=$(jq -r '.domain // ""' "${MANIFEST_FILE}")
 
-# track/tier 显式必填（ADR-010 二维分类；无「目录==track/tier」闸口——模板仓布局为 packages/<id>/）
+# track/tier 显式必填（ADR-010 二维分类）+「目录==track/tier」闸口（模板仓布局 extensions/<track>/<tier>/<id>/，与平台仓同构）
 PKG_TRACK=$(jq -r '.track // empty' "${MANIFEST_FILE}")
 if [ -z "${PKG_TRACK}" ]; then
     echo "错误：manifest.json 缺少必填字段 track（tool 工具轨 / system 系统轨）"
@@ -154,6 +154,19 @@ fi
 case "${PKG_TIER}" in
     platform|business) ;;
     *) echo "错误：manifest.json 的 tier 取值非法：${PKG_TIER}（仅支持 platform / business）"; exit 1 ;;
+esac
+
+# 目录闸口：包目录必须位于 extensions/<track>/<tier>/<pkg-id>/（与 manifest 显式值一致）
+REL_DIR="${PLUGIN_DIR#"${REPO_ROOT}/"}"
+EXPECTED_DIR="extensions/${PKG_TRACK}/${PKG_TIER}/${PACKAGE_ID}"
+if [ "${REL_DIR}" != "${EXPECTED_DIR}" ]; then
+    echo "错误：目录==track/tier 闸口未通过——包目录应为 ${EXPECTED_DIR}，实际为 ${REL_DIR}"
+    echo "      （manifest track=${PKG_TRACK} tier=${PKG_TIER} id=${PACKAGE_ID}；目录三段必须与之逐段一致）"
+    exit 1
+fi
+# demo 包提示：官方演示包允许发布到测试底座体验通路，但禁止作为提测交付
+case "${PACKAGE_ID}" in
+    *-demo) echo "提示：${PACKAGE_ID} 为官方演示包（*-demo），仅用于环境通路验证，禁止提测" ;;
 esac
 PKG_DELIVERY=$(jq -r '.delivery // ""' "${MANIFEST_FILE}")
 if [ -n "${PKG_DELIVERY}" ]; then

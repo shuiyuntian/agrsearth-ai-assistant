@@ -6,7 +6,7 @@
  * 修改记录：
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  *
  * 契约红线（违反将被平台方验收打回）：
  * - 必须默认导出 CapabilityPackage【实例】（非工厂函数）；
@@ -16,7 +16,7 @@
  */
 import { defineComponent, h } from 'vue'
 import { manifest } from './manifest'
-import type { CapabilityPackage, CapabilityContext } from '@cesiumai/sdk-types'
+import type { CapabilityPackage, CapabilityContext } from '@agrsearth/sdk-types'
 
 // 面板内容组件骨架：实现期替换为真实面板（可参考 docs/L5-开发Recipes.md）
 const ExamplePanel = defineComponent({

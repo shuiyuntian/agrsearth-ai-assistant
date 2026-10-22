@@ -1,13 +1,13 @@
 /**
- * 文件作用：管理端远程扩展页运行时契约（模板仓 vendored 共享包 @cesiumai/admin-sdk）
+ * 文件作用：管理端远程扩展页运行时契约（模板仓 vendored 共享包 @agrsearth/admin-sdk）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/admin-sdk vendor：包名改为 @cesiumai/admin-sdk
+ *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/admin-sdk vendor：包名改为 @agrsearth/admin-sdk
  *                       （内容同源；管理面远程化 ADR-007）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  *
  * 远程管理页（admin-ui/）经 import map 与宿主共享运行时：
  * - request（axios 实例，含 token/401/防重）由 import map 别名 '@/utils/request' 直接桥接，

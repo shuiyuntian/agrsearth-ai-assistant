@@ -6,7 +6,7 @@
  * 修改记录：
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本（baseURL 由宿主 request 注入，路径带网关路由前缀）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
 import request from '@/utils/request'
 

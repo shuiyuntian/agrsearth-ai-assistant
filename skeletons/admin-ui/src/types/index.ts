@@ -6,6 +6,6 @@
  * 修改记录：
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本（'@' 构建时指向本包 src；运行时类型抹除，无实际代码）
  *
- * 版权所有 (C) 2026 CesiumAI 项目
+ * 版权所有 (C) 2026 AGRSEarth 项目
  */
-export * from '@cesiumai/admin-sdk'
+export * from '@agrsearth/admin-sdk'

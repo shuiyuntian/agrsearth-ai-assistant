@@ -8,7 +8,7 @@
   - 1.0.1 (2026-10-06) script setup 补 lang="ts"（此前按 JS 解析，TS 语法报莫名 babel 错；
     骨架呈现为 TS 工程，缺 lang 是最常见踩坑点）
 
-版权所有 (C) 2026 CesiumAI 项目
+版权所有 (C) 2026 AGRSEarth 项目
 -->
 <template>
   <div class="app-container">

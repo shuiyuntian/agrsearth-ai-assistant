@@ -1,7 +1,7 @@
 {
-  "name": "@cesiumai/dev-mcp",
+  "name": "@agrsearth/dev-mcp",
   "version": "0.1.0",
-  "description": "CesiumAI 插件开发辅助 MCP（stdio，面向第三方插件开发团队，目标 aiearth02 共享开发调试环境）",
+  "description": "AGRSEarth 插件开发辅助 MCP（stdio，面向第三方插件开发团队，目标 aiearth02 共享开发调试环境）",
   "type": "module",
   "private": true,
   "main": "server.mjs",

@@ -6,7 +6,7 @@
 #   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
 #   - 1.0.1 (2026-10-05) 镜像命名规范注释补 tier 段
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 #
 # 构建规范（OCI Label 注入/镜像命名 gis-platform/<track>/<tier>/<pkg>/<svc>）见平台仓
 # docs/运维手册/2-部署与变更/CONTAINER_IMAGE_SPEC.md；本目录与业务源码分离（backend/ 内禁止 docker build）。

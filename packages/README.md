@@ -1,50 +1,24 @@
-# packages/ 目录：你的扩展包住这里
+# packages/ 目录：平台供给包（只读勿改）
 
-`packages/` 下有两类目录，规则只有一条：**`@cesiumai/` 前缀目录是平台供给物，勿改勿删**。
+`packages/` 下是 `@agrsearth/*` 平台供给包，由平台仓 `packages/` 经 `sync-template.sh`
+单向同步下发（vendored）。**勿改勿删**——手工改动会在下次同步丢失；发现问题报平台管理员，
+由平台仓源头修改后重新同步。
 
-| 目录 | 归属 | 说明 |
-|:---|:---|:---|
-| `@cesiumai/sdk-types` / `@cesiumai/vite-config` / `@cesiumai/ui-utils` / `@cesiumai/admin-sdk` | 平台供给（vendored） | Capability 类型契约 / 双端构建工厂（含宿主 host-contract 快照）/ 简繁工具 / 管理页运行时契约。与平台仓 `extensions/_shared/*` 同源同步，升级随模板仓重发 |
-| `<你的包 id>/` | 你的团队 | 用 `tools/create-extension.sh` 生成（工具轨/系统轨骨架 + 可选后端/管理页）， npm workspace glob（`packages/*/frontend`、`packages/*/admin-ui`）自动覆盖，无需手改仓根 workspaces |
+| 包 | 说明 |
+|:---|:---|
+| `@agrsearth/sdk-types` | Capability 类型契约（`CapabilityPackage` / `CapabilityContext` / manifest 类型） |
+| `@agrsearth/vite-config` | 双端构建工厂（`defineExtensionConfig` 球端 / `defineAdminUiConfig` 管理端），内置宿主依赖 external 与 host-contract 构建期硬校验；`contracts/` 为双宿主契约快照 |
+| `@agrsearth/ui-utils` | 前端共享 UI 工具（简繁转换等） |
+| `@agrsearth/admin-sdk` | 管理端远程扩展页运行时契约（ADR-007）：`getBaseApi()` / 能力桥接，**替代** `createApp` 与 `import.meta.env` |
+| `@agrsearth/icon-kit` | 共享图标库组件（AppIcon：EP 图标名 / iconlib: / calcite: 统一渲染） |
+| `@agrsearth/layer-factory` | 影像/地形/注记/3D Tiles provider 工厂 |
+| `ts-config` | 公共 tsconfig（纯配置目录，非 npm 包） |
 
-## 建包
+你的扩展包不放这里——去 `extensions/<track>/<tier>/<pkg-id>/`（见 `extensions/README.md`）。
 
-```bash
-./tools/create-extension.sh <pkg-id> --track tool|system --tier platform|business \
-    [--delivery bundled|optional] [--name <中文名>] [--with-backend] [--with-admin-ui]
-```
+## 验收红线（供给物相关）
 
-包 id 规则：小写字母 / 数字 / 中划线（如 `wind-field`）；track/tier 语义见 `docs/L1-平台介绍.md`。
-
-## 提测规范（PR / 提测单模板）
-
-向平台方提交提测（PR 或压缩包）时，正文按此模板填写：
-
-```markdown
-# 提测单：<pkg-id> v<x.y.z>
-
-- 团队/负责人：<团队名> / <姓名>
-- 包 id / track / tier（/ delivery）：<pkg> / tool|system / platform|business（/ bundled|optional，仅 tool·business）
-- 版本：<x.y.z>（VERSION / manifest.json / frontend/package.json / manifest.ts 一致，附
-  ./tools/check-extension-versions.sh 输出截图）
-- manifest 关键段截图：components 显式段 + backendServices（管理面「扩展详情」页截图亦可）
-- 自测清单（逐项勾选， evidence 附截图/输出）：
-  - [ ] npm install && npm run check 通过
-  - [ ] 球端面板在测试底座可打开、可交互（附截图）
-  - [ ] 管理页（如有）列表/表单可用（附截图）
-  - [ ] 后端接口（如有）关键路径 200
-  - [ ] 反复激活/停用 5 次无泄漏；停用后现场整组不可见
-  - [ ] 契约红线 grep：无 viewer.entities.add / createApp / import.meta.env（admin-ui 内）/ 硬编码密钥
-  - [ ] data/menu.json 通过 tools/menujson.py validate（如声明菜单）
-- 依赖清单：跨包 dependsOnPackages / 第三方服务与密钥注入需求 / 网关路由新增 / 菜单号段申请
-- 已知问题与限制：…
-```
-
-## 验收清单（平台方按此复核，团队先自查）
-
-1. **元数据**：四必备（manifest/VERSION/README/CHANGELOG）齐备；track/tier（+delivery）显式必填合法。
-2. **components 显式段**与实际结构逐字段一致（frontend/backend[]/adminUi/menu{enabled,menuPath}/data）。
-3. **产物**：external 干净（vue/@/utils/request 等宿主依赖未被打进）；无 `latest` 镜像 tag。
-4. **红线**：实体只走 ctx.entities；admin-ui 不自建 createApp、不烘焙 import.meta.env；
-   k8s workload 显式 `TZ=Asia/Shanghai`；deploy/k8s 无 Secret/RBAC/CRD/Namespace。
-5. **@cesiumai/* 供给物零改动**：PR 中 `packages/@cesiumai/` 必须无 diff。
+- 提测 PR 中 `packages/` 必须零 diff
+- 宿主依赖（vue / vue-router / pinia / element-plus / @element-plus/icons-vue / cesium /
+  echarts / opencc-js / `@/utils/request`）一律 external，不打进产物——构建必须经
+  `@agrsearth/vite-config[/admin]`，禁止自研 vite 配置

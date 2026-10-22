@@ -11,7 +11,7 @@
 | `manifest.json` | `id: "example-tool"`、`name`、`description`、`author` | 包 id（小写字母/数字/中划线）与团队信息 |
 | `manifest.json` | `components.*` | 按包真实构成显式声明（见下） |
 | `VERSION` | `0.1.0` | 初始版本（唯一事实源） |
-| `frontend/package.json` | `name: "cesiumai-plugin-tool-example"` | 包名（平台仓惯例 `@agrscesiumai/<pkg>`） |
+| `frontend/package.json` | `name: "agrsearth-plugin-tool-example"` | 包名（平台仓惯例 `@agrsearth/<pkg>`） |
 | `frontend/src/manifest.ts` | `id/name/version/description` | 与 manifest.json 一致 |
 | `frontend/vite.config.ts` | `name: 'Capability_example'` | `Capability_<pkg-id 去中划线>`，全局唯一 |
 | `deploy/k8s/10-example-server.yaml` | `example-server`/`example-tool` 资源名与镜像路径 | 与 `--backend` 服务 id / 包 id 一致（仅带后端的包需要本目录） |
@@ -32,7 +32,7 @@
 
 - `manifest.json`      能力包清单（components 显式声明段 + entries，发布时 url 自动回填）
 - `VERSION`            包版本唯一事实源
-- `frontend/`          球端 Capability 工程（可构建骨架，依赖 @cesiumai/* workspace 包）
+- `frontend/`          球端 Capability 工程（可构建骨架，依赖 @agrsearth/* workspace 包）
 - `frontend/src/utils/cesium.ts`  Cesium 取用工具（window.Cesium；**禁止裸 import 'cesium'**——
   宿主 import map 无 cesium 键，ESM 产物裸引用会运行时加载失败）
 - `data/menu.json`     管理面菜单声明样例（adminUi + menu.enabled=true 时启用；号段须平台方分配，publish 时 menu-provision 幂等落地）
@@ -41,6 +41,6 @@
 
 ## 开发
 
-1. `cd frontend && npm install && npm run dev`（watch 构建；共享包 `@cesiumai/sdk-types`/`@cesiumai/ui-utils`/`@cesiumai/vite-config` 经 npm workspace 本地引用，无需相对路径）
-2. 契约红线见 `docs/L5-开发Recipes.md` 与 `.kimi-code/skills/cesiumai-plugin-dev/SKILL.md`
+1. `cd frontend && npm install && npm run dev`（watch 构建；共享包 `@agrsearth/sdk-types`/`@agrsearth/ui-utils`/`@agrsearth/vite-config` 经 npm workspace 本地引用，无需相对路径）
+2. 契约红线见 `docs/L5-开发Recipes.md` 与 `.kimi-code/skills/agrsearth-plugin-dev/SKILL.md`
 3. 自测通过 → 按 `docs/L8-提测与发布.md` 提交提测单（平台方统一集成发布）

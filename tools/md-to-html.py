@@ -9,7 +9,7 @@
                        scripts/build/md-to-html.py；按注释头规范补文件头
   - 1.0.0 (2026-06-27) 初始创建（台湾水文模块设计文档评审件生成器，页脚硬编码）
 
-版权所有 (C) 2026 CesiumAI 项目
+版权所有 (C) 2026 AGRSEarth 项目
 """
 
 import argparse
@@ -179,7 +179,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
         {content}
         <div class="footer">
-            AGRSCesiumAI · {footer}
+            AGRSEarth · {footer}
         </div>
     </div>
 </body>

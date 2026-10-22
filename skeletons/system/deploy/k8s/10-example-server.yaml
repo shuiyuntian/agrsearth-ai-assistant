@@ -7,7 +7,7 @@
 #   - 1.0.1 (2026-10-05) 镜像命名补 tier 段；域内衔接注释改包级共享 ConfigMap/Secret
 #   - 1.0.2 (2026-10-06) 去内部命名空间字面量（namespace 由部署服务端覆写，注释占位）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,13 +1,18 @@
 /**
- * 文件作用：i18nChinese 工具函数（模板仓 vendored 共享包 @agrsearth/ui-utils）
+ * 文件作用：i18nChinese 工具函数（共享版）
+ * 从 platform/frontend/gis-platform-ui/src/utils/i18nChinese.ts 迁移而来，
+ * 供 platform 及 extensions 共用。
+ * 2026-07-20：转换器改为复用 convertChinese 的按需创建实例（'t2s' 方向），
+ * opencc-js 由平台宿主统一提供，扩展包构建时 external 不再打包字典。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-07-13
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/ui-utils/src/i18nChinese.ts vendor（内容同源）
+ *   - 1.0.0 (2026-07-13) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
  */
+
 import { convertText } from './convertChinese'
 
 /** 本地存储语言模式的键名 */

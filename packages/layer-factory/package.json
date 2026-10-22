@@ -1,0 +1,15 @@
+{
+  "name": "@agrsearth/layer-factory",
+  "version": "1.0.0",
+  "description": "影像/地形/注记/3D Tiles provider 工厂（宿主与 basemap 共用，自 basemap 抽出）",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  }
+}

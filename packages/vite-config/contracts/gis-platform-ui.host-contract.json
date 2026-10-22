@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "文件作用": "球端宿主 gis-platform-ui 向扩展（能力包 tool.*.js）提供的共享运行时依赖契约：声明宿主实际提供的共享依赖及版本、扩展声明区间必须落入的接受范围、提供通道（import map / window 全局）。构建期由 extensions/_shared/vite-config/host-contract.js 硬校验，违例即构建失败。",
+    "文件作用": "球端宿主 gis-platform-ui 向扩展（能力包 tool.*.js）提供的共享运行时依赖契约：声明宿主实际提供的共享依赖及版本、扩展声明区间必须落入的接受范围、提供通道（import map / window 全局）。构建期由 packages/vite-config/host-contract.js 硬校验，违例即构建失败。",
     "作者": "JasonLee <shuiyuntian@foxmail.com>",
     "创建日期": "2026-10-04",
     "版本": "1.0.1",

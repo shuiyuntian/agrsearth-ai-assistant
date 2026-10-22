@@ -1,18 +1,19 @@
 {
   "name": "@agrsearth/vite-config",
-  "version": "1.0.0",
-  "description": "能力包公共 Vite Library 配置（球端 tool.* / 管理端 admin.* 双模板；模板仓 vendored 共享包，源：平台仓 extensions/_shared/vite-config）",
+  "version": "1.1.1",
+  "description": "能力包公共 Vite Library 配置（defineExtensionConfig/defineAdminUiConfig + host-contract 构建期硬校验）",
   "type": "module",
-  "main": "./dist/vite.base.js",
-  "types": "./src/vite.base.ts",
+  "private": true,
+  "main": "vite.base.ts",
+  "types": "vite.base.ts",
   "exports": {
     ".": {
       "import": "./dist/vite.base.js",
-      "types": "./src/vite.base.ts"
+      "types": "./vite.base.ts"
     },
     "./admin": {
       "import": "./dist/vite.admin.base.js",
-      "types": "./src/vite.admin.base.ts"
+      "types": "./vite.admin.base.ts"
     }
   },
   "scripts": {

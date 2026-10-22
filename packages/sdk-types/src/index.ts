@@ -1,14 +1,16 @@
 /**
- * 文件作用：Capability 插件平台类型定义（模板仓 vendored 共享包 @agrsearth/sdk-types）
+ * 文件作用：Capability 插件平台类型定义（共享版）
+ * 本文件作为 platform/frontend/gis-platform-ui/src/capability/types/index.ts 的共享来源，
+ * 扩展包通过相对路径引用，避免直接依赖 platform 内部目录。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-07-13
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/sdk-types vendor：包名改为 @agrsearth/sdk-types，
- *                       类型内容同源；消灭 ../../_shared 相对路径，模板仓内经 npm workspace 引用
+ *   - 1.0.0 (2026-07-13) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
  */
+
 import type { Component } from 'vue'
 
 /** 取消订阅函数 */

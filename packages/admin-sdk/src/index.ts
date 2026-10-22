@@ -1,18 +1,16 @@
 /**
- * 文件作用：管理端远程扩展页运行时契约（模板仓 vendored 共享包 @agrsearth/admin-sdk）
+ * 文件作用：管理端远程扩展页运行时契约（管理面远程化，ADR-007）
+ * 远程管理页（extensions/<pkg>/admin-ui/）经 import map 与宿主共享运行时：
+ * - request（axios 实例，含 token/401/防重）由 import map 别名 '@/utils/request' 直接桥接，
+ *   存量页面源码 import request from '@/utils/request' 原样可用，无需经本包；
+ * - 本包提供新代码用的显式访问器与运行时环境读取（替代编译期 import.meta.env 烘焙）。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-08-20
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/admin-sdk vendor：包名改为 @agrsearth/admin-sdk
- *                       （内容同源；管理面远程化 ADR-007）
+ *   - 1.0.0 (2026-08-20) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
- *
- * 远程管理页（admin-ui/）经 import map 与宿主共享运行时：
- * - request（axios 实例，含 token/401/防重）由 import map 别名 '@/utils/request' 直接桥接，
- *   页面源码 import request from '@/utils/request' 原样可用，无需经本包；
- * - 本包提供新代码用的显式访问器与运行时环境读取（替代编译期 import.meta.env 烘焙）。
  */
 
 /** 宿主暴露的 request 模块形态（main.ts: window.__AdminRequestModule） */

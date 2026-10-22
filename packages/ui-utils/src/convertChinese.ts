@@ -1,11 +1,14 @@
 /**
- * 文件作用：简繁转换统一封装（模板仓 vendored 共享包 @agrsearth/ui-utils）
+ * 文件作用：简繁转换统一封装（平台级共享）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-07-20
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/ui-utils/src/convertChinese.ts vendor
- *                       （内容同源；opencc-js 字典由平台宿主统一提供，构建时将 opencc-js 列为 external）
+ *   - 1.0.0 (2026-07-20) 初始创建：提供 convertText(text, 's2t'|'t2s') 统一 API
+ *                       与 useChineseConvert 组合式函数；opencc-js 字典（约 1MB）
+ *                       由平台宿主统一提供（import map /esm-libs/opencc-js.mjs +
+ *                       UMD 回退 window.OpenCC），扩展包构建时须将 opencc-js 列为
+ *                       external，不再各自打包字典
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
  */

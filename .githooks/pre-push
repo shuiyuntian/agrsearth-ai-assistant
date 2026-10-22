@@ -16,6 +16,8 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 HITS="$(grep -rEn \
     --exclude='.upstream' \
+    --exclude='.env*' \
+    --exclude='pre-push' \
     --exclude-dir='node_modules' \
     --exclude-dir='.git' \
     --exclude-dir='logs' \

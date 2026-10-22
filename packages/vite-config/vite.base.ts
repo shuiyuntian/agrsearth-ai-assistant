@@ -1,23 +1,23 @@
 /**
- * 文件作用：能力包公共 Vite Library 配置（球端面板产物 tool.*.js，模板仓 vendored 共享包 @agrsearth/vite-config）
+ * 文件作用：vite.base 模块
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-07-13
  * 版本：1.1.0
  * 修改记录：
- *   - 1.1.0 (2026-10-04) 同步平台仓 _shared 1.1.0：接入 host-contract 构建期硬校验（契约取本包
- *                       contracts/ vendored 快照，须随平台 host-contract.json 升级同步）
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/vite-config vendor：改包名 @agrsearth/vite-config，
- *                       用法示例由相对路径改为 workspace 包引用，external/globals 约定同源
+ *   - 1.1.0 (2026-10-04) 构建期共享依赖契约硬校验：配置定义即调 assertHostContract('gis-platform-ui')，
+ *                       扩展声明的共享依赖区间不满足球端 host-contract.json 即构建失败（批4-P0）
+ *   - 1.0.0 (2026-07-13) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
+ */
+
+/**
+ * 能力包公共 Vite Library 配置
  *
  * 扩展包的 vite.config.ts 中这样使用：
  *
- *   import { defineExtensionConfig } from '@agrsearth/vite-config'
- *   export default defineExtensionConfig({ entry: './src/index.ts', name: 'Capability_example' })
- *
- * 加载机制：Vite 加载 vite.config.ts 时 packages:'external' 由 Node 直接 import 本包，
- * 因此入口为 esbuild 预编译产物 dist/*.js（npm run build 生成，types 指向 src/*.ts 源）。
+ *   import { defineExtensionConfig } from '../../../../../packages/vite-config/vite.base'
+ *   export default defineExtensionConfig({ entry: './src/index.ts', name: 'Twwater' })
  */
 import { defineConfig, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -35,7 +35,7 @@ export interface ExtensionConfigOptions {
   extraExternals?: string[]
   /** 额外的 UMD globals 映射（与 extraExternals 配合，如 { 'opencc-js': 'OpenCC' }） */
   extraGlobals?: Record<string, string>
-  /** 追加的 resolve.alias */
+  /** 追加的 resolve.alias（如 '@shared/ui-utils' 指向共享源码） */
   alias?: Record<string, string>
   /** rollup output.exports；默认不设置（仅默认导出时自动为 'default'，UMD 全局即导出实例本身） */
   exports?: 'named' | 'default'
@@ -46,7 +46,7 @@ export interface ExtensionConfigOptions {
 export function defineExtensionConfig(options: ExtensionConfigOptions) {
   const { entry, name, outDir = 'dist', extraExternals = [], extraGlobals = {}, alias = {}, exports, overrides = {} } = options
 
-  // 构建期硬校验（批4-P0）：扩展声明的共享依赖区间必须是球端宿主 host-contract 接受范围的子集
+  // 构建期硬校验（批4-P0）：扩展声明的共享依赖区间必须是球端宿主 host-contract.json 接受范围的子集
   assertHostContract('gis-platform-ui')
 
   return defineConfig({

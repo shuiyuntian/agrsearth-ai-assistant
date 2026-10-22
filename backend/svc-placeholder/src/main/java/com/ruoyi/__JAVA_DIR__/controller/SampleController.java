@@ -6,7 +6,7 @@
  * 修改记录：
  *   - 0.1.0 (__TODAY__) 脚手架初始创建（create-extension.sh）
  *
- * 版权所有 (C) 2026 AGRSEarth 项目
+ * 版权所有 (C) 2026 CesiumAI 项目
  */
 
 package com.ruoyi.__JAVA_DIR__.controller;

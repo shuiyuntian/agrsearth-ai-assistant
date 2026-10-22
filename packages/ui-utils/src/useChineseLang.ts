@@ -1,13 +1,16 @@
 /**
- * 文件作用：useChineseLang 组合式函数（模板仓 vendored 共享包 @agrsearth/ui-utils）
+ * 文件作用：useChineseLang 组合式函数（共享版）
+ * 从 platform/frontend/gis-platform-ui/src/composables/useChineseLang.ts 迁移而来，
+ * 供 platform 及 extensions 共用。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
- * 创建日期：2026-09-14
+ * 创建日期：2026-07-13
  * 版本：1.0.0
  * 修改记录：
- *   - 1.0.0 (2026-09-14) 自平台仓 extensions/_shared/ui-utils/src/useChineseLang.ts vendor（内容同源）
+ *   - 1.0.0 (2026-07-13) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
  */
+
 import { ref, computed } from 'vue'
 import { converter, type LangMode, getLangMode, setLangMode } from './i18nChinese'
 

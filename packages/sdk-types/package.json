@@ -1,7 +1,7 @@
 {
   "name": "@agrsearth/sdk-types",
   "version": "1.0.0",
-  "description": "Capability 插件平台类型契约（模板仓 vendored 共享包，源：平台仓 extensions/_shared/sdk-types）",
+  "description": "AGRSEarth 平台能力包类型契约",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -15,7 +15,6 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
-    "vue": "^3.4.29"
+    "typescript": "^5.4.0"
   }
 }

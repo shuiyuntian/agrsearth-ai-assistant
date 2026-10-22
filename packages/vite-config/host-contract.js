@@ -2,9 +2,8 @@
  * 文件作用：宿主-扩展共享依赖契约（host-contract）构建期硬校验——读取目标宿主的
  *           host-contract.json，校验扩展 package.json（dependencies/devDependencies/
  *           peerDependencies）中声明的共享依赖区间是宿主 accepts 范围的子集，违例即
- *           抛错使构建失败；被 vite.base.ts / vite.admin.base.ts 在配置定义期调用。
- *           本文件为平台仓 extensions/_shared/vite-config/host-contract.js 的 vendored 同步副本，
- *           契约文件取本包 contracts/ 下的宿主快照（须随平台 host-contract.json 升级同步）。
+ *           抛错使构建失败；被 vite.base.ts / vite.admin.base.ts 在配置定义期调用，
+ *           亦被 check-host-contract.mjs CLI 复用（批4-P0，echarts 代际分裂治理）。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-10-04
  * 版本：1.0.0
@@ -19,8 +18,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-/** 仓根：extensions/_shared/vite-config → 上三级 */
-export const REPO_ROOT = path.resolve(HERE, '..', '..', '..')
+/** 仓根：packages/vite-config → 上两级 */
+export const REPO_ROOT = path.resolve(HERE, '..', '..')
 
 /** 宿主 id → 契约文件（相对仓根） */
 export const HOST_CONTRACTS = {
@@ -35,7 +34,7 @@ const SKIP_ENV = 'HOST_CONTRACT_CHECK'
  * 1. 环境变量 HOST_CONTRACT_FILE_<HOST 大写、- 转 _>（显式覆盖）
  * 2. 平台仓布局：<仓根>/platform/frontend/<host>/host-contract.json
  * 3. 模板仓 vendored 布局：与本模块同级的 ../contracts/<host>.host-contract.json
- *    （extensions/_template/packages/vite-config/contracts/，导出独立仓时随 packages/ 同步）
+ *    （模板仓 packages/vite-config/contracts/，经 sync-template.sh 同步）
  */
 function resolveContractFile(host) {
   const envKey = `HOST_CONTRACT_FILE_${host.toUpperCase().replace(/-/g, '_')}`

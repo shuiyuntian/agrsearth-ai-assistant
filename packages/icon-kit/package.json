@@ -1,0 +1,19 @@
+{
+  "name": "@agrsearth/icon-kit",
+  "version": "1.0.0",
+  "description": "共享图标库组件（AppIcon：EP 图标名/iconlib:/calcite: 引用统一渲染）",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "peerDependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "vue": "^3.4.0"
+  }
+}

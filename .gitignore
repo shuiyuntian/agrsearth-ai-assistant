@@ -6,5 +6,8 @@ logs/
 target/
 *.tar.gz
 .DS_Store
+.env
+.env.local
+.env.*.local
 # vendored Maven 仓构件（pom/jar/sha1）必须随仓入库——豁免仓根 .gitignore 的 *.jar 排除
 !maven-repo/**/*.jar

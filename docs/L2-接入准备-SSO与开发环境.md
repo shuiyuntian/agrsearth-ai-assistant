@@ -46,10 +46,10 @@
 
 ```bash
 # 方式 A：平台方下发模板仓压缩包/目录（export-plugin-template.sh 产物）
-unzip agrsearth-plugin-template.zip && cd agrsearth-plugin-template
+unzip AGRSEarth-plugin-template.zip && cd AGRSEarth-plugin-template
 
 # 方式 B：平台方建立团队可见的模板仓克隆后 fork
-git clone <团队 fork 地址> && cd agrsearth-plugin-template
+git clone <团队模板生成仓地址> && cd AGRSEarth-plugin-template
 
 npm install        # 安装全部 workspace 依赖（含 @agrsearth/* 本地包）
 npm run check      # 骨架自检：全部骨架可构建即通过

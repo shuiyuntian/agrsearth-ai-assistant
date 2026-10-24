@@ -6,7 +6,7 @@
 #   - 1.0.0 (2026-10-04) 初始创建
 #   - 1.0.1 (2026-10-06) 去内部文档指针；SERVICE_SOURCE 默认改包内相对路径（两种仓布局通用）
 #
-# 版权所有 (C) 2026 CesiumAI 项目
+# 版权所有 (C) 2026 AGRSEarth 项目
 
 # OCI Label 注入为强制项（规范文档由平台方提供，提测/验收时核对），勿删 LABEL 段
 # 占位符 __SVC_ID__/__SVC_PORT__/__PKG_ID__/__PKG_NAME__/__TRACK__/__TIER__
@@ -35,17 +35,17 @@ EXPOSE __SVC_PORT__
 # JVM 参数可在运行时被覆盖
 ENV JAVA_OPTS="-Xms512m -Xmx1024m -Djava.security.egd=file:/dev/./urandom"
 
-# OCI 标准 Label + CesiumAI 自定义 Label（规范强制注入点；值由 build.sh 经 --build-arg 覆盖）
+# OCI 标准 Label + AGRSEarth 自定义 Label（规范强制注入点；值由 build.sh 经 --build-arg 覆盖）
 LABEL org.opencontainers.image.title="${SERVICE_NAME}"
 LABEL org.opencontainers.image.description="__PKG_NAME__ 后端微服务"
 LABEL org.opencontainers.image.version="${SERVICE_VERSION}"
 LABEL org.opencontainers.image.source="${SERVICE_SOURCE}"
 LABEL org.opencontainers.image.base.name="${BASE_IMAGE}"
 LABEL org.opencontainers.image.created="${CREATED}"
-LABEL org.opencontainers.image.authors="CesiumAI Dev"
+LABEL org.opencontainers.image.authors="AGRSEarth Dev"
 LABEL org.opencontainers.image.build.command="${BUILD_COMMAND}"
 LABEL org.opencontainers.image.dockerfile.base64="${DOCKERFILE_BASE64}"
-LABEL com.cesiumai.service.category="${SERVICE_CATEGORY}"
-LABEL com.cesiumai.service.id="${SERVICE_NAME}"
+LABEL com.agrsearth.service.category="${SERVICE_CATEGORY}"
+LABEL com.agrsearth.service.id="${SERVICE_NAME}"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

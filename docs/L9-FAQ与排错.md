@@ -95,6 +95,11 @@ A：网关路由表里缺你服务的 `/<svcId>/**` 段——提测单声明「�
 测试底座的现成样例见 wind-field-server 段（`Path=/wind-field-server/**` + `StripPrefix=1`，
 controllers 不带服务前缀时 StripPrefix 不可省）。
 
+**Q：本地起的服务注册上了 Nacos，网关调接口却超时？**
+A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本机被防火墙/网段挡住（两态联调的
+双向可达前提，见 L8 §8.6）。放行本机端口并确认双边同网段（公司网或 Tailscale）；仅自己调
+代码可维持现状，要给他人使用必须 `publish --deploy` 回验证态。
+
 ## 9.6 开发机环境（Windows 实战落账 2026-10-24）
 
 **Q：跑 `create-extension.sh` 无任何输出、退出码 49，或报「目录已存在」但上次明明失败了？**

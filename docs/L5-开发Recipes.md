@@ -47,11 +47,14 @@
 1. 工具轨：≤1 个服务；系统轨：每服务一个目录（`create-extension.sh --backend <svc>` 从 `backend/svc-placeholder` + `container/svc-placeholder` 实例化可运行骨架）；
 2. 应用名 = `backendServices[].serviceId`；声明 `apiPrefix/healthEndpoint/minVersion`；
 3. 镜像构建目录 `container/<svc>/`（Dockerfile + build.sh，OCI Label 规范平台方把关）；
-4. 时区：容器与 deployment 显式 `TZ=Asia/Shanghai`。
+4. 时区：容器与 deployment 显式 `TZ=Asia/Shanghai`；
+5. **本地联调回路**：骨架 `bootstrap.yml` 的 Nacos 默认直指 aiearth02 共享底座且配置 import 为
+   `optional:`，`mvn spring-boot:run` 起服务即注册进底座 Nacos、网关按 `apiPrefix` 路由回本机——
+   调代码/接口/前后端联调本地跑，验镜像与 k8s 形态才 `publish --deploy` 推底座（两态分工详见 L8 §8.6）。
 
 **验收**：
 - [ ] `components.backend[]` 与 `backendServices[].serviceId` 完全一致
-- [ ] 本地 `mvn package` 通过；健康检查端点可访问
+- [ ] 本地 `mvn package` 通过；`mvn spring-boot:run` 起服务注册成功，`curl localhost:<port>/<svc>/actuator/health` 可达
 - [ ] deployment 有 TZ、有 resources requests/limits、探针就绪
 - [ ] 第三方密钥零入库（依赖清单注明注入需求）
 

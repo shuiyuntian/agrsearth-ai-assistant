@@ -3,9 +3,10 @@
   文件作用：wind-field-demo-server 微服务 Maven 模块定义（扩展包后端骨架模板）
   作者：JasonLee <shuiyuntian@foxmail.com>
   创建日期：2026-10-04
-  版本：1.0.0
+  版本：1.0.1
   修改记录：
     - 1.0.0 (2026-10-04) 初始创建
+    - 1.0.1 (2026-10-24) 修复 issue #1：vendored maven-repo 相对路径由 4 层纠正为 6 层
 
   版权所有 (C) 2026 AGRSEarth 项目
 -->
@@ -16,8 +17,8 @@
     wind-field-demo-server    服务 id（kebab-case；= manifest.backendServices[].serviceId = Nacos 注册名）
     风场  能力包中文名
   集成约定：
-  - parent 对齐平台 platform/backend/ruoyi-cloud/pom.xml；relativePath 固定 6 层，
-    对应仓内布局 extensions/<track>/<tier>/<pkg>/backend/<svc>/pom.xml（目录唯一规则，ADR-010）
+  - parent 指向 vendored 根 pom（file://maven-repo，相对本 pom 六层到仓根）——模板仓实例化形态，
+    独立构建不依赖平台仓（平台仓内实例化才是 6 层 relativePath 回 platform/backend/ruoyi-cloud）
   - 独立构建：禁止挂进 ruoyi-modules/pom.xml 的 <modules> 聚合（PLUGIN_DEVELOPMENT §3.3）
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -28,7 +29,7 @@
         <groupId>com.ruoyi</groupId>
         <artifactId>ruoyi</artifactId>
         <version>3.6.8</version>
-        <relativePath>../../../../maven-repo/com/ruoyi/ruoyi/3.6.8/ruoyi-3.6.8.pom</relativePath>
+        <relativePath>../../../../../../maven-repo/com/ruoyi/ruoyi/3.6.8/ruoyi-3.6.8.pom</relativePath>
     </parent>
     <artifactId>wind-field-demo-server</artifactId>
     <description>风场 后端微服务</description>
@@ -89,7 +90,7 @@
         <repository>
             <id>agrsearth-vendored</id>
             <name>AGRSEarth vendored com.ruoyi artifacts</name>
-            <url>file://${project.basedir}/../../../../maven-repo</url>
+            <url>file://${project.basedir}/../../../../../../maven-repo</url>
         </repository>
     </repositories>
 

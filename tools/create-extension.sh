@@ -5,7 +5,7 @@
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.1
+# 版本：1.0.2
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：占位符替换与 skeleton 实际占位符全集
 #     对齐；backend 从 backend/svc-placeholder 实例化并改造 pom：relativePath 置空 +
@@ -13,6 +13,8 @@
 #   - 1.0.1 (2026-10-06) 实战检验修复：① manifest.json description 骨架文案纳入占位符替换
 #     （工具轨/系统轨两句长 token），消除「包清单描述残留骨架句」；② 实例化 pom 时同步改写
 #     「集成约定」注释（模板仓 vendored 形态 4 层，原注释残留平台仓 6 层表述误导）+ 改写校验
+#   - 1.0.2 (2026-10-24) 修复 issue #1：vendored maven-repo 相对路径由 4 层纠正为 6 层；
+#     tool 轨带后端时实例化 k8s 文件名与 example-server token
 #
 # 版权所有 (C) 2026 AGRSEarth 项目
 #
@@ -207,7 +209,7 @@ instantiate_backend_skeleton() {
     #   ① parent relativePath 直指 vendored 根 pom 文件（相对模块目录定位，免表达式免仓库解析——
     #     parent 解析阶段 ${project.basedir} 尚未插值，仓库 URL 里的表达式此时不可用）；
     #   ② 注入 <repositories> 指向 vendored file:// 仓（依赖解析期插值生效，供传递 com.ruoyi 构件；
-    #     basedir=<pkg>/backend/<svc>，四层到仓根）
+    #     basedir=<pkg>/backend/<svc>，六层到仓根）
     local pom="${backend_dir}/pom.xml"
     python3 - "${pom}" <<'PYEOF'
 import re
@@ -216,15 +218,15 @@ p = sys.argv[1]
 s = open(p, encoding='utf-8').read()
 s = re.sub(
     r'<relativePath>[^<]*</relativePath>',
-    '<relativePath>../../../../maven-repo/com/ruoyi/ruoyi/3.6.8/ruoyi-3.6.8.pom</relativePath>',
+    '<relativePath>../../../../../../maven-repo/com/ruoyi/ruoyi/3.6.8/ruoyi-3.6.8.pom</relativePath>',
     s,
 )
-# ③ 同步改写集成约定注释：模板仓形态为 vendored 根 pom（4 层），不再保留骨架的
+# ③ 同步改写集成约定注释：模板仓形态为 vendored 根 pom（6 层），不再保留骨架的
 #    「relativePath 固定 6 层 / extensions/<track>/<tier>」平台仓表述（防误导）
 s = re.sub(
     r'  - parent 对齐平台 platform/backend/ruoyi-cloud/pom\.xml；relativePath 固定 6 层，\n'
     r'    对应仓内布局 extensions/<track>/<tier>/<pkg>/backend/<svc>/pom\.xml（目录唯一规则，ADR-010）',
-    '  - parent 指向 vendored 根 pom（file://maven-repo，相对本 pom 四层到仓根）——模板仓实例化形态，\n'
+    '  - parent 指向 vendored 根 pom（file://maven-repo，相对本 pom 六层到仓根）——模板仓实例化形态，\n'
     '    独立构建不依赖平台仓（平台仓内实例化才是 6 层 relativePath 回 platform/backend/ruoyi-cloud）',
     s,
 )
@@ -233,7 +235,7 @@ repos = (
     "        <repository>\n"
     "            <id>agrsearth-vendored</id>\n"
     "            <name>AGRSEarth vendored com.ruoyi artifacts</name>\n"
-    "            <url>file://${project.basedir}/../../../../maven-repo</url>\n"
+    "            <url>file://${project.basedir}/../../../../../../maven-repo</url>\n"
     "        </repository>\n"
     "    </repositories>\n"
     "\n"
@@ -287,6 +289,8 @@ if [ "${TRACK}" = "tool" ]; then
     fi
     if [ "${#BACKEND_SVCS[@]}" -gt 0 ]; then
         instantiate_backend_skeleton "${BACKEND_SVCS[0]}" "8080"
+        mv "${PKG_DIR}/deploy/k8s/10-example-server.yaml" "${PKG_DIR}/deploy/k8s/10-${BACKEND_SVCS[0]}.yaml"
+        replace_tokens "${PKG_DIR}/deploy/k8s" -e "s|example-server|${BACKEND_SVCS[0]}|g"
         # manifest components.backend / backendServices 与骨架服务一致
         jq --arg sid "${BACKEND_SVCS[0]}" \
             '.components.backend = [$sid]

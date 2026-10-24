@@ -45,6 +45,9 @@
 
 ## 快速开始
 
+> 开发机工具链前提（Node / jq / Python / Java+Maven，含 Windows 注意事项）见
+> [`docs/L2-接入准备-SSO与开发环境.md`](docs/L2-接入准备-SSO与开发环境.md) §2.4。
+
 ```bash
 npm install                                   # 安装全部 workspace 依赖（@agrsearth/* 本地包自动链接）
 npm run check                                 # 骨架自检：全部骨架 + 演示包可构建即通过

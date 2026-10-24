@@ -94,3 +94,16 @@ A：k8s `resources.limits.memory` 必须 ≥ 镜像 `JAVA_OPTS` 的 `-Xmx` + non
 A：网关路由表里缺你服务的 `/<svcId>/**` 段——提测单声明「网关路由新增需求」由平台方补；
 测试底座的现成样例见 wind-field-server 段（`Path=/wind-field-server/**` + `StripPrefix=1`，
 controllers 不带服务前缀时 StripPrefix 不可省）。
+
+## 9.6 开发机环境（Windows 实战落账 2026-10-24）
+
+**Q：跑 `create-extension.sh` 无任何输出、退出码 49，或报「目录已存在」但上次明明失败了？**
+A：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias 占位程序（`where python3`
+显示在 `WindowsApps` 下即中枪）：它以静默退出码 49 退出，且失败前已建包目录，二次运行被
+「目录已存在」挡住。处理：装真实 Python（winget `Python.Python.3.13` 等）并在 PATH 中前置；
+已留下的半成品目录删除后重跑脚手架即可。
+
+**Q：`mvn` 报「failed to connect to the docker API at npipe://...」？**
+A：有些预装环境的 PATH 里 `mvn` 是包装脚本（优先找 `mvn.cmd`，找不到就回退 `docker run maven`），
+Docker 守护进程没起时即报此错。用真实 Maven 安装目录下的 `bin/mvn`（或修 PATH 顺序），
+与 k8s 无关——插件开发机本就不需要本地集群，deploy/k8s 清单由 publish 打包后服务端 apply。

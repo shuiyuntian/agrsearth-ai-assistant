@@ -2,6 +2,15 @@
 
 > 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
+## [Unreleased]
+
+- 文档修正（2026-10-24 外部开发者实战落账）：`docs/L2` §2.4 开发机准备——补 jq 硬依赖行
+  （脚手架/publish/check 工具链必需，原完全未提）；Python 3 适用范围由「仅 md-to-html.py」
+  更正为「建包脚手架 pom 改造 + 文档工具」；Java 17 + Maven 适用范围由「仅系统轨后端」更正为
+  「凡带 --with-backend 的包（不分轨道）」；新增 Windows 注意事项（Store 占位 python3 静默
+  退出码 49）。`docs/L9` 新增 §9.6 开发机环境排错两则（同上落账）。README 快速开始补
+  工具链前提指引（→ L2 §2.4）。
+
 ## [2.0.0] - 2026-10-22
 
 **布局终态 + 品牌统一（breaking）**：

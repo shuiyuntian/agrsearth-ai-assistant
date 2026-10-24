@@ -39,8 +39,12 @@
 |:---|:---|:---|
 | Node.js | ≥ 18（建议 20+） | 模板仓用 npm workspaces；pnpm 亦可（版本管理自理） |
 | Git | 任意近期版本 | 分支模型见 L7 |
-| Python 3 | ≥ 3.9 | 仅文档转 HTML 工具（tools/md-to-html.py）需要 |
-| Java 17 + Maven | 仅系统轨后端 | 本地构建自研服务（平台方集成期对齐 parent pom） |
+| jq | ≥ 1.6 | 建包脚手架（`tools/create-extension.sh`）与 publish/check 工具链硬依赖，缺失即报错退出 |
+| Python 3 | ≥ 3.9 | 建包脚手架（后端 pom 改造段）与文档转 HTML 工具（`tools/md-to-html.py`）需要 |
+| Java 17 + Maven | JDK 17 + Maven 3.8+ | 凡带 `--with-backend` 的包（不分轨道）本地构建自研服务需要；com.ruoyi 构件由仓根 `maven-repo/` vendored 仓供给，免平台仓 |
+
+> Windows 注意：需真实 Python 安装（≥3.9），勿用 Microsoft Store 的 `python3` App Execution
+> Alias 占位程序——它以静默退出码 49 中断脚手架且不留错误输出（症状与排错见 L9 §9.6）。
 
 ## 2.5 模板仓获取
 

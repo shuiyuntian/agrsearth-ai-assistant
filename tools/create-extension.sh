@@ -5,7 +5,7 @@
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.2
+# 版本：1.0.3
 # 修改记录：
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：占位符替换与 skeleton 实际占位符全集
 #     对齐；backend 从 backend/svc-placeholder 实例化并改造 pom：relativePath 置空 +
@@ -15,6 +15,7 @@
 #     「集成约定」注释（模板仓 vendored 形态 4 层，原注释残留平台仓 6 层表述误导）+ 改写校验
 #   - 1.0.2 (2026-10-24) 修复 issue #1：vendored maven-repo 相对路径由 4 层纠正为 6 层；
 #     tool 轨带后端时实例化 k8s 文件名与 example-server token
+#   - 1.0.3 (2026-10-24) tool/system 轨带后端时，admin-ui 示例 API 同步替换为实际首个服务名
 #
 # 版权所有 (C) 2026 AGRSEarth 项目
 #
@@ -291,6 +292,9 @@ if [ "${TRACK}" = "tool" ]; then
         instantiate_backend_skeleton "${BACKEND_SVCS[0]}" "8080"
         mv "${PKG_DIR}/deploy/k8s/10-example-server.yaml" "${PKG_DIR}/deploy/k8s/10-${BACKEND_SVCS[0]}.yaml"
         replace_tokens "${PKG_DIR}/deploy/k8s" -e "s|example-server|${BACKEND_SVCS[0]}|g"
+        if [ "${WITH_ADMIN_UI}" -eq 1 ]; then
+            replace_tokens "${PKG_DIR}/admin-ui" -e "s|example-server|${BACKEND_SVCS[0]}|g"
+        fi
         # manifest components.backend / backendServices 与骨架服务一致
         jq --arg sid "${BACKEND_SVCS[0]}" \
             '.components.backend = [$sid]
@@ -321,7 +325,8 @@ else
     rm -rf "${PKG_DIR}/admin-ui/dist"
     replace_tokens "${PKG_DIR}/admin-ui" \
         -e "s|agrsearth-plugin-admin-ui-example|@agrsearth/ext-${PKG_ID}-admin|g" \
-        -e "s|AdminUI_example|${ADMIN_GLOBAL_NAME}|g"
+        -e "s|AdminUI_example|${ADMIN_GLOBAL_NAME}|g" \
+        -e "s|example-server|${BACKEND_SVCS[0]}|g"
     sed_i \
         -e "s|id: 'example-tool'|id: '${PKG_ID}'|" \
         -e "s|name: '示例工具（管理页）'|name: '${PKG_NAME}（管理页）'|" \

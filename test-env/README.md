@@ -13,45 +13,66 @@
 | GIS 球平台 | http://10.82.11.52:18880 | 插件面板联调入口 |
 | 管理面 | http://10.82.11.52:18850 | 扩展管理/菜单对账 |
 | 网关 | http://10.82.11.52:18801 | 业务 API 统一入口 |
-| MinIO S3 | http://10.82.11.52:18814 | 产物存储（bucket `gis-platform-resources-dev`） |
 | 产物公共前缀 | http://10.82.11.52:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
-| resource-manager API | http://10.82.11.52:18801/resource-manager/api/v1/package | 包/版本/资源注册（走网关） |
+| developer-center 控制 API | http://10.82.11.52:18801/developer-center/api/v1 | 发布控制面唯一入口（release-prepare/upload-sessions/release-complete）；**禁止直连 resource-manager、禁止客户端自签 MinIO SigV4** |
 
 `tools/publish.sh` 已按上表写死默认值；如需覆盖，用环境变量
-`MINIO_ENDPOINT / MINIO_BUCKET / MINIO_PUBLIC_URL / RM_API_BASE`。
-公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.52` 换成 `100.64.0.5`。
+`DC_API_BASE`（认证与发布控制全走 developer-center）。
+公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.52` 换成 `100.64.0.5`
+（脚本会按网关 IP 自动推导上传网络画像 `networkProfile`，也可经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定）。
 
 ## 2. 账号申请流程
 
 1. 联系平台管理员，提供：团队名、负责人、包 id 清单、需要的菜单号段；
 2. 平台管理员开通 **ext-developer 角色**并下发：
-   - MinIO 凭据（`MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`）；
-   - 管理端登录 token 获取方式（`RM_TOKEN`，管理面登录后从会话获取）；
+   - 团队 token（`AGRSEARTH_TOKEN`，发布控制 API 统一认证；`RM_TOKEN` 过渡兼容映射，将被移除）；
    - 球端/管理面测试入口的登录账号（SSO 开发者账号，ext-demo 或团队专属账号）。
 3. 凭据只进本机环境变量或本地 `.env`（gitignored），**禁止写进包代码/文档/提测单**。
+
+> 发布不再需要 MinIO 账号/密钥：产物上传走 developer-center 下发的 PostPolicy
+> 预签名（短 TTL、精确 key + 大小锁定），客户端只做 multipart 直传，不接触永久凭据。
 
 ## 2.5 AI 辅助开发（dev-mcp，推荐）
 
 本仓附带 `tools/dev-mcp/`——面向 AI 编码工具（Kimi Code / Codex / Claude Code / qoder）
 的插件开发辅助 MCP：契约文档取读、脚手架建包、发布预检、一键发布到本环境、实例/日志
-自助诊断、HMR 联调指引。接入方式与各工具配置片段见仓根 `AGENTS.md`「AI 工具接入」节
-与 `tools/dev-mcp/README.md`；Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。
+自助诊断、授权包级环境巡检（`environment_status`）、HMR 联调指引。巡检覆盖 Pod/实际镜像、
+实例与任务、PG/schema/runtime 证据、菜单号段、产物 URL 和版本一致性，不读取 Secret 明文。
+接入方式与各工具配置片段见仓根 `AGENTS.md`「AI 工具接入」节与 `tools/dev-mcp/README.md`；
+Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。
 
 ## 3. 发布通道（tools/publish.sh）
 ```bash
-# 1. 自助发布：构建 → MinIO 上传 → resource-manager 注册（仅测试底座）
-MINIO_ACCESS_KEY=... MINIO_SECRET_KEY=... RM_TOKEN=... \
-    ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
+# 1. 自助发布：构建 → DC release-prepare → 逐文件 upload-sessions + MinIO 直传 + complete
+#    → release-complete（仅测试底座；AGRSEARTH_TOKEN 必填）
+AGRSEARTH_TOKEN=... ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
 
-# 2. 联调部署（触发版本部署接口，逐组件打印结果）
+# 2. 联调部署（release-complete 随发布触发部署，逐组件打印结果）
 ./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --deploy
 
-# 3. 菜单布设随发布自动执行（menu-provision 幂等 upsert）；
+# 3. 菜单布设随 release-complete 服务端执行（menuJson 幂等布设）；
 #    号段必须已向平台方申请（sys_config menu.segment.<pkg> 台账），本地先过校验：
 python3 tools/menujson.py validate extensions/<track>/<tier>/<pkg-id>/data/menu.json --package <pkg-id>
 ```
 
-发布冒烟（产物 URL 可达 + manifest 字段比对）不通过即非零退出；重跑即可（资源/菜单均幂等）。
+发布流（全部控制 API 走 developer-center，脚本内无任何 MinIO/RM 直连）：
+`release-prepare`（DC 门面 {version, metadata, backendResources?}，metadata 键名对齐
+RM ReleasePrepareDTO；有后端服务时 backendResources 顶层数组按 RM PackageResourceDTO
+字段携带 docker-image 声明）→
+每个产物文件 `upload-sessions`（version/filename/sizeBytes/sha256/artifactType/networkProfile）
+换取 postUrl/formFields → `curl multipart` 直传 MinIO（预签名短 TTL，host 由服务端按
+networkProfile 下发，**不得改写**）→ `upload-sessions/{uploadId}/complete`（服务端重算
+size+sha256 复核后登记）→ 全部成功后才 `release-complete`（version/dependencies/menuJson/deploy；
+响应 .data.menuResult / .data.bundleResult）。
+
+失败语义：任一步失败即非零退出并明确指认；任一文件 complete 失败即中止、**绝不执行
+release-complete**。重跑口径分两段：release-complete 失败（含上传段失败）时版本仍为
+**草稿态**可重放，修复后直接重跑（prepare/上传会话对草稿版本幂等）；一旦 release-complete
+成功版本即**已发布（发布不可变）**，重跑会在 release-prepare 被拒绝——更新产物须递增版本号，
+冒烟类环境抖动修复后直接复验 URL 即可。
+
+networkProfile 选择：按 `DC_API_BASE` 网关 IP 自动推导（`100.64.*` → tailscale，
+内网私网段 → lan），或经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定；推导不出即拒绝。
 
 ## 4. HMR 调试回路（--dev-url）
 

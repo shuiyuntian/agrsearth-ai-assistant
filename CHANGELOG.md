@@ -6,7 +6,8 @@
 
 - 默认开发支撑环境切至 aiearth01（LAN `10.82.11.51` / Tailscale `100.64.0.4`）；
   aiearth02 仅用于部署测试。`tools/publish.sh`、后端 Nacos 骨架、demo 与文档同步调整。
-  dev-mcp 支持经环境变量或仓根 `.env.local` 覆盖网关、DC/native 完整 URL、clientId 和回跳端口。
+  dev-mcp 支持经环境变量或仓根 `.env.local` 覆盖网关、DC/native 完整 URL、clientId 和回跳端口；
+  新增 `AGRSEARTH_SOCKS_PROXY` 支持 SSH 动态转发，DC 与独立 Chrome 登录页共用 SOCKS5。
 
 - 文档修正（2026-10-24 外部开发者实战落账）：`docs/L2` §2.4 开发机准备——补 jq 硬依赖行
   （脚手架/publish/check 工具链必需，原完全未提）；Python 3 适用范围由「仅 md-to-html.py」

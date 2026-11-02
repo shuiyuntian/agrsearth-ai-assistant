@@ -5,8 +5,9 @@
 //   initialize + tools/list 握手，断言 22 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.1.0
+// 版本：1.2.0
 // 修改记录：
+//   - 1.2.0 (2026-11-02) 新增 SOCKS5 地址解析、认证可选和默认直连断言
 //   - 1.1.0 (2026-11-02) 新增完整登录/DC URL、clientId 与自定义回跳端口段覆盖断言
 //   - 1.0.0 (2026-10-24) 初始创建（绿地 21 工具冒烟 + auth 纯函数/令牌存储单测）
 //   - 1.0.2 (2026-10-24) 断言扩展：DC P1/P2 落地——资源/重试/实例工具描述无【未实现】、
@@ -46,7 +47,7 @@ process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 
 const {
   computeS256Challenge, generatePkcePair, randomLoopbackPort,
-  saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG,
+  saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG, parseSocksProxy,
 } = await import(SERVER);
 
 process.on("exit", () => { fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {}); });
@@ -76,6 +77,16 @@ test("登录和 DC 连接参数均可由环境覆盖", () => {
   assert.equal(DEV_MCP_CONFIG.nativeClientId, "custom-dev-cli");
   assert.equal(DEV_MCP_CONFIG.loopbackPortMin, 51000);
   assert.equal(DEV_MCP_CONFIG.loopbackPortMax, 51010);
+});
+
+test("SOCKS5 代理地址解析支持主机、端口和可选认证", () => {
+  assert.equal(parseSocksProxy(""), null);
+  assert.deepEqual(parseSocksProxy("socks5h://127.0.0.1:51080"), { type: 5, host: "127.0.0.1", port: 51080 });
+  assert.deepEqual(parseSocksProxy("socks5://user:pass@localhost:1080"), {
+    type: 5, host: "localhost", port: 1080, userId: "user", password: "pass",
+  });
+  assert.throws(() => parseSocksProxy("http://127.0.0.1:1080"), /仅支持 socks5/);
+  assert.equal(DEV_MCP_CONFIG.socksProxyEnabled, false, "未配置代理时保持直连");
 });
 
 test("仓根 .env.local 可覆盖登录配置且优先于内置默认值", async () => {
@@ -180,7 +191,7 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.2.0");
+    assert.equal(init.result?.serverInfo?.version, "1.2.1");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

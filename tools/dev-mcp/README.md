@@ -6,7 +6,7 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（22 个，v1.2.0 统一命名）
+## 工具清单（22 个，v1.2.1 统一命名）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
@@ -95,6 +95,7 @@ aiearth01；其他开发测试服务器可整体覆盖，不需要修改 `server
 | `AGRSEARTH_LOOPBACK_PORT_MAX` | `65535` | 回跳端口段终点，须大于等于起点 |
 | `AGRSEARTH_TOKEN` | 无 | CI 覆盖用 Bearer token（优先级最高；交互场景推荐 auth_login） |
 | `AGRSEARTH_TOKEN_FILE` | `~/.config/agrsearth/dev-mcp-token.json` | 令牌落盘路径（测试/多实例可覆盖） |
+| `AGRSEARTH_SOCKS_PROXY` / `SOCKS_PROXY` | 无 | 可选 SOCKS5 代理，如 `socks5h://127.0.0.1:51080`；用于 SSH 动态转发 |
 
 自定义服务器示例（写入模板仓根 `.env.local`，真值不入 Git）：
 
@@ -111,6 +112,28 @@ AGRSEARTH_LOOPBACK_PORT_MAX=51010
 若只改网关地址，其余三项会按 `AGRSEARTH_DEV_BASE` 自动推导；独立部署 DC 或 ruoyi-auth 时再
 设置对应完整 URL。回跳主机仍固定为 `127.0.0.1`，与服务端 loopback 安全约束保持一致。
 
+### SSH 动态转发（SOCKS5，跨网调试）
+
+家庭网/办公网隔离时，不需要改平台地址、hosts 或防火墙。以 aiearth01 为例：
+
+```bash
+# 终端 1：建立动态转发；测试结束 Ctrl-C 即释放
+ssh -N -D 127.0.0.1:51080 aiearth01
+
+# 终端 2：让 dev-mcp 的 Node 请求经隧道访问默认 aiearth01 LAN
+export AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080
+# 也可写入仓根 .env.local；SOCKS_PROXY 为兼容回退变量
+```
+
+- `AGRSEARTH_SOCKS_PROXY` / `SOCKS_PROXY` 支持 `socks5://`、`socks5h://`，默认端口 1080，
+  可选认证信息仅用于建立代理连接，不进入日志或状态输出。
+- 配置后，DC API 与 native session/callback 均走 SOCKS5；`auth_login` 自动打开独立 Chrome
+  配置（`~/.config/agrsearth/dev-mcp-browser`）并使用同一代理，不修改系统代理或默认浏览器配置。
+- `tools/publish.sh` 使用 curl；如需同样经隧道，可另设
+  `ALL_PROXY=socks5h://127.0.0.1:51080`。
+- 服务端 Casdoor 必须存在公共客户端 `agrsearth-dev-cli`（空 secret、loopback 回调）。
+  平台侧由 `deploy/files/sso/provision-casdoor.sh` 幂等收敛。
+
 ## 审计与红线
 
 - 全部工具调用落 `logs/operations/dev-mcp-<日期>.jsonl`（北京时间，gitignored）：时间、
@@ -119,7 +142,7 @@ AGRSEARTH_LOOPBACK_PORT_MAX=51010
 - 写操作（`package_publish`、`package_register`、`package_manage` 写 action、
   `team_manage` 写 action、`resource_issue`/`resource_rotate`/`resource_revoke`、
   `task_retry`）强制 `reason`（≥4 字符），缺失即拒。
-- 远程只走 DC API；生产（aiearth01）无任何通道。
+- 远程只走 DC API；aiearth01 仅开放已授权的开发支撑调用，不因此放开正式生产发布权限。
 - 实例门面语义（DC 设计）：`packageId` 是授权锚点、未授权一律 404（不暴露存在性），
   工具如实透传不reinterpret；日志服务端已逐行脱敏（只掩值不掩键），工具侧只按行数
   截断展示、不改内容。

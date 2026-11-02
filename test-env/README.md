@@ -43,6 +43,10 @@ Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。非默认开�
 `.env.local` 覆盖网关、DC API、原生登录 session/callback 完整 URL、clientId 和回跳端口段，
 无需修改 `server.mjs`，完整变量表与示例见 `tools/dev-mcp/README.md`「环境配置」。
 
+家庭网与办公网隔离时可临时使用 SSH 动态转发：`ssh -N -D 127.0.0.1:51080 aiearth01`，
+再设置 `AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`。DC 与登录请求均走隧道，
+登录浏览器使用独立 Chrome 配置，不改系统代理；测试结束关闭 SSH 进程即释放。
+
 ## 3. 发布通道（tools/publish.sh）
 ```bash
 # 1. 自助发布：构建 → DC release-prepare → 逐文件 upload-sessions + MinIO 直传 + complete

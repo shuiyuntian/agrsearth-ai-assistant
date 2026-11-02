@@ -17,8 +17,10 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.2.0
+// 版本：1.2.1
 // 修改记录：
+//   - 1.2.1 (2026-11-02) 支持 AGRSEARTH_SOCKS_PROXY（SSH 动态转发），Node fetch 与
+//     独立 Chrome 登录页共用 SOCKS5；不改系统代理，不回显代理凭据
 //   - 1.2.0 (2026-11-02) 登录与 DC 连接参数全量可覆盖：支持进程环境/仓根 .env.local，
 //     完整 DC API/native-session/native-callback URL、clientId、回跳端口段/固定端口；
 //     默认开发支撑环境切至 aiearth01，aiearth02 仅用于部署测试
@@ -63,6 +65,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { socksDispatcher } from "fetch-socks";
 import { spawn } from "node:child_process";
 import http from "node:http";
 import crypto from "node:crypto";
@@ -124,10 +127,32 @@ if (LOOPBACK_PORT_MIN > LOOPBACK_PORT_MAX) {
 }
 const TOKEN_FILE = envValue("AGRSEARTH_TOKEN_FILE",
   path.join(os.homedir(), ".config", "agrsearth", "dev-mcp-token.json"));
+
+export function parseSocksProxy(value) {
+  if (!value) return null;
+  const parsed = new URL(value);
+  if (parsed.protocol !== "socks5:" && parsed.protocol !== "socks5h:") {
+    throw new Error(`AGRSEARTH_SOCKS_PROXY 仅支持 socks5:// 或 socks5h://：${parsed.protocol}`);
+  }
+  const options = {
+    type: 5,
+    host: parsed.hostname,
+    port: parsed.port ? portValue("AGRSEARTH_SOCKS_PROXY 端口", parsed.port) : 1080,
+  };
+  if (parsed.username) options.userId = decodeURIComponent(parsed.username);
+  if (parsed.password) options.password = decodeURIComponent(parsed.password);
+  return options;
+}
+const SOCKS_OPTIONS = parseSocksProxy(envValue("AGRSEARTH_SOCKS_PROXY", envValue("SOCKS_PROXY", "")));
+const SOCKS_DISPATCHER = SOCKS_OPTIONS ? socksDispatcher(SOCKS_OPTIONS) : null;
+function fetchOptions() {
+  return SOCKS_DISPATCHER ? { dispatcher: SOCKS_DISPATCHER } : {};
+}
 export const DEV_MCP_CONFIG = Object.freeze({
   devBase: DEV_BASE, dcApi: DC_API, nativeSessionUrl: NATIVE_SESSION_URL,
   nativeCallbackUrl: NATIVE_CALLBACK_URL, nativeClientId: NATIVE_CLIENT_ID,
   loopbackPortMin: LOOPBACK_PORT_MIN, loopbackPortMax: LOOPBACK_PORT_MAX,
+  socksProxyEnabled: Boolean(SOCKS_OPTIONS),
 });
 
 // =============================================================================
@@ -288,6 +313,7 @@ async function postJson(url, body, { timeoutMs = 20000 } = {}) {
       headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: ctrl.signal,
+      ...fetchOptions(),
     });
     const text = await resp.text();
     let parsed = null;
@@ -312,6 +338,7 @@ async function dcFetch(apiPath, { method = "GET", body, timeoutMs = 20000 } = {}
       },
       body: body != null ? JSON.stringify(body) : undefined,
       signal: ctrl.signal,
+      ...fetchOptions(),
     });
     const text = await resp.text();
     let parsed = null;
@@ -381,7 +408,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.2.0",
+  version: "1.2.1",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -1009,10 +1036,28 @@ docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节�
 
 // ===== 19. auth_login：原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳） =====
 
-function openSystemBrowser(url) {
-  const [cmd, args] = process.platform === "darwin" ? ["open", [url]]
-    : process.platform === "win32" ? ["cmd", ["/c", "start", "", url]]
-      : ["xdg-open", [url]];
+async function openSystemBrowser(url) {
+  let cmd;
+  let args;
+  if (SOCKS_OPTIONS) {
+    const profile = path.join(os.homedir(), ".config", "agrsearth", "dev-mcp-browser");
+    await fs.mkdir(profile, { recursive: true, mode: 0o700 });
+    const host = SOCKS_OPTIONS.host.includes(":") ? `[${SOCKS_OPTIONS.host}]` : SOCKS_OPTIONS.host;
+    const chromeArgs = [
+      `--user-data-dir=${profile}`,
+      `--proxy-server=socks5://${host}:${SOCKS_OPTIONS.port}`,
+      "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
+      url,
+    ];
+    [cmd, args] = process.platform === "darwin"
+      ? ["open", ["-na", "Google Chrome", "--args", ...chromeArgs]]
+      : process.platform === "win32" ? ["cmd", ["/c", "start", "", "chrome", ...chromeArgs]]
+        : ["google-chrome", chromeArgs];
+  } else {
+    [cmd, args] = process.platform === "darwin" ? ["open", [url]]
+      : process.platform === "win32" ? ["cmd", ["/c", "start", "", url]]
+        : ["xdg-open", [url]];
+  }
   return new Promise((resolve) => {
     try {
       const child = spawn(cmd, args, { detached: true, stdio: "ignore", shell: false });
@@ -1025,7 +1070,7 @@ function openSystemBrowser(url) {
 }
 
 server.registerTool("auth_login", {
-  description: "浏览器原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA/首登改密均在 Casdoor 页内完成，本工具不接触密码）：本地 127.0.0.1 可配置端口段（默认 49152-65535）监听回跳 → 自动开系统浏览器（可关；手动/失败时授权链接实时输出到 MCP server stderr）→ 收授权码 → 换 RuoYi JWT 落盘 ~/.config/agrsearth/dev-mcp-token.json（0600）。网关、DC API、原生 session/callback 完整 URL、clientId 和回跳端口均可经环境变量或仓根 .env.local 覆盖。已配置 AGRSEARTH_TOKEN 时本工具可不登录。",
+  description: "浏览器原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA/首登改密均在 Casdoor 页内完成，本工具不接触密码）：本地 127.0.0.1 可配置端口段（默认 49152-65535）监听回跳 → 自动开系统浏览器（可关；手动/失败时授权链接实时输出到 MCP server stderr）→ 收授权码 → 换 RuoYi JWT 落盘 ~/.config/agrsearth/dev-mcp-token.json（0600）。网关、DC API、原生 session/callback 完整 URL、clientId 和回跳端口均可经环境变量或仓根 .env.local 覆盖。支持 AGRSEARTH_SOCKS_PROXY 经 SSH 动态转发访问隔离网络。已配置 AGRSEARTH_TOKEN 时本工具可不登录。",
   inputSchema: {
     openBrowser: z.boolean().default(true).describe("自动打开系统浏览器；false 时输出授权链接手动打开（无桌面/远程场景）"),
     timeoutSeconds: z.number().int().min(30).max(900).default(300).describe("等待浏览器回跳的超时（秒），上限 900（state 服务端有效期 600 秒）"),
@@ -1079,8 +1124,9 @@ server.registerTool("auth_login", {
     let browserNote = "";
     let browserAutoOpened = false;
     if (openBrowser) {
-      browserNote = await openSystemBrowser(authorizeUrl) || "";
-      browserAutoOpened = !browserNote;
+      const browserError = await openSystemBrowser(authorizeUrl);
+      browserAutoOpened = !browserError;
+      browserNote = browserError || (SOCKS_OPTIONS ? "已使用独立 Chrome 配置和 SOCKS5 隧道" : "");
     } else {
       browserNote = "已按参数跳过自动开浏览器";
     }

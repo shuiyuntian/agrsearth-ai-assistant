@@ -10,15 +10,18 @@
 //   双形态同源：平台仓 mcps/agrsearth-dev/（唯一事实源）与模板仓导出产物
 //   tools/dev-mcp/（禁止直接改，问题回报平台方）。落位脚本均在仓根下两层，ROOT 同为
 //   ../..；按 tools/publish.sh 是否存在判别模板仓/平台仓。
-//   边界红线：只触达 aiearth02 共享开发调试环境（公司网，默认 LAN 10.82.11.52）；
-//   永不出现家庭网地址；远程一律走 DC API（/developer-center/api/v1），RM 旧 API 不再
+//   边界：默认触达 aiearth01 共享开发调试环境；其他环境须显式配置 DC/native URL；
+//   远程一律走 DC API（默认 /developer-center/api/v1，可覆盖），RM 旧 API 不再
 //   使用；鉴权 = auth_login 原生授权（OIDC 授权码 + PKCE S256 + loopback 回跳，密码不过
 //   本工具）落盘 ~/.config/agrsearth（0600），AGRSEARTH_TOKEN 环境变量仍为 CI 覆盖通道；
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.1.0
+// 版本：1.2.0
 // 修改记录：
+//   - 1.2.0 (2026-11-02) 登录与 DC 连接参数全量可覆盖：支持进程环境/仓根 .env.local，
+//     完整 DC API/native-session/native-callback URL、clientId、回跳端口段/固定端口；
+//     默认开发支撑环境切至 aiearth01，aiearth02 仅用于部署测试
 //   - 0.1.0 (2026-10-22) 初始创建（双 MCP 体系 M3，7 工具，RM 旧 API + 团队 token）
 //   - 1.0.0 (2026-10-24) 绿地重构：统一命名 21 工具；新增真实 auth_login（ruoyi-auth
 //     /auth/casdoor/native-session + loopback 回跳 + /auth/casdoor/native-callback，PKCE
@@ -75,21 +78,7 @@ const ROOT = path.resolve(path.dirname(HERE), "..", "..");
 const MODE = await fs.stat(path.join(ROOT, "tools", "publish.sh"))
   .then(() => "template", () => "platform");
 
-// ---------- 环境配置（唯一目标：aiearth02 共享开发调试环境）----------
-const DEV_BASE = (process.env.AGRSEARTH_DEV_BASE || "http://10.82.11.52:18801").replace(/\/+$/, "");
-const DC_API = `${DEV_BASE}/developer-center/api/v1`;
-const NATIVE_SESSION_URL = `${DEV_BASE}/auth/casdoor/native-session`;
-const NATIVE_CALLBACK_URL = `${DEV_BASE}/auth/casdoor/native-callback`;
-// 原生公共客户端 clientId（服务端 casdoor.native-clients 白名单键，见 aiearth02 ruoyi-auth 配置）
-const NATIVE_CLIENT_ID = process.env.AGRSEARTH_DEV_CLIENT_ID || "agrsearth-dev-cli";
-// Casdoor 回跳端口段（与服务端 allowed-ports 对齐：49152-65535）
-const LOOPBACK_PORT_MIN = 49152;
-const LOOPBACK_PORT_MAX = 65535;
-// 令牌落盘：仓外用户配置目录（0600），AGRSEARTH_TOKEN 环境变量仍为最高优先 CI 覆盖
-const TOKEN_FILE = process.env.AGRSEARTH_TOKEN_FILE
-  || path.join(os.homedir(), ".config", "agrsearth", "dev-mcp-token.json");
-
-// ---------- 仓根 .env.local 读取（旧版团队 token 的兼容回退，gitignored 不落仓）----------
+// ---------- 仓根 .env.local 读取（进程环境优先；gitignored，不落仓）----------
 const LOCAL_ENV = {};
 try {
   const raw = await fs.readFile(path.join(ROOT, ".env.local"), "utf8");
@@ -98,6 +87,48 @@ try {
     if (m && !line.trimStart().startsWith("#")) LOCAL_ENV[m[1]] = m[2];
   }
 } catch { /* .env.local 不存在时静默 */ }
+
+// ---------- 可覆盖的环境配置（process.env > 仓根 .env.local > 默认值）----------
+function envValue(name, fallback) {
+  return process.env[name] || LOCAL_ENV[name] || fallback;
+}
+function httpUrl(name, value) {
+  const parsed = new URL(value);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`${name} 仅支持 http/https URL：${value}`);
+  }
+  return value.replace(/\/+$/, "");
+}
+function portValue(name, value) {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`${name} 必须是 1-65535 的整数端口：${value}`);
+  }
+  return port;
+}
+
+const DEV_BASE = httpUrl("AGRSEARTH_DEV_BASE", envValue("AGRSEARTH_DEV_BASE", "http://10.82.11.51:18801"));
+const DC_API = httpUrl("AGRSEARTH_DC_API_BASE", envValue("AGRSEARTH_DC_API_BASE", `${DEV_BASE}/developer-center/api/v1`));
+const NATIVE_SESSION_URL = httpUrl("AGRSEARTH_NATIVE_SESSION_URL",
+  envValue("AGRSEARTH_NATIVE_SESSION_URL", `${DEV_BASE}/auth/casdoor/native-session`));
+const NATIVE_CALLBACK_URL = httpUrl("AGRSEARTH_NATIVE_CALLBACK_URL",
+  envValue("AGRSEARTH_NATIVE_CALLBACK_URL", `${DEV_BASE}/auth/casdoor/native-callback`));
+const NATIVE_CLIENT_ID = envValue("AGRSEARTH_DEV_CLIENT_ID", "agrsearth-dev-cli");
+const FIXED_LOOPBACK_PORT = envValue("AGRSEARTH_LOOPBACK_PORT", "");
+const LOOPBACK_PORT_MIN = portValue("AGRSEARTH_LOOPBACK_PORT_MIN",
+  envValue("AGRSEARTH_LOOPBACK_PORT_MIN", FIXED_LOOPBACK_PORT || "49152"));
+const LOOPBACK_PORT_MAX = portValue("AGRSEARTH_LOOPBACK_PORT_MAX",
+  envValue("AGRSEARTH_LOOPBACK_PORT_MAX", FIXED_LOOPBACK_PORT || "65535"));
+if (LOOPBACK_PORT_MIN > LOOPBACK_PORT_MAX) {
+  throw new Error(`回跳端口段起止颠倒：${LOOPBACK_PORT_MIN}-${LOOPBACK_PORT_MAX}`);
+}
+const TOKEN_FILE = envValue("AGRSEARTH_TOKEN_FILE",
+  path.join(os.homedir(), ".config", "agrsearth", "dev-mcp-token.json"));
+export const DEV_MCP_CONFIG = Object.freeze({
+  devBase: DEV_BASE, dcApi: DC_API, nativeSessionUrl: NATIVE_SESSION_URL,
+  nativeCallbackUrl: NATIVE_CALLBACK_URL, nativeClientId: NATIVE_CLIENT_ID,
+  loopbackPortMin: LOOPBACK_PORT_MIN, loopbackPortMax: LOOPBACK_PORT_MAX,
+});
 
 // =============================================================================
 // 令牌解析（优先级：AGRSEARTH_TOKEN 环境变量 > ~/.config/agrsearth 文件 > 仓根 .env.local）
@@ -350,7 +381,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.1.0",
+  version: "1.2.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -506,7 +537,7 @@ server.registerTool("package_precheck", {
 // ===== 4. package_publish：发布（整工具写操作，wrapper 闸 reason） =====
 
 server.registerTool("package_publish", {
-  description: "【写操作，需审批】发布扩展包到 aiearth02 共享开发调试环境（tools/publish.sh 编排 DC 发布门面四步：POST /packages/{id}/release-prepare 预登记（权威包元数据服务端覆盖）→ POST /packages/{id}/upload-sessions 取预签名 postUrl/formFields 后 POST 直传产物（不再 MinIO SigV4 自签直传）→ POST /upload-sessions/{uploadId}/complete（幂等）→ POST /packages/{id}/release-complete 落成；allowedSecretRefs 仅服务端从 dc_resource 计算、客户端不可注入；用户 token 永不透传 RM）。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability 二次校验。prod 一律拒绝；deploy=true 追加触发部署。平台仓模式下本工具不可用（平台侧发布走 agrsearth-ops 的 publish_extension）。",
+  description: "【写操作，需审批】发布扩展包到 aiearth01 共享开发调试环境（tools/publish.sh 编排 DC 发布门面四步：POST /packages/{id}/release-prepare 预登记（权威包元数据服务端覆盖）→ POST /packages/{id}/upload-sessions 取预签名 postUrl/formFields 后 POST 直传产物（不再 MinIO SigV4 自签直传）→ POST /upload-sessions/{uploadId}/complete（幂等）→ POST /packages/{id}/release-complete 落成；allowedSecretRefs 仅服务端从 dc_resource 计算、客户端不可注入；用户 token 永不透传 RM）。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability 二次校验。prod 一律拒绝；deploy=true 追加触发部署。平台仓模式下本工具不可用（平台侧发布走 agrsearth-ops 的 publish_extension）。",
   inputSchema: {
     pkgDir: pkgDirField,
     skipBuild: z.boolean().default(false).describe("跳过前端构建（复用已有产物）"),
@@ -950,7 +981,7 @@ server.registerTool("hmr_get_guide", {
     return ok(`HMR 调试回路（包：${pkgId}）
 
 平台仓模式提示：--dev-url 回路是模板仓 tools/publish.sh 的能力（面向第三方团队
-对 aiearth02 的调试），平台仓 publish-extension.sh 不支持该参数。
+对 aiearth01 的调试），平台仓 publish-extension.sh 不支持该参数。
 平台仓内的扩展联调请走既有通道：extensions/<track>/<tier>/<pkg>/deploy/docker-compose.yml
 联调栈（scripts/deploy/ext-dev-up.sh）+ 球端 dev /esm-libs 中间件，详见
 docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节。`);
@@ -994,7 +1025,7 @@ function openSystemBrowser(url) {
 }
 
 server.registerTool("auth_login", {
-  description: "浏览器授权登录 aiearth02（OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA/首登改密均在 Casdoor 页内完成，本工具不接触密码）：本地 127.0.0.1 随机高位端口（49152-65535）监听回跳 → 自动开系统浏览器（可关；手动/失败时授权链接实时输出到 MCP server stderr）→ 收授权码 → 换 RuoYi JWT 落盘 ~/.config/agrsearth/dev-mcp-token.json（0600）。已配置 AGRSEARTH_TOKEN 环境变量时本工具可不登录。",
+  description: "浏览器原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA/首登改密均在 Casdoor 页内完成，本工具不接触密码）：本地 127.0.0.1 可配置端口段（默认 49152-65535）监听回跳 → 自动开系统浏览器（可关；手动/失败时授权链接实时输出到 MCP server stderr）→ 收授权码 → 换 RuoYi JWT 落盘 ~/.config/agrsearth/dev-mcp-token.json（0600）。网关、DC API、原生 session/callback 完整 URL、clientId 和回跳端口均可经环境变量或仓根 .env.local 覆盖。已配置 AGRSEARTH_TOKEN 时本工具可不登录。",
   inputSchema: {
     openBrowser: z.boolean().default(true).describe("自动打开系统浏览器；false 时输出授权链接手动打开（无桌面/远程场景）"),
     timeoutSeconds: z.number().int().min(30).max(900).default(300).describe("等待浏览器回跳的超时（秒），上限 900（state 服务端有效期 600 秒）"),

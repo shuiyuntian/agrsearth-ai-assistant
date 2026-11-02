@@ -14,7 +14,7 @@ extensions/<track>/<tier>/<pkg-id>/
 （「目录==track/tier」闸口）。验收通过后，平台管理员把你的包目录**纯拷贝**移植进平台仓
 同名路径，零映射零改写。
 
-本目录下的官方内容：`tool/business/wind-field-demo/`（演示包，可发 ext-dev 验证环境通路，
+本目录下的官方内容：`tool/business/wind-field-demo/`（演示包，可发开发支撑环境验证环境通路，
 **禁止提测**）。
 
 ## 建包

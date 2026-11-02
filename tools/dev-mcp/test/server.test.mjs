@@ -2,11 +2,12 @@
 // 文件作用：agrsearth-dev MCP 轻量测试（node:test，无新框架）——
 //   ① PKCE/端口段等纯函数单测（含 RFC 7636 官方测试向量）；② 令牌落盘/读取/清理
 //   （0600 权限）回环测试；③ JSON-RPC tools/list 冒烟：子进程起 server.mjs，
-//   initialize + tools/list 握手，断言 21 个绿地命名工具全部注册。
+//   initialize + tools/list 握手，断言 22 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.0.4
+// 版本：1.1.0
 // 修改记录：
+//   - 1.1.0 (2026-11-02) 新增完整登录/DC URL、clientId 与自定义回跳端口段覆盖断言
 //   - 1.0.0 (2026-10-24) 初始创建（绿地 21 工具冒烟 + auth 纯函数/令牌存储单测）
 //   - 1.0.2 (2026-10-24) 断言扩展：DC P1/P2 落地——资源/重试/实例工具描述无【未实现】、
 //     instance_list 必填 packageId、instance_logs tasks 参数、package_publish 描述含
@@ -27,7 +28,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SERVER = path.join(HERE, "..", "server.mjs");
@@ -35,15 +36,22 @@ const SERVER = path.join(HERE, "..", "server.mjs");
 // 必须在 import server.mjs 之前设置：令牌文件重定向到临时目录（不碰真实 ~/.config/agrsearth）
 const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-test-"));
 process.env.AGRSEARTH_TOKEN_FILE = path.join(tmpDir, "token.json");
+process.env.AGRSEARTH_DEV_BASE = "https://gateway.example:18443";
+process.env.AGRSEARTH_DC_API_BASE = "https://dc.example:19412/custom/api";
+process.env.AGRSEARTH_NATIVE_SESSION_URL = "https://auth.example:19200/custom/session";
+process.env.AGRSEARTH_NATIVE_CALLBACK_URL = "https://auth.example:19200/custom/callback";
+process.env.AGRSEARTH_DEV_CLIENT_ID = "custom-dev-cli";
+process.env.AGRSEARTH_LOOPBACK_PORT_MIN = "51000";
+process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 
 const {
   computeS256Challenge, generatePkcePair, randomLoopbackPort,
-  saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST,
+  saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG,
 } = await import(SERVER);
 
 process.on("exit", () => { fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {}); });
 
-// ---------- ① PKCE 纯函数 ----------
+// ---------- ① PKCE 纯函数与可覆盖配置 ----------
 
 test("computeS256Challenge 符合 RFC 7636 官方测试向量", () => {
   // RFC 7636 §4.2 附录示例
@@ -60,10 +68,58 @@ test("generatePkcePair 形态合法（verifier 64 位、challenge 定长 43、ch
   assert.notEqual(generatePkcePair().codeVerifier, codeVerifier);
 });
 
-test("randomLoopbackPort 落在 49152-65535 段", () => {
+test("登录和 DC 连接参数均可由环境覆盖", () => {
+  assert.equal(DEV_MCP_CONFIG.devBase, "https://gateway.example:18443");
+  assert.equal(DEV_MCP_CONFIG.dcApi, "https://dc.example:19412/custom/api");
+  assert.equal(DEV_MCP_CONFIG.nativeSessionUrl, "https://auth.example:19200/custom/session");
+  assert.equal(DEV_MCP_CONFIG.nativeCallbackUrl, "https://auth.example:19200/custom/callback");
+  assert.equal(DEV_MCP_CONFIG.nativeClientId, "custom-dev-cli");
+  assert.equal(DEV_MCP_CONFIG.loopbackPortMin, 51000);
+  assert.equal(DEV_MCP_CONFIG.loopbackPortMax, 51010);
+});
+
+test("仓根 .env.local 可覆盖登录配置且优先于内置默认值", async () => {
+  const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-env-"));
+  try {
+    const moduleDir = path.join(sandbox, "mcps", "agrsearth-dev");
+    await fs.mkdir(moduleDir, { recursive: true });
+    const serverCopy = path.join(moduleDir, "server.mjs");
+    await fs.copyFile(SERVER, serverCopy);
+    await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(moduleDir, "node_modules"), "dir");
+    await fs.writeFile(path.join(sandbox, ".env.local"), [
+      "AGRSEARTH_DEV_BASE=https://local-gateway.example:18081",
+      "AGRSEARTH_DC_API_BASE=https://local-dc.example:19001/api",
+      "AGRSEARTH_NATIVE_SESSION_URL=https://local-auth.example:19002/session",
+      "AGRSEARTH_NATIVE_CALLBACK_URL=https://local-auth.example:19002/callback",
+      "AGRSEARTH_DEV_CLIENT_ID=local-cli",
+      "AGRSEARTH_LOOPBACK_PORT=52345",
+    ].join("\n"));
+    const script = `import { DEV_MCP_CONFIG } from ${JSON.stringify(pathToFileURL(serverCopy).href)}; console.log(JSON.stringify(DEV_MCP_CONFIG));`;
+    const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("AGRSEARTH_")));
+    const child = spawn(process.execPath, ["--input-type=module", "-e", script], { env, stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (data) => { stdout += data; });
+    child.stderr.on("data", (data) => { stderr += data; });
+    const exitCode = await new Promise((resolve) => child.on("close", resolve));
+    assert.equal(exitCode, 0, stderr);
+    const config = JSON.parse(stdout);
+    assert.equal(config.devBase, "https://local-gateway.example:18081");
+    assert.equal(config.dcApi, "https://local-dc.example:19001/api");
+    assert.equal(config.nativeSessionUrl, "https://local-auth.example:19002/session");
+    assert.equal(config.nativeCallbackUrl, "https://local-auth.example:19002/callback");
+    assert.equal(config.nativeClientId, "local-cli");
+    assert.equal(config.loopbackPortMin, 52345);
+    assert.equal(config.loopbackPortMax, 52345);
+  } finally {
+    await fs.rm(sandbox, { recursive: true, force: true });
+  }
+});
+
+test("randomLoopbackPort 落在自定义 51000-51010 段", () => {
   for (let i = 0; i < 200; i++) {
     const p = randomLoopbackPort();
-    assert.ok(p >= 49152 && p <= 65535, `端口越界: ${p}`);
+    assert.ok(p >= 51000 && p <= 51010, `端口越界: ${p}`);
   }
 });
 
@@ -124,7 +180,7 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.1.0");
+    assert.equal(init.result?.serverInfo?.version, "1.2.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

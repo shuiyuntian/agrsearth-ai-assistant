@@ -8,7 +8,7 @@
 ## 这是什么仓
 
 航遥业务中台（AGRSEarth）的**插件（能力包）开发模板仓**。你在这里开发的每个包最终会被发布到
-共享开发调试环境（aiearth02 ext-dev，公司网）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
+共享开发调试环境（aiearth01，公司网）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
 `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L1-L10` 是分层指南，
 冲突时以契约本体为准。
 
@@ -23,7 +23,7 @@
   check-extension-versions.sh、menujson.py、dev-mcp/
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
-- `test-env/` — 共享开发调试环境（aiearth02 ext-dev）地址表与账号申请说明
+- `test-env/` — 共享开发调试环境（aiearth01）地址表与账号申请说明
 - `docs/L1-L10` — 分层开发指南；`RELEASE_CHECKLIST.md` — 提测前自检清单
 
 ## AI 工具接入（dev-mcp，推荐）

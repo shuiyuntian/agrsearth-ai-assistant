@@ -1,7 +1,7 @@
 {
   "name": "@agrsearth/dev-mcp",
-  "version": "1.1.0",
-  "description": "AGRSEarth 插件开发 MCP（stdio，面向第三方插件开发团队，目标 aiearth02 共享开发调试环境；统一命名 22 工具 + 原生授权登录）",
+  "version": "1.2.0",
+  "description": "AGRSEarth 插件开发 MCP（stdio，面向第三方插件开发团队，默认目标 aiearth01、支持自定义开发环境；统一命名 22 工具 + 原生授权登录）",
   "type": "module",
   "private": true,
   "main": "server.mjs",

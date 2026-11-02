@@ -3,10 +3,10 @@
 > 面向**第三方插件开发团队**的 MCP server（stdio，Node，运行在团队本机）。
 > 唯一事实源在平台仓 `mcps/agrsearth-dev/`；模板仓 `tools/dev-mcp/` 是导出产物
 > （等价 vendored，**禁止直接改**，问题回报平台方）。
-> 与 `agrsearth-ops`（业主运维）是两个 server：本 server 只触达 aiearth02 共享开发
-> 调试环境，永不出现家庭网地址，远程一律走 **DC（developer-center）API**。
+> 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
+> 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（22 个，v1.1.0 统一命名）
+## 工具清单（22 个，v1.2.0 统一命名）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
@@ -69,23 +69,47 @@ cd tools/dev-mcp && npm install   # 仅首次
 落盘文件 ＞ 仓根 `.env.local`（遗留兼容）。`auth_status` 可查来源并用 DC `/me` 实测；
 `auth_logout` 删落盘文件。
 
-前置条件（平台侧一次性，aiearth02）：
+前置条件（平台侧一次性，aiearth01）：
 
 - ruoyi-auth nacos 配置 `casdoor.native-clients` 已登记 `agrsearth-dev-cli`
   （公开客户端无 secret，allowed-ports `49152-65535`）；
 - Casdoor 应用 `agrsearth-dev-cli` 已建（secret 留空）且 redirectUris 含 `http://127.0.0.1`；
 - 网关 `/auth/**` 白名单覆盖（既有，`/auth/casdoor/native-*` 同链）；
 - **网关需有 `/developer-center/**` → `lb://developer-center`（StripPrefix=1）路由**
-  （落地时核对 aiearth02 nacos 网关配置）。
+  （落地时核对 aiearth01 nacos 网关配置）。
 
 ## 环境配置
 
+所有连接参数均支持**进程环境变量 > 模板仓根 `.env.local` > 内置默认值**。默认仍指向
+aiearth01；其他开发测试服务器可整体覆盖，不需要修改 `server.mjs`。
+
 | 环境变量 | 默认值 | 说明 |
 |---|---|---|
-| `AGRSEARTH_DEV_BASE` | `http://10.82.11.52:18801` | aiearth02 网关（公司网 LAN）；Tailscale 可达时可用 `http://100.64.0.5:18801` |
+| `AGRSEARTH_DEV_BASE` | `http://10.82.11.51:18801` | 网关基址；同时作为 DC/native 端点的推导默认值 |
+| `AGRSEARTH_DC_API_BASE` | `{AGRSEARTH_DEV_BASE}/developer-center/api/v1` | DC API 完整基址，可覆盖其他服务路径或独立端口 |
+| `AGRSEARTH_NATIVE_SESSION_URL` | `{AGRSEARTH_DEV_BASE}/auth/casdoor/native-session` | 原生登录 session 完整 URL |
+| `AGRSEARTH_NATIVE_CALLBACK_URL` | `{AGRSEARTH_DEV_BASE}/auth/casdoor/native-callback` | 原生登录 callback 完整 URL |
+| `AGRSEARTH_DEV_CLIENT_ID` | `agrsearth-dev-cli` | 原生公共客户端 clientId（服务端白名单键） |
+| `AGRSEARTH_LOOPBACK_PORT` | 无 | 固定回跳端口；设置后优先级高于端口段 |
+| `AGRSEARTH_LOOPBACK_PORT_MIN` | `49152` | 回跳端口段起点，须与服务端 allowed-ports 一致 |
+| `AGRSEARTH_LOOPBACK_PORT_MAX` | `65535` | 回跳端口段终点，须大于等于起点 |
 | `AGRSEARTH_TOKEN` | 无 | CI 覆盖用 Bearer token（优先级最高；交互场景推荐 auth_login） |
-| `AGRSEARTH_DEV_CLIENT_ID` | `agrsearth-dev-cli` | 原生公共客户端 clientId（白名单键） |
 | `AGRSEARTH_TOKEN_FILE` | `~/.config/agrsearth/dev-mcp-token.json` | 令牌落盘路径（测试/多实例可覆盖） |
+
+自定义服务器示例（写入模板仓根 `.env.local`，真值不入 Git）：
+
+```bash
+AGRSEARTH_DEV_BASE=https://dev-gateway.example:18443
+AGRSEARTH_DC_API_BASE=https://dev-dc.example:19412/custom/api
+AGRSEARTH_NATIVE_SESSION_URL=https://dev-auth.example:19200/custom/session
+AGRSEARTH_NATIVE_CALLBACK_URL=https://dev-auth.example:19200/custom/callback
+AGRSEARTH_DEV_CLIENT_ID=my-dev-cli
+AGRSEARTH_LOOPBACK_PORT_MIN=51000
+AGRSEARTH_LOOPBACK_PORT_MAX=51010
+```
+
+若只改网关地址，其余三项会按 `AGRSEARTH_DEV_BASE` 自动推导；独立部署 DC 或 ruoyi-auth 时再
+设置对应完整 URL。回跳主机仍固定为 `127.0.0.1`，与服务端 loopback 安全约束保持一致。
 
 ## 审计与红线
 
@@ -119,6 +143,6 @@ cd tools/dev-mcp && npm install   # 仅首次
 cd mcps/agrsearth-dev && npm test
 ```
 
-node:test 轻量测试（无新框架）：PKCE 纯函数（含 RFC 7636 测试向量）、loopback 端口段、
-令牌落盘 0600 回环、JSON-RPC `tools/list` 冒烟（断言 22 工具齐全 + 关键写工具声明
-reason 字段 + `environment_status` 只读边界）。
+node:test 轻量测试（无新框架）：PKCE 纯函数（含 RFC 7636 测试向量）、完整登录/DC URL
+与 clientId 覆盖、自定义 loopback 端口段、令牌落盘 0600 回环、JSON-RPC `tools/list`
+冒烟（断言 22 工具齐全 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。

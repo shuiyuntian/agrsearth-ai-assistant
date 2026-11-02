@@ -2,7 +2,7 @@
   "id": "wind-field-demo",
   "name": "风场演示（Demo）",
   "version": "0.1.0",
-  "description": "官方演示包（禁止提测）：风场可视化——经纬度网格上的风向箭头/粒子点渲染（含合成样例数据、管理概览页与薄后端）。fork 后可原样发布到 ext-dev 验证环境通路。",
+  "description": "官方演示包（禁止提测）：风场可视化——经纬度网格上的风向箭头/粒子点渲染（含合成样例数据、管理概览页与薄后端）。fork 后可原样发布到开发支撑环境验证环境通路。",
   "type": "extension",
   "track": "tool",
   "tier": "business",

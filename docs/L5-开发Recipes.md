@@ -48,7 +48,7 @@
 2. 应用名 = `backendServices[].serviceId`；声明 `apiPrefix/healthEndpoint/minVersion`；
 3. 镜像构建目录 `container/<svc>/`（Dockerfile + build.sh，OCI Label 规范平台方把关）；
 4. 时区：容器与 deployment 显式 `TZ=Asia/Shanghai`；
-5. **本地联调回路**：骨架 `bootstrap.yml` 的 Nacos 默认直指 aiearth02 共享底座且配置 import 为
+5. **本地联调回路**：骨架 `bootstrap.yml` 的 Nacos 默认直指 aiearth01 开发支撑环境且配置 import 为
    `optional:`，`mvn spring-boot:run` 起服务即注册进底座 Nacos、网关按 `apiPrefix` 路由回本机——
    调代码/接口/前后端联调本地跑，验镜像与 k8s 形态才 `publish --deploy` 推底座（两态分工详见 L8 §8.6）。
 

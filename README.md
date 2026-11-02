@@ -13,12 +13,12 @@
 2. `./tools/create-extension.sh <id> --track tool|system --tier platform|business ...`
    建包到 `extensions/<track>/<tier>/<id>/`
 3. 开发自验：`npm install && npm run check`、`./tools/check-extension-versions.sh`
-4. `./tools/publish.sh extensions/<track>/<tier>/<id>` 发共享调试环境（aiearth02 ext-dev）实测
+4. `./tools/publish.sh extensions/<track>/<tier>/<id>` 发共享调试环境（aiearth01）实测
 5. 按 `extensions/README.md` 提测单模板提交平台管理员（PR 或压缩包）
 6. 模板升级：把本仓加为 upstream 后 `git merge` 拉取模板 diff——你的 `extensions/<你的包>/`
    上游从不触碰，合并零冲突
 
-演示包：`extensions/tool/business/wind-field-demo/`（官方 Demo，可发 ext-dev 验证通路，**禁止提测**）。
+演示包：`extensions/tool/business/wind-field-demo/`（官方 Demo，可发开发支撑环境验证通路，**禁止提测**）。
 
 ## 组成
 
@@ -33,7 +33,7 @@
 | `tools/md-to-html.py` | 公共文档工具（README/CHANGELOG/DESIGN/REPORT 一键转 HTML 评审件） | 本仓自有 |
 | `tools/dev-mcp/` | 插件开发辅助 MCP server（平台仓 `mcps/agrsearth-dev/` 同步产物，**勿直接改**） | 平台同步 |
 | `maven-repo/` | vendored file:// Maven 仓：插件后端骨架实际依赖的 com.ruoyi 构件闭包（**com.ruoyi 不在 Maven 中央仓**）；后端 `mvn package` 免平台仓，清单与扩充方式见 `maven-repo/README.md` | 平台同步 |
-| `test-env/` | 共享开发调试环境（aiearth02 ext-dev）使用说明：地址表、ext-developer 账号申请、发布通道、`--dev-url` HMR 步骤，见 `test-env/README.md` | 本仓自有 |
+| `test-env/` | 共享开发调试环境（aiearth01）使用说明：地址表、ext-developer 账号申请、发布通道、`--dev-url` HMR 步骤，见 `test-env/README.md` | 本仓自有 |
 | `skeletons/tool/` | 工具轨最小骨架：manifest（含 components 显式声明段）+ VERSION + 四必备 + 可构建 frontend + data/menu.json 样例 + deploy/k8s 单后端部署样例（--with-backend 时随包生效） | 本仓自有 |
 | `skeletons/system/` | 系统轨最小骨架：manifest（backendServices 多组件声明）+ container/ 镜像目录 + deploy/k8s 白名单样例 + data/menu.json 样例（backend 源码不入骨架，由 `tools/create-extension.sh` 从 `backend/svc-placeholder/` 实例化） | 本仓自有 |
 | `skeletons/admin-ui/` | 通用管理面远程页骨架（ADR-007；两轨复用，复制为包内 `admin-ui/`） | 本仓自有 |

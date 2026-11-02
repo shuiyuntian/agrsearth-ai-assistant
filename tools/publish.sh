@@ -8,8 +8,10 @@
 #          权限对账/双环境，只打测试底座，prod 一律拒绝）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.2.3
+# 版本：1.3.0
 # 修改记录：
+#   - 1.3.0 (2026-11-02) 默认开发支撑环境切换 aiearth01（LAN 10.82.11.51）；
+#     aiearth02 保留部署测试用途；DC_API_BASE 仍可环境变量覆盖
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：测试环境默认值按 DGX 测试底座
 #     端点写死、全部可环境变量覆盖；凭据必须经环境变量注入，脚本内无任何默认口令）
 #   - 1.0.1 (2026-10-06) 实战检验修复（测试底座不可达场景报错体验）：① s3_upload 增加
@@ -85,8 +87,8 @@
 #      改写为本机 dev server 地址（宿主再拉 manifest 即指向本机产物）；
 #      --dev-url --reset：服务端复位正式产物 URL（reset 与 esmUrl 互斥，RM 侧契约）
 #
-# 环境变量（aiearth02 共享开发调试环境默认值，全部可覆盖）：
-#   DC_API_BASE   http://10.82.11.52:18801/developer-center/api/v1
+# 环境变量（aiearth01 开发支撑环境默认值，全部可覆盖）：
+#   DC_API_BASE   http://10.82.11.51:18801/developer-center/api/v1
 #   AGRSEARTH_TOKEN  必填（团队 token；RM_TOKEN 可过渡映射，兼容期后移除）
 #   AGRSEARTH_NETWORK  可选：lan / tailscale——缺省按 DC_API_BASE 网关 IP 推导
 #                      （100.64.* → tailscale；10.* / 192.168.* / 172.16-31.* → lan；
@@ -285,7 +287,7 @@ else
 fi
 
 # ---------- 端点与凭据（测试底座默认值，全部可环境变量覆盖；凭据必填、无默认口令）----------
-DC_API_BASE="${DC_API_BASE:-http://10.82.11.52:18801/developer-center/api/v1}"
+DC_API_BASE="${DC_API_BASE:-http://10.82.11.51:18801/developer-center/api/v1}"
 REGISTRY="${REGISTRY:-localhost:32000}"
 
 TOKEN="${AGRSEARTH_TOKEN:-}"

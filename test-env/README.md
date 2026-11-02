@@ -1,24 +1,24 @@
-# 共享开发调试环境（aiearth02 ext-dev）使用说明
+# 开发支撑环境（aiearth01）使用说明
 
-> 共享开发调试环境是平台方部署在公司网 aiearth02（LAN 10.82.11.52 / Tailscale 100.64.0.5）
-> microk8s 独立 namespace `ext-dev` 的插件开发调试环境，与生产环境完全隔离
-> （独立 DB / MinIO bucket / 清单 / SSO 全链）。
-> 团队自助发布**只进本环境**；生产发布由平台管理员执行。
-> 平台方运维口径见平台仓 `platform/deploy/environments/dev/aiearth02/README.md`。
+> 默认开发支撑环境由公司网 aiearth01 承载（LAN `10.82.11.51` / Tailscale `100.64.0.4`）。
+> aiearth01 同时是预备生产环境，不能沿用独立测试底座的隔离假设；开发操作仍须受
+> developer-center 授权与审计约束。aiearth02 当前用于部署测试，不作为模板仓默认开发环境。
+> 团队自助发布只走 developer-center；正式生产发布由平台管理员执行。
+> 平台方运维口径见平台仓 `platform/deploy/environments/prod/aiearth01/README.md`。
 
 ## 1. 地址表（默认端点，全部可环境变量覆盖）
 
 | 组件 | 地址 | 用途 |
 |:---|:---|:---|
-| GIS 球平台 | http://10.82.11.52:18880 | 插件面板联调入口 |
-| 管理面 | http://10.82.11.52:18850 | 扩展管理/菜单对账 |
-| 网关 | http://10.82.11.52:18801 | 业务 API 统一入口 |
-| 产物公共前缀 | http://10.82.11.52:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
-| developer-center 控制 API | http://10.82.11.52:18801/developer-center/api/v1 | 发布控制面唯一入口（release-prepare/upload-sessions/release-complete）；**禁止直连 resource-manager、禁止客户端自签 MinIO SigV4** |
+| GIS 球平台 | http://10.82.11.51:18880 | 插件面板联调入口 |
+| 管理面 | http://10.82.11.51:18850 | 扩展管理/菜单对账 |
+| 网关 | http://10.82.11.51:18801 | 业务 API 统一入口 |
+| 产物公共前缀 | http://10.82.11.51:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
+| developer-center 控制 API | http://10.82.11.51:18801/developer-center/api/v1 | 发布控制面唯一入口（release-prepare/upload-sessions/release-complete）；**禁止直连 resource-manager、禁止客户端自签 MinIO SigV4** |
 
-`tools/publish.sh` 已按上表写死默认值；如需覆盖，用环境变量
+`tools/publish.sh` 已按上表设置默认值；如需覆盖，用环境变量
 `DC_API_BASE`（认证与发布控制全走 developer-center）。
-公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.52` 换成 `100.64.0.5`
+公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.51` 换成 `100.64.0.4`
 （脚本会按网关 IP 自动推导上传网络画像 `networkProfile`，也可经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定）。
 
 ## 2. 账号申请流程
@@ -39,7 +39,9 @@
 自助诊断、授权包级环境巡检（`environment_status`）、HMR 联调指引。巡检覆盖 Pod/实际镜像、
 实例与任务、PG/schema/runtime 证据、菜单号段、产物 URL 和版本一致性，不读取 Secret 明文。
 接入方式与各工具配置片段见仓根 `AGENTS.md`「AI 工具接入」节与 `tools/dev-mcp/README.md`；
-Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。
+Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。非默认开发测试服务器可在仓根
+`.env.local` 覆盖网关、DC API、原生登录 session/callback 完整 URL、clientId 和回跳端口段，
+无需修改 `server.mjs`，完整变量表与示例见 `tools/dev-mcp/README.md`「环境配置」。
 
 ## 3. 发布通道（tools/publish.sh）
 ```bash

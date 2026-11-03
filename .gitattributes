@@ -1,0 +1,16 @@
+*.sh text eol=lf
+*.py text eol=lf
+*.mjs text eol=lf
+*.ts text=auto
+*.tsx text=auto
+*.js text=auto
+*.jsx text=auto
+*.vue text=auto
+*.json text=auto
+*.md text=auto
+*.yml text=auto
+*.yaml text=auto
+*.png binary
+*.jpg binary
+*.ico binary
+*.jar binary

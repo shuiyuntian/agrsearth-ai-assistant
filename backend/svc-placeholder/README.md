@@ -40,11 +40,11 @@ vendored 仓 `file://${project.basedir}/../../../../../../maven-repo`（相对�
 1. **改端口**：`bootstrap.yml` 的 `server.port` 默认值与 `container/<svc>/Dockerfile` 的 `EXPOSE`。
 2. **声明服务**：`manifest.json` 的 `backendServices[]` 填 `serviceId/apiPrefix/healthEndpoint`
    （脚手架已按约定生成：`apiPrefix="/<svc>"`，`healthEndpoint="/<svc>/actuator/health"`）。
-3. **网关路由**：提测单向平台方声明 apiPrefix 路由新增需求（由平台方在网关配置中加路由），
-   前端 `ctx.http` 才能打通。
+3. **网关路由**：标准 `apiPrefix` 在 `release-complete --deploy` 时由 DC 自动写入网关动态配置；
+   特殊路径/过滤器需求才需在提测单单独声明。
 4. **本地验证**：`mvn clean package -DskipTests`（vendored maven-repo + Maven 中央仓即可，见
    仓根 README「maven-repo」节）→ `mvn spring-boot:run`，访问
-   `http://localhost:<port>/info` 与 `/actuator/health`（nacos 默认指向测试底座，地址表见
+   `http://localhost:<port>/info` 与 `/<svc>/actuator/health`（nacos 默认指向测试底座，地址表见
    `test-env/README.md`）。
 5. **业务依赖**：数据库/MyBatis 等按需往 `pom.xml` 加（com.ruoyi 构件仅限 maven-repo 已
    vendored 的范围，缺件找平台方补发或更新模板仓）。

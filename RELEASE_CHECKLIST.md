@@ -6,7 +6,7 @@
 ## 1. 元数据与版本
 
 - [ ] 四必备齐备：`manifest.json` / `VERSION` / `README.md` / `CHANGELOG.md`（最新段写明本版变更）
-- [ ] 版本五处一致：`VERSION` ↔ `manifest.json` ↔ `frontend/package.json` ↔ `frontend/src/manifest.ts` ↔ `container/<svc>/build.sh`
+- [ ] 版本一致：`VERSION` ↔ `manifest.json` ↔ frontend/admin-ui `package.json` ↔ `frontend/src/manifest.ts` ↔ CHANGELOG 最新段；后端组件另核 `container/<svc>/VERSION` ↔ deploy yaml 镜像 tag
 - [ ] manifest `track`/`tier`（+按需 `delivery`）显式必填，且与包目录 `extensions/<track>/<tier>/<pkg>/` 一致
 - [ ] `components` 段与实际结构一致：frontend/backend[]/adminUi/menu{enabled,menuPath}/data 逐字段核对
 - [ ] `backendServices[].serviceId` 与 `components.backend[]` 完全一致；apiPrefix/healthEndpoint 可访问
@@ -35,5 +35,5 @@
 
 - [ ] 测试底座实测截图：球端面板打开/交互、管理页列表/表单、关键接口 200
 - [ ] 反复激活/停用 5 次无泄漏；停用后现场整组不可见
-- [ ] 依赖清单：跨包 dependsOn / 第三方服务与密钥注入需求 / 网关路由新增 / 菜单号段申请
+- [ ] 依赖清单：跨包 dependsOn / 第三方服务与密钥注入需求 / 特殊网关需求 / 菜单资源位；标准 apiPrefix 路由由 DC 自动注册
 - [ ] 回滚说明：上一稳定版验证点；数据变更有反向 SQL 或声明不可回滚点

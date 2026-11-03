@@ -1,0 +1,393 @@
+[
+  {
+    "step": "release-prepare",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/release-prepare",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "metadata": {
+        "packageName": "发布对拍演示",
+        "packageType": "1",
+        "track": "tool",
+        "tier": "business",
+        "description": "发布对拍演示（工具轨能力包）",
+        "icon": "MapLocation",
+        "author": "插件团队 <plugin-dev@example.com>",
+        "changelog": "- 初始脚手架（tools/create-extension.sh 生成，tool 轨）",
+        "isDefault": 1,
+        "delivery": "optional",
+        "menuPath": "kimi-publish-demo-20261103",
+        "components": {
+          "frontend": true,
+          "backend": [],
+          "adminUi": true,
+          "menu": {
+            "enabled": true,
+            "menuPath": "kimi-publish-demo-20261103"
+          },
+          "data": false
+        },
+        "defaultConfig": "{}"
+      }
+    }
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "tool.es.js",
+      "sizeBytes": 1383,
+      "sha256": "6f7d9a43929077c97eaffdaa0561286688a39c9a197a13347c6d14ba10b46e7e",
+      "artifactType": "esm-js",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "tool.es.js",
+      "sizeBytes": 1383,
+      "sha256": "6f7d9a43929077c97eaffdaa0561286688a39c9a197a13347c6d14ba10b46e7e"
+    },
+    "formFields": {
+      "x-amz-date": "1c0a6e900676653e48aa30b76c07174f24f97dbc868bc617bbe205984dd9a8cc",
+      "x-amz-signature": "68fa99b25f4fccca7a527c5da062b14043c3fca5371c2926b0898cac8d687dfe",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "c978691c01b847172dbb5569d3c0018ed8c6dee00db9d4d73a5e2b5ec8b88562",
+      "key": "01c83666f17d370771ea64783f9aaaca96697d1cbd8b7495d9ac3814bbe3f4b5"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/bab39c91fedb4326acc00bde933f3afd/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "tool.umd.js",
+      "sizeBytes": 1406,
+      "sha256": "2925cb009a86521bc8385f5e5cdba11710158fcf097b526d3e9410faea11b120",
+      "artifactType": "umd-js",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "tool.umd.js",
+      "sizeBytes": 1406,
+      "sha256": "2925cb009a86521bc8385f5e5cdba11710158fcf097b526d3e9410faea11b120"
+    },
+    "formFields": {
+      "x-amz-date": "4e907a44a7a70eca6f0e568d94a65dcf165bdb9a9389def7428c4c5ddecc164e",
+      "x-amz-signature": "2050e89633463e103626b0a3e17dda9649ee3f9d58848460923014548cc47bdc",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "c1c89a56410c9d0b8fbf9de668eff07b578f5dde58c0d2153e00b62c75047396",
+      "key": "7a7f3d222c24da5b815b9e977993734c7b4971a8435087da8b0e80134bda1883"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/43c04317ee94454ab3d5778b0a8635fc/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "admin.es.js",
+      "sizeBytes": 8909,
+      "sha256": "0c159b98bd13201bb4d6a877436308b11f36f5fb05923fa21040e9c75087c3f9",
+      "artifactType": "admin-esm-js",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "admin.es.js",
+      "sizeBytes": 8909,
+      "sha256": "0c159b98bd13201bb4d6a877436308b11f36f5fb05923fa21040e9c75087c3f9"
+    },
+    "formFields": {
+      "x-amz-date": "4e907a44a7a70eca6f0e568d94a65dcf165bdb9a9389def7428c4c5ddecc164e",
+      "x-amz-signature": "c12da52034834cad300fb094c056ac685e0f136648875cd4de1dc60d939d0209",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "c73a7f6ba420965f40b4486da62542d282a2a57655946ac06353873a51732caa",
+      "key": "1b808256909e1c685ab5f8494be97691354eed4fb25460a0117a298aaaafbf0e"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/92c45670a9f4420aae6014ab547f8104/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "admin.umd.js",
+      "sizeBytes": 5820,
+      "sha256": "373d3e6f70a1b7c3d1d7ab351da9c45b90db0245a145ea0b5d0e06b4b819a619",
+      "artifactType": "admin-umd-js",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "admin.umd.js",
+      "sizeBytes": 5820,
+      "sha256": "373d3e6f70a1b7c3d1d7ab351da9c45b90db0245a145ea0b5d0e06b4b819a619"
+    },
+    "formFields": {
+      "x-amz-date": "4e907a44a7a70eca6f0e568d94a65dcf165bdb9a9389def7428c4c5ddecc164e",
+      "x-amz-signature": "4d60814ae3499579a26e00c57fcc955a1e21348e4609cd1411fa2c1d9a92b55e",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "bec730c2b1d832e983dd2dc382538aff9e538a91344c25027737ccfe5f50fddc",
+      "key": "ba5db1e1a696b3aff8b6f5d3d9903964c21ded1f2db82eb5d18218ba95b731f9"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/e64064a62f684633a0f2f63594adbcec/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "manifest.json",
+      "sizeBytes": 924,
+      "sha256": "fd3f32152b819052841503d8a8d8064ab6362037d81b7b3cee837ebe0216b746",
+      "artifactType": "manifest-json",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "manifest.json",
+      "sizeBytes": 924,
+      "sha256": "fd3f32152b819052841503d8a8d8064ab6362037d81b7b3cee837ebe0216b746"
+    },
+    "formFields": {
+      "x-amz-date": "cdd4ffba9ec9f89ecdabc68a75f3721bc6b5d7c6973af17972d23988c32038fc",
+      "x-amz-signature": "c501a6e6aae91a3aede6659a8ad416f0631c330b9d719258a6f686de10421aaa",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "5ac1f7f6321a86b8c3c43a1057b5c150ee8bdd1c5e4590c9421a27739e2ad44f",
+      "key": "c3d1874b57310404f85b79d0cb5f87a394732dd6395dac1b9b4a06f0a54f15eb"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/d776efc6eb4b4e119715a3765fb00741/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "k8s-bundle.tar.gz",
+      "sizeBytes": 1649,
+      "sha256": "87d1da142977766e7db816b3178649adc3f76b9de77e9683092121eb323ec2e4",
+      "artifactType": "k8s-bundle",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "k8s-bundle.tar.gz",
+      "sizeBytes": 1649,
+      "sha256": "87d1da142977766e7db816b3178649adc3f76b9de77e9683092121eb323ec2e4"
+    },
+    "formFields": {
+      "x-amz-date": "cdd4ffba9ec9f89ecdabc68a75f3721bc6b5d7c6973af17972d23988c32038fc",
+      "x-amz-signature": "f17824d106d8e8e249eb0bc8a3240811e9fa7cf4aef9b601d8456b09ef1525ab",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "7d7da3077b09831896fa79291492a35225ce86a7108b560ab7022bf263a79dee",
+      "key": "a041b0eabb59e8932eb7f12c624a4d0c735f68461cf2faa61671891b6fdb0155"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/626c44c3d46b493589a0ceedc1764cc5/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "upload-sessions",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "filename": "menu.json",
+      "sizeBytes": 2613,
+      "sha256": "5afa8abbc4210ea210e2ebde9e1b8c7890cfe00d079c0acf9e67a9f2c9293b6d",
+      "artifactType": "menu-json",
+      "networkProfile": "lan"
+    }
+  },
+  {
+    "step": "minio-upload",
+    "method": "POST",
+    "path": "/gis-platform-resources",
+    "bodyJSON": null,
+    "file": {
+      "filename": "menu.json",
+      "sizeBytes": 2613,
+      "sha256": "5afa8abbc4210ea210e2ebde9e1b8c7890cfe00d079c0acf9e67a9f2c9293b6d"
+    },
+    "formFields": {
+      "x-amz-date": "cdd4ffba9ec9f89ecdabc68a75f3721bc6b5d7c6973af17972d23988c32038fc",
+      "x-amz-signature": "c2af6dc553bd6e974b769f48e44ead3e69719dce9a4ef10bf1d7661dc40dda3e",
+      "x-amz-algorithm": "608d9859e6bc152c6792c64bd844c76ece5e9479bd1d0b9fc532cad16d1f7d5d",
+      "x-amz-credential": "7df5b5870ce36a8467eeee26e9b8e18751105604ce4cf5c260917d239700d1dc",
+      "policy": "40d4b51dd0c0b0e15e2ce03fabaf5e09ff6daef6998ba014547a53f74faa0431",
+      "key": "51ec572e793f715e880e4f7f1503ee42988705e130a6ddf77cb7d1a5c794a104"
+    }
+  },
+  {
+    "step": "upload-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/upload-sessions/3bec490d77994be69794fd25674bca48/complete",
+    "bodyJSON": null
+  },
+  {
+    "step": "release-complete",
+    "method": "POST",
+    "path": "/packages/kimi-publish-demo-20261103/release-complete",
+    "bodyJSON": {
+      "version": "0.1.0",
+      "dependencies": [],
+      "menuJson": {
+        "schemaVersion": 1,
+        "packageId": "kimi-publish-demo-20261103",
+        "_comment": [
+          "管理面菜单声明（批4 起替代菜单登记 SQL，规约见 docs/L6-参考契约.md 菜单章节；权威本体=平台仓 PLUGIN_DEVELOPMENT.md）。",
+          "适用：components.adminUi=true 且 components.menu.enabled=true 的包；发布时 tools/publish.sh",
+          "上传本文件并调 resource-manager menu-provision 幂等 upsert sys_menu/sys_role_menu。",
+          "号段：menuId 必须在平台方分配的号段内（20261001 两段制台账 sys_config menu.segment.<pkg>，",
+          "tool 扩展在 2000000-2999999 按包千段；新包向平台方申请下一空闲千段）。本样例用 2005000 段示意。",
+          "component 写 remote:<packageId>/<viewPath>（管理面远程化 ADR-007，viewPath 与 adminViews 键一致）。",
+          "TODO：复制本样例后 ① packageId/号段换成本包值 ② perms 前缀换成本包权限串 ③ roleIds 按需调整",
+          "（新菜单至少绑 1=平台超管；开发者自助可见再加 106=dev-platform）。",
+          "校验：python3 tools/menujson.py validate data/menu.json --package <packageId>"
+        ],
+        "menus": [
+          {
+            "menuId": 2005000,
+            "menuName": "发布对拍演示",
+            "parentId": 0,
+            "orderNum": 9,
+            "path": "kimi-publish-demo-20261103",
+            "component": null,
+            "query": null,
+            "routeName": null,
+            "isFrame": 1,
+            "isCache": 0,
+            "menuType": "M",
+            "visible": "0",
+            "status": "0",
+            "perms": "",
+            "icon": "guide",
+            "remark": "发布对拍演示管理目录（path = components.menu.menuPath）",
+            "roleIds": [
+              1,
+              5
+            ]
+          },
+          {
+            "menuId": 2005001,
+            "menuName": "数据管理",
+            "parentId": 2005000,
+            "orderNum": 1,
+            "path": "data",
+            "component": "remote:kimi-publish-demo-20261103/example/index",
+            "query": null,
+            "routeName": null,
+            "isFrame": 1,
+            "isCache": 0,
+            "menuType": "C",
+            "visible": "0",
+            "status": "0",
+            "perms": "kimi-publish-demo-20261103:data:list",
+            "icon": "list",
+            "remark": "发布对拍演示数据管理页",
+            "roleIds": [
+              1,
+              5
+            ]
+          },
+          {
+            "menuId": 2005002,
+            "menuName": "新增",
+            "parentId": 2005001,
+            "orderNum": 1,
+            "path": "",
+            "component": null,
+            "query": null,
+            "routeName": null,
+            "isFrame": 1,
+            "isCache": 0,
+            "menuType": "F",
+            "visible": "0",
+            "status": "0",
+            "perms": "kimi-publish-demo-20261103:data:add",
+            "icon": "#",
+            "remark": "",
+            "roleIds": [
+              1,
+              5
+            ]
+          }
+        ]
+      },
+      "deploy": false
+    }
+  }
+]

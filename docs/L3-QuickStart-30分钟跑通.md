@@ -46,14 +46,14 @@ npm install && npm run build    # 或 npm run check
 **验收点**：`extensions/tool/business/my-first-tool/frontend/dist/tool.es.js` 存在，且文件头部只从
 `"vue"` 做 external import（无 element-plus/cesium 被打进产物）。
 
-## 步骤 4：提测，让插件在测试底座可见（平台方接力）
+## 步骤 4：发布到测试底座并提测
 
 1. 按 `RELEASE_CHECKLIST.md` 完成发布前自检；
-2. 按 L8 填提测单，随附：代码（PR/压缩包）、版本、CHANGELOG、自测证据
-   （构建产物清单 + 面板截图）、依赖清单；
-3. 平台方验收（`docs/运维手册/2-部署与变更/PLUGIN_ACCEPTANCE.md`）后 publish test →
-   你在 18880 工具栏看到「我的第一个工具」图标，点击弹出面板即跑通；
-4. 观察窗无问题后平台方 publish prod（isDefault 人工点选）。
+2. 经团队 token 自助发布：macOS/Ubuntu 跑 `./tools/publish.sh extensions/tool/business/my-first-tool`，
+   Windows CMD/PowerShell 跑 `tools\publish.cmd extensions/tool/business/my-first-tool`；
+3. 在 18880 工具栏看到「我的第一个工具」并点击验证；随后按 L8 填提测单，随附代码、版本、
+   CHANGELOG、自测证据和依赖清单；
+4. 平台方验收与生产发布仍由平台管理员执行，自助发布不触发生产。
 
 ## 常见卡点（详见 L9）
 

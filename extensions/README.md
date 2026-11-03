@@ -44,7 +44,7 @@ extensions/<track>/<tier>/<pkg-id>/
   - [ ] 反复激活/停用 5 次无泄漏；停用后现场整组不可见
   - [ ] 契约红线 grep：无 viewer.entities.add / createApp / import.meta.env（admin-ui 内）/ 硬编码密钥
   - [ ] data/menu.json 通过 tools/menujson.py validate（如声明菜单）
-- 依赖清单：跨包 dependsOnPackages / 第三方服务与密钥注入需求 / 网关路由新增 / 菜单号段申请
+- 依赖清单：跨包 dependsOnPackages / 第三方服务与密钥注入需求 / 特殊网关需求 / 菜单资源位（标准 apiPrefix 路由由 DC 自动注册）
 - 已知问题与限制：…
 ```
 

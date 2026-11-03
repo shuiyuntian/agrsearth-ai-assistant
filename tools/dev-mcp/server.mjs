@@ -17,8 +17,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.2.1
+// 版本：1.2.2
 // 修改记录：
+//   - 1.2.2 (2026-11-03) 模板仓 precheck/publish 直走 publish.mjs（process.execPath），不再经 bash/python
 //   - 1.2.1 (2026-11-02) 支持 AGRSEARTH_SOCKS_PROXY（SSH 动态转发），Node fetch 与
 //     独立 Chrome 登录页共用 SOCKS5；不改系统代理，不回显代理凭据
 //   - 1.2.0 (2026-11-02) 登录与 DC 连接参数全量可覆盖：支持进程环境/仓根 .env.local，
@@ -535,7 +536,7 @@ server.registerTool("package_scaffold", {
 
 server.registerTool("package_precheck", {
   description: MODE === "template"
-    ? "发布前预检：版本五处一致性 + 四必备文件（tools/check-extension-versions.sh 仓级）+ 指定包 data/menu.json 本地校验（tools/menujson.py validate）。零副作用。"
+    ? "发布前预检：直接以 Node 执行 publish.mjs --check-only（目录/manifest/components/menu/版本与组件版本轴），零网络、零副作用；不经 bash/python。"
     : "发布前预检（平台仓模式）：publish-extension.sh --check-only 全闸口（manifest/track/tier/components/menu.json/号段台账/权限对账）。零副作用。",
   inputSchema: {
     pkgDir: pkgDirField,
@@ -543,20 +544,7 @@ server.registerTool("package_precheck", {
 }, async ({ pkgDir }) => {
   assertPkgDir(pkgDir);
   if (MODE === "template") {
-    const out = [];
-    out.push("===== 版本五处一致性 + 四必备（仓级） =====");
-    out.push((await run("bash", ["tools/check-extension-versions.sh"], { timeoutMs: 120000 })).stdout || "(无输出)");
-    const menuJson = path.join(ROOT, pkgDir, "data", "menu.json");
-    try {
-      await fs.stat(menuJson);
-      out.push("\n===== menu.json 校验 =====");
-      const r = await run("python3", ["tools/menujson.py", "validate", `${pkgDir}/data/menu.json`], { timeoutMs: 60000 });
-      out.push(r.stdout.trim() || r.stderr.trim() || "(无输出)");
-      if (r.code !== 0) out.push(`[menujson exit code: ${r.code}]`);
-    } catch {
-      out.push("\n（本包无 data/menu.json，跳过菜单校验）");
-    }
-    return ok(out.join("\n"), 250);
+    return fmt(await run(process.execPath, ["tools/publish.mjs", pkgDir, "--check-only"], { timeoutMs: 120000 }), 250);
   }
   return fmt(await run("bash", ["scripts/publish-extension.sh", pkgDir, "--check-only"], { timeoutMs: 300000 }), 250);
 });
@@ -564,7 +552,7 @@ server.registerTool("package_precheck", {
 // ===== 4. package_publish：发布（整工具写操作，wrapper 闸 reason） =====
 
 server.registerTool("package_publish", {
-  description: "【写操作，需审批】发布扩展包到 aiearth01 共享开发调试环境（tools/publish.sh 编排 DC 发布门面四步：POST /packages/{id}/release-prepare 预登记（权威包元数据服务端覆盖）→ POST /packages/{id}/upload-sessions 取预签名 postUrl/formFields 后 POST 直传产物（不再 MinIO SigV4 自签直传）→ POST /upload-sessions/{uploadId}/complete（幂等）→ POST /packages/{id}/release-complete 落成；allowedSecretRefs 仅服务端从 dc_resource 计算、客户端不可注入；用户 token 永不透传 RM）。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability 二次校验。prod 一律拒绝；deploy=true 追加触发部署。平台仓模式下本工具不可用（平台侧发布走 agrsearth-ops 的 publish_extension）。",
+  description: "【写操作，需审批】发布扩展包到 aiearth01 共享开发调试环境（直接以 Node 执行 tools/publish.mjs，不经 bash：DC release-prepare → upload-sessions + MinIO PostPolicy → complete → release-complete；allowedSecretRefs 仅服务端计算）。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability。prod 一律拒绝；deploy=true 追加触发部署。",
   inputSchema: {
     pkgDir: pkgDirField,
     skipBuild: z.boolean().default(false).describe("跳过前端构建（复用已有产物）"),
@@ -576,10 +564,10 @@ server.registerTool("package_publish", {
     return fail("平台仓模式下请使用 agrsearth-ops 的 publish_extension 工具；package_publish 面向模板仓（第三方团队）");
   }
   assertPkgDir(pkgDir);
-  const args = ["tools/publish.sh", pkgDir];
+  const args = ["tools/publish.mjs", pkgDir];
   if (skipBuild) args.push("--skip-build");
   if (deploy) args.push("--deploy");
-  return fmt(await run("bash", args, { timeoutMs: 1800000 }), 400);
+  return fmt(await run(process.execPath, args, { timeoutMs: 1800000 }), 400);
 });
 
 // ===== 5. package_list：我可见的扩展包（DC GET /packages） =====

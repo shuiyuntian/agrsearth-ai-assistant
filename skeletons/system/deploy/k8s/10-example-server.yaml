@@ -1,8 +1,9 @@
 # 文件作用：example-server k8s 工作负载样例（Deployment + Service，publish 打包为 k8s-bundle 一键安装）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-09-14
-# 版本：1.0.2
+# 版本：1.1.0
 # 修改记录：
+#   - 1.1.0 (2026-11-03) 增加 DC PostgreSQL Secret 四键注入（Secret 名保留部署占位符）
 #   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
 #   - 1.0.1 (2026-10-05) 镜像命名补 tier 段；域内衔接注释改包级共享 ConfigMap/Secret
 #   - 1.0.2 (2026-10-06) 去内部命名空间字面量（namespace 由部署服务端覆写，注释占位）
@@ -35,17 +36,31 @@ spec:
             # 时区一票否决项：必须显式声明
             - name: TZ
               value: Asia/Shanghai
-          # 包内衔接（复制后按需启用）：
-          # ② 非密共享配置：整体引入包级共享 ConfigMap
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: jdbc-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: password
+            - name: DB_SCHEMA
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: schema
+          # 包内衔接（复制后按需启用）：__DB_SECRET_NAME__ 由 DC deploy 自动收敛
+          # 非密共享配置可整体引入包级共享 ConfigMap
           # envFrom:
           #   - configMapRef:
           #       name: example-system-shared
-          # ③ 凭据：引用平台方手工预建 Secret（bundle 禁 Secret，只引用不创建）
-          #   - name: DB_PASSWORD
-          #     valueFrom:
-          #       secretKeyRef:
-          #         name: example-system-secrets
-          #         key: db-password
           readinessProbe:
             httpGet:
               path: /example-server/actuator/health

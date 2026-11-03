@@ -1,8 +1,9 @@
 # 文件作用：__SVC_ID__ 微服务引导配置（扩展包后端骨架模板）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-04
-# 版本：1.0.1
+# 版本：1.2.0
 # 修改记录：
+#   - 1.2.0 (2026-11-03) 补齐服务级 actuator base-path 与 Hikari schema 环境注入
 #   - 1.0.0 (2026-10-04) 初始创建
 #   - 1.0.1 (2026-10-06) nacos 默认地址改指 aiearth02 共享开发调试环境（10.82.11.52:18810，可环境变量覆盖）
 #
@@ -19,6 +20,9 @@ spring:
     name: __SVC_ID__
   profiles:
     active: dev
+  datasource:
+    hikari:
+      schema: ${DB_SCHEMA:}
   cloud:
     nacos:
       discovery:
@@ -34,6 +38,10 @@ spring:
       - optional:nacos:application-${spring.profiles.active}.${spring.config.file-extension}
       - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.config.file-extension}
 
-# actuator 默认仅暴露 /actuator/health——正是 manifest.backendServices[].healthEndpoint 的约定端点；
+# actuator 健康端点与 manifest.backendServices[].healthEndpoint 一致：/<svc>/actuator/health；
 # 需要更多端点时放到 nacos 的 ${spring.application.name}-<profile>.yml 里开
 # management.endpoints.web.exposure.include，不要写进本文件
+management:
+  endpoints:
+    web:
+      base-path: /__SVC_ID__/actuator

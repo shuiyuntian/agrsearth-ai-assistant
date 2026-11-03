@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+- 跨平台发布链修复（2026-11-03）：新增 `tools/publish.mjs` 作为唯一发布实现，bash/jq/curl
+  协议层退役；`.sh/.cmd` 仅保留薄 shim。新增 `.gitattributes` 固定脚本 LF，支持 SOCKS5、
+  请求 golden master 对拍与失败中止回归测试；后端骨架补服务级 actuator 探针、Hikari schema、
+  DC PostgreSQL 四键 Secret 引用；镜像构建默认 `linux/amd64`，新增 `PUSH_VIA=ssh` 搬运通道。
+  macOS 与 dgx01 Ubuntu 均完成 aiearth01 真实发布，中文菜单、产物冒烟和 Pod 探针验证通过。
+- 平台联动（2026-11-03）：发布器新增 `--check-only`、`data/sql/*.sql` 原文+SHA-256 提交和 deploy 前
+  registry HEAD 预检；dev-mcp 1.2.2 的 precheck/publish 直走 Node。平台侧新增动态网关路由、
+  owner 角色菜单绑定、DB_* 自动注入与 SQL applied/skipped 幂等回执。
 - 默认开发支撑环境切至 aiearth01（LAN `10.82.11.51` / Tailscale `100.64.0.4`）；
   aiearth02 仅用于部署测试。`tools/publish.sh`、后端 Nacos 骨架、demo 与文档同步调整。
   dev-mcp 支持经环境变量或仓根 `.env.local` 覆盖网关、DC/native 完整 URL、clientId 和回跳端口；

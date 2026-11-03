@@ -1,7 +1,7 @@
 {
   "name": "agrsearth-plugin-template",
   "version": "1.0.0",
-  "description": "航遥业务中台插件开发模板仓（同步源：平台仓 extensions/_template/）：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨最小骨架 + L1-L10 分层开发指南",
+  "description": "AGRSEarth 插件开发模板仓：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨骨架 + Node 跨平台发布器 + L1-L10 分层开发指南",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -13,6 +13,12 @@
   "scripts": {
     "build": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "check": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
+    "test:publish": "node --test tests/unit/publish.test.mjs tests/unit/publish-golden.test.mjs",
     "docs:html": "mkdir -p docs/html && for f in docs/L*.md; do python3 tools/md-to-html.py \"$f\" \"docs/html/$(basename \"$f\" .md).html\"; done"
+  },
+  "dependencies": {
+    "fetch-socks": "^1.3.3",
+    "tar": "^7.5.22",
+    "undici": "^6.29.1"
   }
 }

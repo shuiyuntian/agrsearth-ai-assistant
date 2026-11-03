@@ -2,8 +2,9 @@
 #          publish 打包为 k8s-bundle 一键安装；基线取自 wind-field 实测清单）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-07
-# 版本：1.0.0
+# 版本：1.1.0
 # 修改记录：
+#   - 1.1.0 (2026-11-03) 增加 DC PostgreSQL Secret 四键注入（Secret 名保留部署占位符）
 #   - 1.0.0 (2026-10-07) 初始创建（tool 轨后端部署样例补齐；imagePullPolicy Always +
 #     limits.memory 1536Mi 为 Spring Boot 4 实测基线，512Mi 会 OOMKilled）
 #
@@ -52,7 +53,27 @@ spec:
             # 时区一票否决项：必须显式声明（勿只经 envFrom 间接注入）
             - name: TZ
               value: Asia/Shanghai
-          # 非密应用配置整体引入；凭据一律 secretKeyRef 引用平台方预建 Secret（只引用不创建）
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: jdbc-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: password
+            - name: DB_SCHEMA
+              valueFrom:
+                secretKeyRef:
+                  name: __DB_SECRET_NAME__
+                  key: schema
+          # 非密应用配置整体引入；__DB_SECRET_NAME__ 由 DC deploy 自动收敛为本包 runtime Secret
           envFrom:
             - configMapRef:
                 name: example-server-config

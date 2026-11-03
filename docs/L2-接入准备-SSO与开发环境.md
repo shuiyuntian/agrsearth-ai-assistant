@@ -37,27 +37,29 @@
 
 | 依赖 | 版本要求 | 说明 |
 |:---|:---|:---|
-| Node.js | ≥ 18（建议 20+） | 模板仓用 npm workspaces；pnpm 亦可（版本管理自理） |
-| Git | 任意近期版本 | 分支模型见 L7 |
-| jq | ≥ 1.6 | 建包脚手架（`tools/create-extension.sh`）与 publish/check 工具链硬依赖，缺失即报错退出 |
-| Python 3 | ≥ 3.9 | 建包脚手架（后端 pom 改造段）与文档转 HTML 工具（`tools/md-to-html.py`）需要 |
+| Node.js | ≥ 18（建议 22） | npm workspaces + `tools/publish.mjs`；发布不再需要 bash/jq/curl |
+| Git | 任意近期版本 | 仓根 `.gitattributes` 固定 `.sh/.py/.mjs` 为 LF；Windows 无需手工 sed 修行尾 |
+| jq | ≥ 1.6 | 建包脚手架与 `check-extension-versions.sh` 仍需要；Node 发布器不需要 |
+| Python 3 | ≥ 3.9 | 建包脚手架（后端 pom 改造段）与文档转 HTML 工具需要；Node 发布器不需要 |
 | Java 17 + Maven | JDK 17 + Maven 3.8+ | 凡带 `--with-backend` 的包（不分轨道）本地构建自研服务需要；com.ruoyi 构件由仓根 `maven-repo/` vendored 仓供给，免平台仓 |
+| Docker + SSH | 近期稳定版 | 仅自构后端镜像需要；默认 `linux/amd64`，经 `PUSH_VIA=ssh` 搬运到 aiearth01 |
 
-> Windows 注意：需真实 Python 安装（≥3.9），勿用 Microsoft Store 的 `python3` App Execution
-> Alias 占位程序——它以静默退出码 49 中断脚手架且不留错误输出（症状与排错见 L9 §9.6）。
+> Windows 注意：发布可直接在 CMD/PowerShell 执行 `tools\publish.cmd`，不依赖 WSL/Git Bash。
+> 脚手架仍使用 `create-extension.sh` + jq + Python；需真实 Python 安装（≥3.9），勿用 Microsoft Store
+> 的 `python3` App Execution Alias 占位程序（症状与排错见 L9 §9.6）。
 
 ## 2.5 模板仓获取
 
 ```bash
-# 方式 A：平台方下发模板仓压缩包/目录（export-plugin-template.sh 产物）
+# 方式 A：平台方下发模板仓压缩包/目录
 unzip AGRSEarth-plugin-template.zip && cd AGRSEarth-plugin-template
 
-# 方式 B：平台方建立团队可见的模板仓克隆后 fork
+# 方式 B：GitHub「Use this template」生成团队仓，或克隆团队既有仓
 git clone <团队模板生成仓地址> && cd AGRSEarth-plugin-template
 
 npm install        # 安装全部 workspace 依赖（含 @agrsearth/* 本地包）
 npm run check      # 骨架自检：全部骨架可构建即通过
 ```
 
-> 模板仓是**同步源** `extensions/_template/` 的导出产物；平台方升级模板后按同样方式重新下发。
-> 团队定制只发生在自己包目录内（`extensions/<track>/<tier>/<pkg>/`），`packages/`（平台供给包）与 `skeletons/` 保持原样以便 diff 跟进升级。
+> 模板仓采用 fork 模型；团队定制只发生在 `extensions/<track>/<tier>/<pkg>/`。
+> 平台供给物由平台仓单向同步，团队升级模板走 upstream 合并，不手改供给目录。

@@ -12,6 +12,8 @@ publish 时本目录整体打包为 `k8s-bundle.tar.gz`，部署时一键安装�
 | 时区 | 每个 workload 显式 `env: TZ=Asia/Shanghai`（一票否决项） |
 | 凭据 | 一律 `secretKeyRef` 引用平台方预建的环境级 Secret 或包级 Secret——**只引用不创建** |
 
+主服务模板声明 `DB_URL/DB_USERNAME/DB_PASSWORD/DB_SCHEMA` 四个映射，键固定为 `jdbc-url/username/password/schema`。`__DB_SECRET_NAME__` 仅是占位符；DC 在 deploy 前会自动收敛为本包实际发放的 Secret，无需手工替换。真实 Secret 名和值均不进模板仓。
+
 ## 文件组织
 
 - `00-shared-configmap.yaml`：包级共享配置（`<pkg>-shared`，非密配置，包内组件 `envFrom` 整体引入）

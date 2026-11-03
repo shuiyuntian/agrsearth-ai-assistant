@@ -16,10 +16,12 @@
 | 产物公共前缀 | http://10.82.11.51:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
 | developer-center 控制 API | http://10.82.11.51:18801/developer-center/api/v1 | 发布控制面唯一入口（release-prepare/upload-sessions/release-complete）；**禁止直连 resource-manager、禁止客户端自签 MinIO SigV4** |
 
-`tools/publish.sh` 已按上表设置默认值；如需覆盖，用环境变量
+`tools/publish.mjs` 已按上表设置默认值；如需覆盖，用环境变量
 `DC_API_BASE`（认证与发布控制全走 developer-center）。
 公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.51` 换成 `100.64.0.4`
-（脚本会按网关 IP 自动推导上传网络画像 `networkProfile`，也可经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定）。
+（发布器会按网关 IP 自动推导上传网络画像 `networkProfile`，也可经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定）。
+本机与目标网段隔离时，使用 SSH 动态转发：`ssh -N -D 127.0.0.1:51080 aiearth01`，再设置
+`AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`；DC、MinIO 与冒烟请求均走该代理。
 
 ## 2. 账号申请流程
 
@@ -47,38 +49,36 @@ Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。非默认开�
 再设置 `AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`。DC 与登录请求均走隧道，
 登录浏览器使用独立 Chrome 配置，不改系统代理；测试结束关闭 SSH 进程即释放。
 
-## 3. 发布通道（tools/publish.sh）
+## 3. 发布通道（publish.mjs + 双 shim）
 ```bash
-# 1. 自助发布：构建 → DC release-prepare → 逐文件 upload-sessions + MinIO 直传 + complete
-#    → release-complete（仅测试底座；AGRSEARTH_TOKEN 必填）
+# 1. macOS / Ubuntu 自助发布（仅测试底座；AGRSEARTH_TOKEN 必填）
 AGRSEARTH_TOKEN=... ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
+
+# Windows CMD / PowerShell：tools\publish.cmd extensions/<track>/<tier>/<pkg-id>
 
 # 2. 联调部署（release-complete 随发布触发部署，逐组件打印结果）
 ./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --deploy
 
-# 3. 菜单布设随 release-complete 服务端执行（menuJson 幂等布设）；
-#    号段必须已向平台方申请（sys_config menu.segment.<pkg> 台账），本地先过校验：
+# 3. 菜单布设随 release-complete 服务端执行；本地校验：
 python3 tools/menujson.py validate extensions/<track>/<tier>/<pkg-id>/data/menu.json --package <pkg-id>
 ```
 
-发布流（全部控制 API 走 developer-center，脚本内无任何 MinIO/RM 直连）：
-`release-prepare`（DC 门面 {version, metadata, backendResources?}，metadata 键名对齐
-RM ReleasePrepareDTO；有后端服务时 backendResources 顶层数组按 RM PackageResourceDTO
-字段携带 docker-image 声明）→
-每个产物文件 `upload-sessions`（version/filename/sizeBytes/sha256/artifactType/networkProfile）
-换取 postUrl/formFields → `curl multipart` 直传 MinIO（预签名短 TTL，host 由服务端按
-networkProfile 下发，**不得改写**）→ `upload-sessions/{uploadId}/complete`（服务端重算
-size+sha256 复核后登记）→ 全部成功后才 `release-complete`（version/dependencies/menuJson/deploy；
-响应 .data.menuResult / .data.bundleResult）。
+发布流（全部控制 API 走 developer-center，无 MinIO/RM 管理面直连）：
+`release-prepare`（{version, metadata, backendResources?}）→ 每个产物文件 `upload-sessions`
+（version/filename/sizeBytes/sha256/artifactType/networkProfile）换取 postUrl/formFields →
+Node multipart 直传 MinIO（预签名短 TTL，host 不得改写）→ `upload-sessions/{uploadId}/complete`
+→ 全部成功后才 `release-complete`（version/dependencies/menuJson/deploy）。
 
-失败语义：任一步失败即非零退出并明确指认；任一文件 complete 失败即中止、**绝不执行
-release-complete**。重跑口径分两段：release-complete 失败（含上传段失败）时版本仍为
-**草稿态**可重放，修复后直接重跑（prepare/上传会话对草稿版本幂等）；一旦 release-complete
-成功版本即**已发布（发布不可变）**，重跑会在 release-prepare 被拒绝——更新产物须递增版本号，
-冒烟类环境抖动修复后直接复验 URL 即可。
+失败语义：任一步失败即非零退出；任一文件 complete 失败即中止、**绝不执行 release-complete**。
+release-complete 前失败时版本保持**草稿态**可重放；一旦 release-complete 成功即发布不可变，
+更新产物须递增版本号。
 
-networkProfile 选择：按 `DC_API_BASE` 网关 IP 自动推导（`100.64.*` → tailscale，
-内网私网段 → lan），或经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定；推导不出即拒绝。
+networkProfile 按 `DC_API_BASE` 网关 IP 自动推导（`100.64.*` → tailscale，内网私网段 → lan），
+或经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定。SOCKS5 代理同时覆盖 DC、MinIO 和冒烟。
+
+自构后端镜像在 `container/<svc>/` 执行
+`PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`：默认 `PLATFORMS=linux/amd64`，buildx `--load`
+后 docker save，经 SSH 在 aiearth01 `docker load && docker push`；`PUSH_VIA=registry` 保留直接推送。
 
 ## 4. HMR 调试回路（--dev-url）
 

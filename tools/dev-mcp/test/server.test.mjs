@@ -89,6 +89,14 @@ test("SOCKS5 代理地址解析支持主机、端口和可选认证", () => {
   assert.equal(DEV_MCP_CONFIG.socksProxyEnabled, false, "未配置代理时保持直连");
 });
 
+test("模板仓 precheck/publish 直接走 Node，不经 bash/python", async () => {
+  const source = await fs.readFile(SERVER, "utf8");
+  assert.match(source, /run\(process\.execPath, \["tools\/publish\.mjs", pkgDir, "--check-only"\]/);
+  assert.match(source, /run\(process\.execPath, args, \{ timeoutMs: 1800000 \}/);
+  assert.ok(!source.includes('run("bash", ["tools/publish.sh"'));
+  assert.ok(!source.includes('run("python3", ["tools/menujson.py"'));
+});
+
 test("仓根 .env.local 可覆盖登录配置且优先于内置默认值", async () => {
   const sandbox = await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-env-"));
   try {

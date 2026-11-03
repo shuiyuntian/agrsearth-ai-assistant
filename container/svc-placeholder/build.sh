@@ -2,8 +2,9 @@
 # 文件作用：__SVC_ID__ 微服务镜像构建脚本（编译 + OCI Label 注入 + buildx 推送）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-04
-# 版本：1.0.1
+# 版本：1.2.0
 # 修改记录：
+#   - 1.2.0 (2026-11-03) 默认 linux/amd64；新增 PUSH_VIA=ssh 镜像搬运，规避 Docker Desktop localhost 隔离
 #   - 1.0.0 (2026-10-04) 初始创建
 #   - 1.0.1 (2026-10-06) 去内部文档指针；SERVICE_SOURCE 改包内相对路径（两种仓布局通用）
 #
@@ -13,7 +14,7 @@
 # 完整规范文档由平台方提供（提测/验收时核对）。
 # 占位符 __SVC_ID__/__PKG_ID__/__TRACK__/__TIER__ 由脚手架实例化时替换
 # （模板仓 tools/create-extension.sh；平台仓 scripts/create-extension.sh）。
-set -e
+set -euo pipefail
 
 SERVICE_NAME="__SVC_ID__"
 # 版本取自同目录 VERSION 文件（组件版本轴：改哪个组件 bump 哪个）
@@ -22,18 +23,17 @@ SERVICE_VERSION="$(cat VERSION | tr -d '[:space:]')"
 SERVICE_SOURCE="backend/${SERVICE_NAME}"
 SERVICE_CATEGORY="extension"
 BASE_IMAGE="eclipse-temurin:17-jre"
-REGISTRY="localhost:32000"
+REGISTRY="${REGISTRY:-localhost:32000}"
 # 镜像命名空间与仓内目录同构（AGENTS.md §8）：gis-platform/<track>/<tier>/<pkg>/<svc>
 NAMESPACE="gis-platform/__TRACK__/__TIER__/__PKG_ID__"
 IMAGE_TAG="${REGISTRY}/${NAMESPACE}/${SERVICE_NAME}:${SERVICE_VERSION}"
 BACKEND_DIR="../../backend/${SERVICE_NAME}"
 
-if [ "${SKIP_COMPILE}" != "1" ]; then
+if [ "${SKIP_COMPILE:-0}" != "1" ]; then
   echo "[build] 编译 ${SERVICE_NAME} ..."
   cd "${BACKEND_DIR}"
   mvn clean package -DskipTests
   cd -
-
 fi
 
 # 两种模式都要拷产物（编译模式=新构建，SKIP_COMPILE=1=已有产物）；缺 jar 立即失败防推空镜像
@@ -46,14 +46,29 @@ else
   DOCKERFILE_BASE64=$(base64 -i Dockerfile | tr -d '\r\n')
 fi
 
-PLATFORMS="${PLATFORMS:-linux/arm64,linux/amd64}"
+PLATFORMS="${PLATFORMS:-linux/amd64}"
 BUILDER="${BUILDER:-multiarch}"
+PUSH_VIA="${PUSH_VIA:-ssh}"
+PUSH_SSH_HOST="${PUSH_SSH_HOST:-aiearth01}"
 
-echo "[build] 使用 buildx 构建并推送（平台: ${PLATFORMS}, builder: ${BUILDER}）..."
+case "${PUSH_VIA}" in
+  ssh)
+    if [[ "${PLATFORMS}" == *,* ]]; then
+      echo "[build] 错误：PUSH_VIA=ssh 使用 --load，仅支持单一平台；请设置 PLATFORMS=linux/amd64" >&2
+      exit 1
+    fi
+    OUTPUT_FLAG="--load"
+    ;;
+  registry) OUTPUT_FLAG="--push" ;;
+  *) echo "[build] 错误：PUSH_VIA 仅支持 ssh / registry：${PUSH_VIA}" >&2; exit 1 ;;
+esac
+
+BUILD_COMMAND="docker buildx build --platform ${PLATFORMS} ${OUTPUT_FLAG} -t ${IMAGE_TAG} ."
+echo "[build] 使用 buildx 构建（平台: ${PLATFORMS}, builder: ${BUILDER}, 输出: ${OUTPUT_FLAG}）..."
 docker buildx build \
   --builder "${BUILDER}" \
   --platform "${PLATFORMS}" \
-  --push \
+  "${OUTPUT_FLAG}" \
   --build-arg SERVICE_NAME="${SERVICE_NAME}" \
   --build-arg SERVICE_VERSION="${SERVICE_VERSION}" \
   --build-arg SERVICE_SOURCE="${SERVICE_SOURCE}" \
@@ -61,8 +76,13 @@ docker buildx build \
   --build-arg BASE_IMAGE="${BASE_IMAGE}" \
   --build-arg DOCKERFILE_BASE64="${DOCKERFILE_BASE64}" \
   --build-arg CREATED="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-  --build-arg BUILD_COMMAND="docker buildx build --platform ${PLATFORMS} --push -t ${IMAGE_TAG} ." \
+  --build-arg BUILD_COMMAND="${BUILD_COMMAND}" \
   -t "${IMAGE_TAG}" \
   .
+
+if [ "${PUSH_VIA}" = "ssh" ]; then
+  echo "[push] 经 ${PUSH_SSH_HOST} 搬运并推送 ${IMAGE_TAG} ..."
+  docker save "${IMAGE_TAG}" | gzip | ssh "${PUSH_SSH_HOST}" "gunzip | docker load && docker push '${IMAGE_TAG}'"
+fi
 
 echo "[build] 完成: ${IMAGE_TAG}"

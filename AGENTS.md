@@ -19,7 +19,7 @@
 - `packages/` — `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk /
   icon-kit / layer-factory / ts-config），**只读勿改**
 - `skeletons/` — tool / system / admin-ui 三套骨架，建包一律走脚手架，不手抄
-- `tools/` — create-extension.sh（建包）、publish.sh（发测试底座，含「目录==track/tier」闸口）、
+- `tools/` — create-extension.sh（建包）、publish.mjs（Node 发布唯一实现；publish.sh/publish.cmd 为薄 shim）、
   check-extension-versions.sh、menujson.py、dev-mcp/
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
@@ -66,10 +66,12 @@
 ```bash
 npm install                    # 首次：装全部 workspace 依赖（@agrsearth/* 自动链接）
 npm run check                  # 骨架自检（全部骨架可构建即通过）
+npm run test:publish           # Node 发布协议 + golden master 回归
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
-./tools/check-extension-versions.sh        # 版本五处一致性 + 四必备校验
-./tools/publish.sh extensions/<track>/<tier>/<id>  # 发测试底座（prod 一律拒绝）
+./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验
+./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
+# Windows：tools\publish.cmd extensions/<track>/<tier>/<id>
 ./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/  # HMR 调试回路
 ```
 

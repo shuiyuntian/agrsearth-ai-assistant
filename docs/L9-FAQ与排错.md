@@ -66,7 +66,7 @@ A：告警不阻断——确认 `data/menu.json` 已随包发布并经 menu-prov
 角色授权后复测。
 
 **Q：部署后接口 404？**
-A：网关路由未加 apiPrefix——提测单已要求声明「网关路由新增需求」，找平台方补。
+A：先确认发布响应含 `gatewayRoutes` 且网关已加载 `ruoyi-gateway-dynamic-<profile>.yml`；标准 apiPrefix 由 DC 自动注册。仍 404 时查动态配置与 Nacos 发布日志，不要手工改静态路由表。
 
 ## 9.5 后端与部署（wind-field 实战落账 2026-10-07）
 
@@ -91,9 +91,8 @@ A：k8s `resources.limits.memory` 必须 ≥ 镜像 `JAVA_OPTS` 的 `-Xmx` + non
 骨架 Dockerfile 默认 `-Xmx1024m`，配套 limit 至少 1536Mi（768Mi 实测必死）。
 
 **Q：发布后管理页调后端 404「No static resource <svc>/...」？**
-A：网关路由表里缺你服务的 `/<svcId>/**` 段——提测单声明「网关路由新增需求」由平台方补；
-测试底座的现成样例见 wind-field-server 段（`Path=/wind-field-server/**` + `StripPrefix=1`，
-controllers 不带服务前缀时 StripPrefix 不可省）。
+A：标准路由应为 `Path=/<svcId>/**` + `StripPrefix=1` + `lb://<svcId>`，由 DC 在 deploy 时自动注册。
+若响应没有 `gatewayRoutes`，先升级 DC 并重发新版本；已有路由但仍 404 再查服务发现与控制器前缀。
 
 **Q：本地起的服务注册上了 Nacos，网关调接口却超时？**
 A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本机被防火墙/网段挡住（两态联调的
@@ -112,3 +111,25 @@ A：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias 占位
 A：有些预装环境的 PATH 里 `mvn` 是包装脚本（优先找 `mvn.cmd`，找不到就回退 `docker run maven`），
 Docker 守护进程没起时即报此错。用真实 Maven 安装目录下的 `bin/mvn`（或修 PATH 顺序），
 与 k8s 无关——插件开发机本就不需要本地集群，deploy/k8s 清单由 publish 打包后服务端 apply。
+
+**Q：Windows 发布后中文菜单变成问号或菱形乱码？**
+A：旧版 Git Bash + mingw curl 会把 argv 中的中文按 ANSI 重编码。使用新版 `tools\publish.cmd`
+或 `./tools/publish.sh`（两者都执行 `publish.mjs`），请求体由 Node 直接按 UTF-8 发送；已发布版本不可变，
+修复后递增版本号重发。
+
+**Q：fresh clone 后 `.sh` 报 `set: pipefail: invalid option name`？**
+A：旧仓缺少行尾约束时，Windows `autocrlf=true` 会把脚本签出为 CRLF。当前仓根 `.gitattributes`
+已强制 `.sh/.py/.mjs` 为 LF，重新 clone 或重新签出即可，不要再用 sed 手工剥 `\r`。
+
+**Q：MinIO 返回 `SignatureDoesNotMatch`，或 API 前缀变成 `C:/Program Files/Git/...`？**
+A：两者分别来自 jq.exe 的 CRLF 输出与 MSYS argv 路径转换。新版发布器使用原生 JSON 与 Node multipart，
+不再经过 jq/curl/argv；保留服务端下发的 PostPolicy 字段和 host，不要自行改写。
+
+**Q：经 MCP 发布命中 WSL bash，或 Docker Desktop 推不了 `localhost:32000`？**
+A：先在本机直接运行 `publish.cmd`/`publish.sh`，避开 dev-mcp 的 bash 选择问题。镜像推送使用
+`PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`，走 buildx `--load` + docker save + SSH 到
+aiearth01 后 load/push，不在 Docker Desktop VM 内解析集群 localhost。
+
+**Q：拉取 arm64 基础镜像元数据经 hubproxy 失败？**
+A：aiearth01 为 x86_64，骨架已默认 `PLATFORMS=linux/amd64`；不要为该环境强制多平台构建。
+SSH 搬运模式的 `--load` 也只接受单平台。

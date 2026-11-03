@@ -27,7 +27,7 @@
 | `extensions/` | **你的扩展包工作区**（`extensions/<track>/<tier>/<id>/`，与平台仓布局同构）+ 提测规范（`extensions/README.md`）+ 官方演示包 | 你的团队 |
 | `packages/` | `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk / icon-kit / layer-factory / ts-config，平台仓 `packages/` 同步下发，**勿改**），规则见 `packages/README.md` | 平台同步 |
 | `tools/create-extension.sh` | 本地脚手架：`./tools/create-extension.sh <id> --track tool\|system --tier platform\|business [--with-backend] [--with-admin-ui]`，生成到 `extensions/<track>/<tier>/<id>/` | 本仓自有 |
-| `tools/publish.sh` | 一键发布（**仅测试底座**）：构建 → MinIO SigV4 直传 → resource-manager 注册；含「目录==track/tier」闸口；`--dev-url` HMR 调试回路；prod 一律拒绝 | 本仓自有 |
+| `tools/publish.mjs` | Node 发布唯一实现（**仅测试底座**）：构建 → DC release-prepare → MinIO PostPolicy 直传 → release-complete；`tools/publish.sh`/`publish.cmd` 仅为跨平台薄 shim；含目录闸口、HMR、SOCKS5，prod 一律拒绝 | 本仓自有 |
 | `tools/menujson.py` | menu.json 生成/转换/校验工具（平台仓 `scripts/build/menujson.py` 同步副本） | 平台同步 |
 | `tools/check-extension-versions.sh` | 包版本与文档一致性校验（extensions/ 发现制） | 本仓自有 |
 | `tools/md-to-html.py` | 公共文档工具（README/CHANGELOG/DESIGN/REPORT 一键转 HTML 评审件） | 本仓自有 |
@@ -54,6 +54,22 @@ npm run check                                 # 骨架自检：全部骨架 + �
 ./tools/create-extension.sh my-tool --track tool --tier business \
     --name 我的工具 --with-backend --with-admin-ui   # 建第一个包（extensions/tool/business/my-tool/）
 ```
+
+发布使用同一个 Node 实现，不依赖 Git Bash/jq/curl：
+
+```bash
+# macOS / Ubuntu
+./tools/publish.sh extensions/tool/business/my-tool
+
+# Windows CMD / PowerShell
+# tools\publish.cmd extensions/tool/business/my-tool
+
+# 网络隔离时：先另开终端 ssh -N -D 127.0.0.1:51080 aiearth01
+export AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080
+```
+
+自构后端镜像默认 `PLATFORMS=linux/amd64`，在 `container/<svc>/` 执行
+`PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`，经 SSH 在 aiearth01 完成 load/push。
 
 详细流程见 `docs/L3-QuickStart-30分钟跑通.md`；测试底座发布见 `test-env/README.md` + `docs/L8-提测与发布.md`。
 

@@ -17,8 +17,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.2.2
+// 版本：1.2.3
 // 修改记录：
+//   - 1.2.3 (2026-11-04) Windows 开浏览器改 rundll32/直连 Chrome；HMR 指南改 watch + vite preview + 实际 ESM URL
 //   - 1.2.2 (2026-11-03) 模板仓 precheck/publish 直走 publish.mjs（process.execPath），不再经 bash/python
 //   - 1.2.1 (2026-11-02) 支持 AGRSEARTH_SOCKS_PROXY（SSH 动态转发），Node fetch 与
 //     独立 Chrome 登录页共用 SOCKS5；不改系统代理，不回显代理凭据
@@ -977,18 +978,21 @@ server.registerTool("task_retry", {
 // ===== 18. hmr_get_guide：HMR 联调指引 =====
 
 server.registerTool("hmr_get_guide", {
-  description: "HMR 热更新调试回路指引：给出本包 --dev-url 回路的准确命令（改写已发布版本 manifest 指向本机 dev server）与排障清单。",
+  description: "HMR 热更新调试回路指引：watch 构建 + vite preview 伺服 dist + --dev-url 指向实际 ESM 产物，含恢复与排障命令。",
   inputSchema: {
     pkgDir: pkgDirField,
-    port: z.number().int().min(1024).max(65535).default(5173).describe("本机 vite dev server 端口，默认 5173"),
+    port: z.number().int().min(1024).max(65535).default(5173).describe("本机 vite preview 静态服务端口，默认 5173"),
   },
 }, async ({ pkgDir, port }) => {
   assertPkgDir(pkgDir);
   let pkgId = path.basename(pkgDir);
+  let esmFile = "tool.es.js";
   try {
     const manifest = JSON.parse(await fs.readFile(path.join(ROOT, pkgDir, "manifest.json"), "utf8"));
     if (manifest.id) pkgId = manifest.id;
-  } catch { /* manifest 缺失时用目录名 */ }
+    const currentUrl = manifest.entries?.esm?.url;
+    if (currentUrl) esmFile = path.basename(new URL(currentUrl).pathname) || esmFile;
+  } catch { /* manifest 缺失时沿用骨架默认产物名 */ }
   const publishCmd = MODE === "template"
     ? `./tools/publish.sh ${pkgDir}`
     : `./scripts/publish-extension.sh ${pkgDir} --env test`;
@@ -1003,26 +1007,51 @@ docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节�
   }
   return ok(`HMR 调试回路（包：${pkgId}）
 
-① 起本机 dev server：
-   cd ${pkgDir}/frontend && npm run dev -- --port ${port} --host
+① 终端 A：持续构建（骨架 dev = vite build --watch，不接 --port/--host）：
+   cd ${pkgDir}/frontend && npm run dev
 
-② 把共享调试环境上该包的 manifest 指向本机产物：
-   ${publishCmd} --dev-url http://<本机IP>:${port}/
+② 终端 B：用 vite preview 伺服最新 dist：
+   cd ${pkgDir}/frontend && npx vite preview --outDir dist --host 0.0.0.0 --port ${port} --strictPort
+
+③ 把共享调试环境上该包的 manifest 指向本机实际 ESM 产物：
+   ${publishCmd} --dev-url http://<本机IP>:${port}/${esmFile}
 
    说明：--dev-url 会改写 MinIO 上该包当前版本 manifest.json 的 entries.esm.url
-   为本机地址并重传；宿主（球端 18880）再拉 manifest 即加载本机 HMR 产物。
+   为本机产物地址并重传；宿主（球端 18880）再拉 manifest 即加载本机 HMR 产物。
 
-③ 调完恢复线上形态（必须做，否则共享环境一直指向你的机器）：
+④ 调完恢复线上形态（必须做，否则共享环境一直指向你的机器）：
    ${publishCmd} --dev-url --reset
 
 排障清单：
 - 宿主没加载本机产物 → 强刷球端页面（manifest 有缓存）；确认本机IP在公司网可达
-- dev server 跨域报错 → vite 配置需走 @agrsearth/vite-config（已内置 cors/headers）
+- preview 跨域报错 → vite 配置需走 @agrsearth/vite-config（已内置 cors/headers）
 - 球端样式丢失 → 宿主 Tailwind 产物需含本包工具类（平台侧闸口，向平台方反馈）
-- 忘记 reset → 其他团队看到 404 加载失败；收工前务必执行 ③`);
+- 忘记 reset → 其他团队看到 404 加载失败；收工前务必执行 ④`);
 });
 
 // ===== 19. auth_login：原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳） =====
+
+export function browserLaunchCommand(url, platform = process.platform) {
+  if (platform === "darwin") return ["open", [url]];
+  if (platform === "win32") return ["rundll32.exe", ["url.dll,FileProtocolHandler", url]];
+  return ["xdg-open", [url]];
+}
+
+async function windowsChromeExecutable() {
+  const candidates = [
+    process.env.CHROME_BIN,
+    process.env.PROGRAMFILES && path.join(process.env.PROGRAMFILES, "Google", "Chrome", "Application", "chrome.exe"),
+    process.env["ProgramFiles(x86)"] && path.join(process.env["ProgramFiles(x86)"], "Google", "Chrome", "Application", "chrome.exe"),
+    process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe"),
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch { /* 继续探测下一安装位置 */ }
+  }
+  throw new Error("未找到 Chrome，请设置 CHROME_BIN 或手动打开授权链接");
+}
 
 async function openSystemBrowser(url) {
   let cmd;
@@ -1037,14 +1066,20 @@ async function openSystemBrowser(url) {
       "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1",
       url,
     ];
-    [cmd, args] = process.platform === "darwin"
-      ? ["open", ["-na", "Google Chrome", "--args", ...chromeArgs]]
-      : process.platform === "win32" ? ["cmd", ["/c", "start", "", "chrome", ...chromeArgs]]
+    if (process.platform === "win32") {
+      try {
+        cmd = await windowsChromeExecutable();
+        args = chromeArgs;
+      } catch (e) {
+        return `${e.message}`;
+      }
+    } else {
+      [cmd, args] = process.platform === "darwin"
+        ? ["open", ["-na", "Google Chrome", "--args", ...chromeArgs]]
         : ["google-chrome", chromeArgs];
+    }
   } else {
-    [cmd, args] = process.platform === "darwin" ? ["open", [url]]
-      : process.platform === "win32" ? ["cmd", ["/c", "start", "", url]]
-        : ["xdg-open", [url]];
+    [cmd, args] = browserLaunchCommand(url);
   }
   return new Promise((resolve) => {
     try {

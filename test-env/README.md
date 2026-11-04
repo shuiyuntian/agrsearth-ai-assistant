@@ -85,14 +85,15 @@ networkProfile 按 `DC_API_BASE` 网关 IP 自动推导（`100.64.*` → tailsca
 正常发布后要改前端？不必每次全量发布——把球端 `entries.esm.url` 指到本机：
 
 ```bash
-# 1. 前端 watch 构建（产物持续输出到 dist/）
+# 1. 终端 A：前端 watch 构建（骨架 dev = vite build --watch，不接 --port/--host）
 cd extensions/<track>/<tier>/<pkg-id>/frontend && npm run dev
 
-# 2. 另一个终端：静态服务 dist/（本机 IP 需测试底座球端可直达）
-cd extensions/<track>/<tier>/<pkg-id>/frontend/dist && python3 -m http.server 5173
+# 2. 终端 B：vite preview 伺服最新 dist（本机 IP 需让球端可达）
+cd extensions/<track>/<tier>/<pkg-id>/frontend
+npx vite preview --outDir dist --host 0.0.0.0 --port 5173 --strictPort
 
-# 3. 把已发布版本的 manifest entries 指向本机（宿主再拉 manifest 即加载本机产物）
-./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --dev-url http://<本机IP>:5173
+# 3. manifest 指向本机实际 ESM 产物（不是 preview 根路径）
+./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --dev-url http://<本机IP>:5173/tool.es.js
 
 # 4. 球端 18880 强制刷新 → 面板加载本机产物，改代码即生效（watch 自动重编）
 

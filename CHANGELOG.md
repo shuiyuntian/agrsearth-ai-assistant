@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- dev-mcp 1.2.3（2026-11-04）：Windows 授权链接改由 `rundll32` 原样打开，避免 `cmd start`
+  截断 `&`；SOCKS5 Chrome 直接启动解析后的 chrome.exe。HMR 指南修正为 watch 构建 +
+  `vite preview` 伺服 dist，`--dev-url` 指向实际 `tool.es.js` 而非 preview 根路径。
 - 跨平台发布链修复（2026-11-03）：新增 `tools/publish.mjs` 作为唯一发布实现，bash/jq/curl
   协议层退役；`.sh/.cmd` 仅保留薄 shim。新增 `.gitattributes` 固定脚本 LF，支持 SOCKS5、
   请求 golden master 对拍与失败中止回归测试；后端骨架补服务级 actuator 探针、Hikari schema、

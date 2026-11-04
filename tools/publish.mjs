@@ -3,8 +3,9 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.1.0
+// 版本：2.1.1
 // 修改记录：
+//   - 2.1.1 (2026-11-04) dev-url 输出补 vite preview 静态伺服指引
 //   - 2.1.0 (2026-11-03) 新增 check-only、data/sql 幂等布设入参与部署前 registry 预检
 //   - 2.0.0 (2026-11-03) Node 单实现替代 bash/jq/curl 发布层，支持 SOCKS5 与请求对拍
 //
@@ -855,7 +856,9 @@ async function devUrl(context, args, dispatcher, trace, logger) {
   else logger.log(`  改写完成：${data.previousUrl || "∅"} → ${data.esmUrl ?? ""}`);
   if (data.objectKey) logger.log(`  manifest 对象：${data.objectKey}`);
   if (!args.devReset) {
-    logger.log(`HMR 调试回路已建立：cd ${path.join(context.pluginDir, "frontend")} && npm run dev`);
+    const frontendDir = path.join(context.pluginDir, "frontend");
+    logger.log(`HMR 调试回路已建立：cd ${frontendDir} && npm run dev（watch 构建）`);
+    logger.log(`静态伺服：cd ${frontendDir} && npx vite preview --outDir dist --host 0.0.0.0 --port <端口> --strictPort`);
     logger.log(`调试完恢复：./tools/publish.sh ${context.relativeDir} --dev-url --reset`);
   }
 }

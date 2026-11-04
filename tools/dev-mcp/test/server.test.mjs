@@ -5,8 +5,9 @@
 //   initialize + tools/list 握手，断言 22 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.2.0
+// 版本：1.2.1
 // 修改记录：
+//   - 1.2.1 (2026-11-04) 覆盖 Windows rundll32 授权 URL 与 HMR watch/preview 指南
 //   - 1.2.0 (2026-11-02) 新增 SOCKS5 地址解析、认证可选和默认直连断言
 //   - 1.1.0 (2026-11-02) 新增完整登录/DC URL、clientId 与自定义回跳端口段覆盖断言
 //   - 1.0.0 (2026-10-24) 初始创建（绿地 21 工具冒烟 + auth 纯函数/令牌存储单测）
@@ -48,6 +49,7 @@ process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 const {
   computeS256Challenge, generatePkcePair, randomLoopbackPort,
   saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG, parseSocksProxy,
+  browserLaunchCommand,
 } = await import(SERVER);
 
 process.on("exit", () => { fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {}); });
@@ -87,6 +89,22 @@ test("SOCKS5 代理地址解析支持主机、端口和可选认证", () => {
   });
   assert.throws(() => parseSocksProxy("http://127.0.0.1:1080"), /仅支持 socks5/);
   assert.equal(DEV_MCP_CONFIG.socksProxyEnabled, false, "未配置代理时保持直连");
+});
+
+test("Windows 授权 URL 经 rundll32 原样传递，不经 cmd start", async () => {
+  const url = "https://casdoor.example/login/oauth/authorize?client_id=dev-cli&code_challenge=abc&state=xyz";
+  assert.deepEqual(browserLaunchCommand(url, "win32"), [
+    "rundll32.exe", ["url.dll,FileProtocolHandler", url],
+  ]);
+  const source = await fs.readFile(SERVER, "utf8");
+  assert.ok(!source.includes('["cmd", ["/c", "start"'));
+});
+
+test("HMR 指南使用 watch + vite preview 并指向实际 ESM 文件", async () => {
+  const source = await fs.readFile(SERVER, "utf8");
+  assert.ok(source.includes("npx vite preview --outDir dist --host 0.0.0.0 --port ${port} --strictPort"));
+  assert.ok(source.includes("--dev-url http://<本机IP>:${port}/${esmFile}"));
+  assert.ok(!source.includes("npm run dev -- --port"));
 });
 
 test("模板仓 precheck/publish 直接走 Node，不经 bash/python", async () => {

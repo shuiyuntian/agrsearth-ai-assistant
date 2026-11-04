@@ -72,7 +72,7 @@ npm run test:publish           # Node 发布协议 + golden master 回归
 ./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验
 ./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>
-./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/  # HMR 调试回路
+./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/tool.es.js  # HMR：watch + vite preview
 ```
 
 ## 验收 Checklist（提测前逐条过）

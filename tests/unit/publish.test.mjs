@@ -2,8 +2,9 @@
 // 文件作用：Node 发布器协议、产物、失败中止与本地闸口回归测试
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：1.0.0
+// 版本：1.1.0
 // 修改记录：
+//   - 1.1.0 (2026-11-05) 后端用例补 API 常量表与示例控制器，覆盖发布前 URL 契约闸口
 //   - 1.0.0 (2026-11-03) 初始创建
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
@@ -119,6 +120,14 @@ function makePackage(t, options = {}) {
     fs.writeFileSync(path.join(dir, "container", serviceId, "VERSION"), "0.2.0\n", "utf8");
     fs.mkdirSync(path.join(dir, "deploy", "k8s"), { recursive: true });
     fs.writeFileSync(path.join(dir, "deploy", "k8s", "10-server.yaml"), `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: ${serviceId}\nspec:\n  template:\n    spec:\n      containers:\n        - image: localhost:32000/gis-platform/tool/business/${id}/${serviceId}:0.2.0\n`, "utf8");
+    const api = `const SVC = '/${serviceId}'\nexport const API = {\n  exampleList: \`\${SVC}/example/list\`\n}\n`;
+    for (const sourceRoot of ["frontend", "admin-ui"]) {
+      fs.mkdirSync(path.join(dir, sourceRoot, "src", "api"), { recursive: true });
+      fs.writeFileSync(path.join(dir, sourceRoot, "src", "api", "index.ts"), api, "utf8");
+    }
+    const controller = path.join(dir, "backend", serviceId, "src/main/java/demo/SampleController.java");
+    fs.mkdirSync(path.dirname(controller), { recursive: true });
+    fs.writeFileSync(controller, '@RequestMapping("/example")\nclass SampleController {\n  @GetMapping("/list")\n  public Object list() { return null; }\n}\n', "utf8");
   }
   if (options.bundle) {
     fs.mkdirSync(path.join(dir, "deploy", "k8s"), { recursive: true });

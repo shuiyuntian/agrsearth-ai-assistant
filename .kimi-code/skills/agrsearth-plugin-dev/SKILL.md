@@ -20,6 +20,7 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 3. **宿主依赖 external**：`vue/vue-router/pinia/element-plus/@element-plus/icons-vue/cesium/echarts`（及 `opencc-js`、`@/utils/request`）一律不打进产物——构建必须经 `@agrsearth/vite-config` / `@agrsearth/vite-config/admin`。
 4. **管理页红线（ADR-007）**：不自建 `createApp`；不用 `import.meta.env`（用 `@agrsearth/admin-sdk` 的 `getBaseApi()`）；不 import 宿主内部组件/store。
 5. **显式声明零推断**：manifest `track`/`tier` 必填（tool|system / platform|business；`delivery` 仅 tool·business 象限用，旧 `class` 字段已全退役勿再填）；`components` 段（frontend/backend[]/adminUi/menu{enabled,menuPath}/data）与包内实际结构一致；禁止 latest 镜像 tag；时区 `TZ=Asia/Shanghai` 一票否决。
+6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自 `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落 `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前执行双向对账。
 
 ## 任务 Recipe 索引（每条带验收 checklist，详见 docs/L5-开发Recipes.md）
 
@@ -35,7 +36,8 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 
 ## 每步验收（通用 checklist）
 
-- [ ] `npm run check` 通过（全部 workspace 骨架可构建）
+- [ ] `npm run check` 通过（URL 契约单测 + 全部 workspace 骨架可构建）
+- [ ] `node tools/check-api-contract.mjs <包目录>` 双向对账通过；业务代码无本包服务 URL 字面量
 - [ ] 产物仅 external import vue 等宿主依赖（grep dist 首行）
 - [ ] 源码 grep：无 `viewer.entities.add`、无 `createApp`、无 `import.meta.env`、无 latest tag
 - [ ] components 段与目录结构一致；版本五处一致；注释头合规（docs/L7.4）

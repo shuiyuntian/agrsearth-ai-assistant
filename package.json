@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
-    "check": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
+    "check:api-contract": "node --test tests/unit/api-contract.test.mjs",
+    "check": "npm run check:api-contract && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "test:publish": "node --test tests/unit/publish.test.mjs tests/unit/publish-golden.test.mjs",
     "docs:html": "mkdir -p docs/html && for f in docs/L*.md; do python3 tools/md-to-html.py \"$f\" \"docs/html/$(basename \"$f\" .md).html\"; done"
   },

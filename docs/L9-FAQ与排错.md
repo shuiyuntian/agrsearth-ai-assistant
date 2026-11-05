@@ -14,6 +14,11 @@ A：确认 `import type { CapabilityManifest } from '@agrsearth/sdk-types'` 为 
 A：九成是宿主依赖被打进产物。查 `vite.config.ts` 是否经 `@agrsearth/vite-config` 引入 external；
 若引入了 ui-utils（opencc-js），记得把 `opencc-js` 加入 extraExternals（骨架默认不含）。
 
+**Q：球端与管理页的 CSS 产物都叫 `style.css`，发布时互相覆盖？**
+A：Vite 5 的默认 CSS 文件名是 `style.css`。在各端 `vite.config.ts` 的
+`rollupOptions.output.assetFileNames` 中按端改成包内唯一文件名（如 `tool.css` / `admin.css`），
+不要依赖平铺上传时的后传覆盖先传。
+
 ## 9.2 球端运行期
 
 **Q：工具栏没有我的插件图标？**
@@ -68,7 +73,16 @@ A：告警不阻断——确认 `data/menu.json` 已随包发布并经 menu-prov
 **Q：部署后接口 404？**
 A：先确认发布响应含 `gatewayRoutes` 且网关已加载 `ruoyi-gateway-dynamic-<profile>.yml`；标准 apiPrefix 由 DC 自动注册。仍 404 时查动态配置与 Nacos 发布日志，不要手工改静态路由表。
 
+**Q：面板报 `Request method 'GET' is not supported`，或前端路径与控制器看似只差一段？**
+A：先跑 `node tools/check-api-contract.mjs <包目录>`，按报告核对 `src/api/index.ts`、公开服务的
+`apiPrefix`、类级 `@RequestMapping` 与方法级 Mapping 的拼接全路径。不要在业务组件里临时拼 URL
+绕过；对账通过但仍 404 时再按上一条查 DC 动态网关路由。
+
 ## 9.5 后端与部署（wind-field 实战落账 2026-10-07）
+
+**Q：PostgreSQL 后端使用 PageHelper 时分页 SQL 报错？**
+A：显式配置 `pagehelper.helper-dialect: postgresql`，不要让方言自动识别落到其他数据库；
+修正后同时核对 `startPage` 紧挨查询调用，避免分页上下文污染下一条 SQL。
 
 **Q：后端启动即失败「Failed to determine a suitable driver class」？**
 A：骨架依赖 ruoyi-common-security 传递引入 mybatis/HikariCP，无库服务必须在启动类排除
@@ -111,6 +125,15 @@ A：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias 占位
 A：有些预装环境的 PATH 里 `mvn` 是包装脚本（优先找 `mvn.cmd`，找不到就回退 `docker run maven`），
 Docker 守护进程没起时即报此错。用真实 Maven 安装目录下的 `bin/mvn`（或修 PATH 顺序），
 与 k8s 无关——插件开发机本就不需要本地集群，deploy/k8s 清单由 publish 打包后服务端 apply。
+
+**Q：命令行发布需要 `AGRSEARTH_TOKEN`，已完成 dev-mcp 登录后从哪里取？**
+A：交互使用优先直接走 dev-mcp，不必手工复制令牌。CI 确需覆盖时，读取
+`~/.config/agrsearth/dev-mcp-token.json` 的 `access_token` 注入 `AGRSEARTH_TOKEN`；
+不要把文件内容或令牌贴进日志、Issue 和提测单。
+
+**Q：Windows Docker Desktop 下 buildx 找不到默认 `multiarch` builder？**
+A：先 `docker buildx ls` 核对本机 builder；使用 Docker Desktop 自带的 `desktop-linux` 时执行
+`BUILDER=desktop-linux ./build.sh`。镜像脚本的 `--builder` 参数支持该覆盖，无需改仓内脚本。
 
 **Q：Windows 发布后中文菜单变成问号或菱形乱码？**
 A：旧版 Git Bash + mingw curl 会把 argv 中的中文按 ANSI 重编码。使用新版 `tools\publish.cmd`

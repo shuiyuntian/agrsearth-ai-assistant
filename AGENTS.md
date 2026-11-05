@@ -60,13 +60,17 @@
    `delivery` 仅 tool·business 象限用；旧 `class` 字段已全退役，勿再填；`components` 段
    （frontend/backend[]/adminUi/menu{enabled,menuPath}/data）必须与包内实际结构一致；
    禁止 latest 镜像 tag；一切 k8s/docker 时区 `TZ=Asia/Shanghai`（一票否决项）。
+6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自
+   `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落
+   `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前双向对账。
 
 ## 常用命令
 
 ```bash
 npm install                    # 首次：装全部 workspace 依赖（@agrsearth/* 自动链接）
-npm run check                  # 骨架自检（全部骨架可构建即通过）
+npm run check                  # 契约单测 + 全部 workspace 骨架构建
 npm run test:publish           # Node 发布协议 + golden master 回归
+node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 URL 双向对账
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
 ./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验
@@ -74,6 +78,20 @@ npm run test:publish           # Node 发布协议 + golden master 回归
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>
 ./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/tool.es.js  # HMR：watch + vite preview
 ```
+
+## 遇到问题 → 先去哪
+
+通用 R1–R7 recipe 见 `docs/L5-开发Recipes.md`（所有 agent 可读；SKILL 仅是 Kimi Code 的触发式增强）。
+排错按下表选入口，不要先改服务器或共享配置：
+
+| 症状 | 处置入口 |
+|---|---|
+| 构建/骨架/URL 契约自检失败 | `npm run check`；`node tools/check-api-contract.mjs <包目录>`；`docs/L9-FAQ与排错.md` |
+| 球端加载失败 / 联调报错 | dev-mcp `hmr_get_guide` + docs/L9 |
+| 发布失败 | `node tools/publish.mjs <包目录> --check-only`；dev-mcp `package_precheck` / `task_get` / `task_retry` |
+| 实例异常 / 查日志 | dev-mcp `instance_list` / `instance_logs` |
+| 环境不通 | dev-mcp `environment_status` |
+| 权限不生效 | 核 `data/menu.json`、`v-hasPermi` 与 docs/L10；平台方执行权限对账 |
 
 ## 验收 Checklist（提测前逐条过）
 

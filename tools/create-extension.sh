@@ -5,8 +5,9 @@
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.0.3
+# 版本：1.1.0
 # 修改记录：
+#   - 1.1.0 (2026-11-05) 球端/管理页内置 api/index.ts；公开示例控制器与 API.exampleList 对齐
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：占位符替换与 skeleton 实际占位符全集
 #     对齐；backend 从 backend/svc-placeholder 实例化并改造 pom：relativePath 置空 +
 #     <repositories> 指向 file://${project.basedir}/../../../../maven-repo）
@@ -151,9 +152,9 @@ replace_tokens() {
 }
 
 # 后端骨架实例化（backend/svc-placeholder + container/svc-placeholder），pom 改造指向 vendored maven-repo
-# 用法：instantiate_backend_skeleton <svc-id> <svc-port>
+# 用法：instantiate_backend_skeleton <svc-id> <svc-port> [public-api]
 instantiate_backend_skeleton() {
-    local svc_id="$1" svc_port="$2"
+    local svc_id="$1" svc_port="$2" public_api="${3:-}"
     local tpl_backend="${REPO_ROOT}/backend/svc-placeholder"
     local tpl_container="${REPO_ROOT}/container/svc-placeholder"
     local backend_dir="${PKG_DIR}/backend/${svc_id}"
@@ -256,6 +257,35 @@ PYEOF
         echo "错误：pom 集成约定注释改写失败（仍残留平台仓 6 层表述）：${pom}"
         exit 1
     fi
+
+    if [ "${public_api}" = "public-api" ]; then
+        local controller="${backend_dir}/src/main/java/com/ruoyi/${java_dir}/controller/SampleController.java"
+        python3 - "${controller}" <<'PYEOF'
+import sys
+p = sys.argv[1]
+s = open(p, encoding='utf-8').read()
+replacements = [
+    ('示例信息控制器（服务自检/版本信息）', '示例列表控制器（rows/total 空样例）'),
+    ('示例信息控制器：服务自检与版本信息（联通性冒烟用，可按需删除）。', '示例列表控制器：与前端 API.exampleList 契约对齐。'),
+    ('@RequestMapping("/info")', '@RequestMapping("/example")'),
+    ('@GetMapping\n', '@GetMapping("/list")\n'),
+    ('服务信息自检端点', '示例列表端点'),
+    ('@return 服务 id、所属能力包、版本与当前时间', '@return 示例列表（rows/total）及服务元信息'),
+    ('public R<Map<String, Object>> info()', 'public R<Map<String, Object>> list()'),
+    (
+        '        Map<String, Object> data = new LinkedHashMap<>();',
+        '        Map<String, Object> data = new LinkedHashMap<>();\n'
+        '        data.put("rows", java.util.List.of());\n'
+        '        data.put("total", 0);',
+    ),
+]
+for old, new in replacements:
+    if old not in s:
+        sys.exit(f'错误：公开示例控制器对齐失败，缺少预期片段：{old}')
+    s = s.replace(old, new, 1)
+open(p, 'w', encoding='utf-8').write(s)
+PYEOF
+    fi
 }
 
 # ---------- 复制骨架 + 占位符替换 ----------
@@ -289,9 +319,10 @@ if [ "${TRACK}" = "tool" ]; then
             && mv "${PKG_DIR}/manifest.json.tmp" "${PKG_DIR}/manifest.json"
     fi
     if [ "${#BACKEND_SVCS[@]}" -gt 0 ]; then
-        instantiate_backend_skeleton "${BACKEND_SVCS[0]}" "8080"
+        instantiate_backend_skeleton "${BACKEND_SVCS[0]}" "8080" "public-api"
         mv "${PKG_DIR}/deploy/k8s/10-example-server.yaml" "${PKG_DIR}/deploy/k8s/10-${BACKEND_SVCS[0]}.yaml"
         replace_tokens "${PKG_DIR}/deploy/k8s" -e "s|example-server|${BACKEND_SVCS[0]}|g"
+        replace_tokens "${PKG_DIR}/frontend/src/api" -e "s|example-server|${BACKEND_SVCS[0]}|g"
         if [ "${WITH_ADMIN_UI}" -eq 1 ]; then
             replace_tokens "${PKG_DIR}/admin-ui" -e "s|example-server|${BACKEND_SVCS[0]}|g"
         fi
@@ -335,7 +366,11 @@ else
     SVC_INDEX=0
     for SVC_ID in "${BACKEND_SVCS[@]}"; do
         SVC_INDEX=$((SVC_INDEX + 1))
-        instantiate_backend_skeleton "${SVC_ID}" "$((8080 + SVC_INDEX - 1))"
+        if [ "${SVC_INDEX}" -eq 1 ]; then
+            instantiate_backend_skeleton "${SVC_ID}" "$((8080 + SVC_INDEX - 1))" "public-api"
+        else
+            instantiate_backend_skeleton "${SVC_ID}" "$((8080 + SVC_INDEX - 1))"
+        fi
     done
 fi
 

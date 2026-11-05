@@ -19,19 +19,21 @@
    `getCesium()` 取 **window.Cesium**——宿主 import map 无 cesium 键，
    **禁止裸 `import ... from 'cesium'`**（ESM 产物宿主运行时加载失败，且构建期缺类型）；
 4. 联动：面板↔地图走 `ctx.emit/on`；跨面板状态用模块级 reactive store；
-5. 清理：`deactivate` 判挂起态 + 清实体，`destroy` removeEventListener + close 面板。
+5. 后端请求：URL 集中在 `frontend/src/api/index.ts` 的 `API` 常量表，面板与业务模块只引用常量；
+6. 清理：`deactivate` 判挂起态 + 清实体，`destroy` removeEventListener + close 面板。
 
 **验收**：
 - [ ] 停用插件后现场整组不可见（无 viewer.entities 直加，评审 grep 源码确认）
 - [ ] 反复激活/停用 5 次无句柄泄漏、无重复面板（createPanel 前判重）
 - [ ] 窗口 resize 面板跟随且无抖动；ESM/UMD 双产物行为一致
 - [ ] UI 走查符合 L10 球端面板规范
+- [ ] `node tools/check-api-contract.mjs <包目录>` 通过，业务文件无散落服务 URL
 
 ## R3 加管理页（admin-ui + 菜单注册）
 
 1. 脚手架 `--with-admin-ui` 生成包内 `admin-ui/`（或 `cp -R skeletons/admin-ui extensions/<track>/<tier>/<pkg>/admin-ui`），改名（UMD 名 `AdminUI_<pkg>`、manifest.id）；
 2. 页面：`src/views/<view>/index.vue`（骨架 = 查询区/工具栏/表格/分页/对话框，风格见 L10-A）；
-3. API：`src/api/*.ts` 用 `@/utils/request`；类型 `import type ... from '@/types'`；
+3. API：URL 集中在 `src/api/index.ts` 的 `API` 常量表；`src/api/*.ts` 只引用常量并用 `@/utils/request` 封装请求，业务页面禁止散落 `/<serviceId>/...` 字面量；类型 `import type ... from '@/types'`；
 4. 入口：`src/index.ts` 的 `adminViews` 键 = viewPath；
 5. 菜单：`data/menu.json` 样例改 packageId/号段/权限串为本包（号段向平台方申请，批4 通道，publish 时 menu-provision 幂等落地）；
 6. manifest：`components.adminUi=true`、`components.menu={enabled:true, menuPath:<顶层 path>}`。

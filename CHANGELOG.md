@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- URL 契约治理（2026-11-05，issues #5/#6/#7）：球端/管理页骨架内置 `src/api/index.ts`；
+  新增 Node 跨平台 `tools/check-api-contract.mjs`，公开 Spring Mapping 与前端常量表双向对账并
+  接入 `npm run check`、`publish.mjs --check-only` 及正式发布；AGENTS 补症状导航，L5/L8/L9 与
+  验收清单同步，公开示例控制器与管理页示例 API 对齐。
 - dev-mcp 1.2.3（2026-11-04）：Windows 授权链接改由 `rundll32` 原样打开，避免 `cmd start`
   截断 `&`；SOCKS5 Chrome 直接启动解析后的 chrome.exe。HMR 指南修正为 watch 构建 +
   `vite preview` 伺服 dist，`--dev-url` 指向实际 `tool.es.js` 而非 preview 根路径。

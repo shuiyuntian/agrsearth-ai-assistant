@@ -22,6 +22,7 @@
 - [ ] 无 `viewer.entities.add` / `scene.primitives.add`（实体/Primitive 走 ctx）
 - [ ] 无 `createApp`、无 `import.meta.env`（admin-ui 内）
 - [ ] 无 `latest` 镜像 tag；无硬编码密钥/token/密码
+- [ ] 本包后端 URL 仅集中在 `src/api/index.ts`；`node tools/check-api-contract.mjs <包目录>` 双向对账通过（无公开后端时确认跳过原因）
 - [ ] 每个 k8s workload 显式 `TZ=Asia/Shanghai`；deploy/k8s 无 Secret/RBAC/CRD/Namespace
 
 ## 4. 文档与规范

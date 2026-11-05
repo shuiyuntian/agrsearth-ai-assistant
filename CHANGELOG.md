@@ -8,6 +8,13 @@
   新增 Node 跨平台 `tools/check-api-contract.mjs`，公开 Spring Mapping 与前端常量表双向对账并
   接入 `npm run check`、`publish.mjs --check-only` 及正式发布；AGENTS 补症状导航，L5/L8/L9 与
   验收清单同步，公开示例控制器与管理页示例 API 对齐。
+- 依赖工具链升级（2026-11-05，issue #4）：骨架与演示包升级 Vite 6.4.4+、`vue-tsc` 3.3.14、
+  `unplugin-auto-import` 20.3.0 与 `@vitejs/plugin-vue` 5.2.4；非破坏性传递依赖已更新。
+  平台源头 `@agrsearth/vite-config` 1.2.0 保留 Vite 5 兼容并支持 Vite 6；同步后 `npm audit` 为 0。
+- dev-mcp 1.3.0（2026-11-05，平台仓 issue #1）：新增第 23 工具 `package_contract_check`，
+  模板仓直接执行 Node URL 对账并透传失败；`package_precheck` 报告同步覆盖 URL 契约。
+- dev-mcp 1.2.4（2026-11-04）：修复 auth_login 超时清理把回调式 `server.close()` 当 Promise
+  使用导致的二次抛错；统一为可等待、幂等的 `closeHttpServer`。
 - dev-mcp 1.2.3（2026-11-04）：Windows 授权链接改由 `rundll32` 原样打开，避免 `cmd start`
   截断 `&`；SOCKS5 Chrome 直接启动解析后的 chrome.exe。HMR 指南修正为 watch 构建 +
   `vite preview` 伺服 dist，`--dev-url` 指向实际 `tool.es.js` 而非 preview 根路径。
@@ -15,7 +22,7 @@
   协议层退役；`.sh/.cmd` 仅保留薄 shim。新增 `.gitattributes` 固定脚本 LF，支持 SOCKS5、
   请求 golden master 对拍与失败中止回归测试；后端骨架补服务级 actuator 探针、Hikari schema、
   DC PostgreSQL 四键 Secret 引用；镜像构建默认 `linux/amd64`，新增 `PUSH_VIA=ssh` 搬运通道。
-  macOS 与 dgx01 Ubuntu 均完成 aiearth01 真实发布，中文菜单、产物冒烟和 Pod 探针验证通过。
+  macOS 与 Ubuntu 开发机均完成 aiearth01 真实发布，中文菜单、产物冒烟和 Pod 探针验证通过。
 - 平台联动（2026-11-03）：发布器新增 `--check-only`、`data/sql/*.sql` 原文+SHA-256 提交和 deploy 前
   registry HEAD 预检；dev-mcp 1.2.2 的 precheck/publish 直走 Node。平台侧新增动态网关路由、
   owner 角色菜单绑定、DB_* 自动注入与 SQL applied/skipped 幂等回执。

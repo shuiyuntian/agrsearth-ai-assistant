@@ -2,11 +2,13 @@
 // 文件作用：agrsearth-dev MCP 轻量测试（node:test，无新框架）——
 //   ① PKCE/端口段等纯函数单测（含 RFC 7636 官方测试向量）；② 令牌落盘/读取/清理
 //   （0600 权限）回环测试；③ JSON-RPC tools/list 冒烟：子进程起 server.mjs，
-//   initialize + tools/list 握手，断言 22 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
+//   initialize + tools/list 握手，断言 23 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.2.1
+// 版本：1.3.0
 // 修改记录：
+//   - 1.3.0 (2026-11-05) 覆盖第 23 工具注册、模板模式真实调用/失败透传与平台模式边界
+//   - 1.2.2 (2026-11-04) 新增 loopback HTTP 可等待/幂等关闭回归
 //   - 1.2.1 (2026-11-04) 覆盖 Windows rundll32 授权 URL 与 HMR watch/preview 指南
 //   - 1.2.0 (2026-11-02) 新增 SOCKS5 地址解析、认证可选和默认直连断言
 //   - 1.1.0 (2026-11-02) 新增完整登录/DC URL、clientId 与自定义回跳端口段覆盖断言
@@ -26,8 +28,11 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
+import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -49,7 +54,7 @@ process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 const {
   computeS256Challenge, generatePkcePair, randomLoopbackPort,
   saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG, parseSocksProxy,
-  browserLaunchCommand,
+  browserLaunchCommand, closeHttpServer,
 } = await import(SERVER);
 
 process.on("exit", () => { fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {}); });
@@ -160,6 +165,15 @@ test("randomLoopbackPort 落在自定义 51000-51010 段", () => {
   }
 });
 
+test("loopback HTTP 清理可等待且重复调用安全", async () => {
+  const server = http.createServer((req, res) => res.end("ok"));
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  assert.equal(server.listening, true);
+  await closeHttpServer(server);
+  assert.equal(server.listening, false);
+  await closeHttpServer(server);
+});
+
 // ---------- ② 令牌落盘（0600）回环 ----------
 
 test("令牌保存/读取/清理回环（文件权限 0600）", async () => {
@@ -178,7 +192,7 @@ test("令牌保存/读取/清理回环（文件权限 0600）", async () => {
 
 // ---------- ③ JSON-RPC tools/list 冒烟 ----------
 
-test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30000 }, async () => {
+test("JSON-RPC tools/list：23 个统一命名工具全部注册", { timeout: 30000 }, async () => {
   const child = spawn(process.execPath, [SERVER], {
     env: { ...process.env, AGRSEARTH_TOKEN_FILE: process.env.AGRSEARTH_TOKEN_FILE },
     stdio: ["pipe", "pipe", "pipe"],
@@ -217,7 +231,7 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.2.1");
+    assert.equal(init.result?.serverInfo?.version, "1.3.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});
@@ -227,10 +241,25 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
     const expected = [...TOOL_MANIFEST].sort();
     assert.deepEqual(names, expected,
       `工具清单不符：缺 ${expected.filter((n) => !names.includes(n))} / 多 ${names.filter((n) => !expected.includes(n))}`);
-    assert.equal(tools.length, 22, "必须恰好 22 个工具");
+    assert.equal(tools.length, 23, "必须恰好 23 个工具");
     for (const t of tools) {
       assert.ok(t.description && t.description.length > 10, `${t.name} 缺描述`);
       assert.ok(t.inputSchema && t.inputSchema.type === "object", `${t.name} 缺 inputSchema`);
+    }
+    const contract = tools.find((t) => t.name === "package_contract_check");
+    assert.ok(contract, "必须注册 package_contract_check");
+    assert.ok(contract.description.includes("双向 diff"), "契约工具须声明前后端双向 diff");
+    const templateMode = await fs.stat(path.join(HERE, "..", "..", "..", "tools", "publish.sh")).then(() => true, () => false);
+    const contractResult = await call(3, "tools/call", {
+      name: "package_contract_check",
+      arguments: { pkgDir: "extensions/tool/business/wind-field-demo" },
+    });
+    if (templateMode) {
+      assert.notEqual(contractResult.result?.isError, true, "模板仓官方演示包须通过真实 URL 契约对账");
+      assert.match(contractResult.result?.content?.[0]?.text ?? "", /URL 契约对账通过/);
+    } else {
+      assert.equal(contractResult.result?.isError, true, "平台仓模式须明确拒绝，不得假成功");
+      assert.match(contractResult.result?.content?.[0]?.text ?? "", /仅适用于模板仓/);
     }
     // 关键写工具必须带 reason 字段声明
     const reg = tools.find((t) => t.name === "package_register");
@@ -294,7 +323,7 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
     assert.equal(ilog.inputSchema.properties.tasks?.default, false, "instance_logs tasks 默认 false（查日志）");
     // 全工具描述不应再有【未实现】占位
     for (const t of tools) {
-      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 22 工具已落地）`);
+      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 23 工具已落地）`);
     }
     // package_publish 描述应体现 DC 发布门面四步、不再 MinIO 直传/RM 登记
     assert.ok(pub.description.includes("release-prepare"), "package_publish 描述应含 release-prepare");
@@ -306,5 +335,46 @@ test("JSON-RPC tools/list：22 个统一命名工具全部注册", { timeout: 30
     throw new Error(`${e.message}\n[server stderr]\n${stderrText}`);
   } finally {
     child.kill("SIGKILL");
+  }
+});
+
+test("package_contract_check 在模板模式执行 Node 对账并透传失败", { timeout: 30000 }, async (t) => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-template-contract-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  const script = path.join(root, "tools", "check-api-contract.mjs");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  await fs.writeFile(path.join(root, "tools", "publish.sh"), "#!/usr/bin/env sh\n", "utf8");
+  await fs.writeFile(script, 'console.log("URL 契约对账通过：mock");\n', "utf8");
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const client = new Client({ name: "node:test-template-contract", version: "1.0.0" });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: { ...process.env, AGRSEARTH_TOKEN_FILE: process.env.AGRSEARTH_TOKEN_FILE },
+    stderr: "pipe",
+  });
+  transport.stderr?.on("data", (chunk) => console.error(chunk.toString()));
+  await client.connect(transport);
+  try {
+    const passed = await client.callTool({
+      name: "package_contract_check",
+      arguments: { pkgDir: "extensions/tool/business/demo" },
+    });
+    assert.notEqual(passed.isError, true);
+    assert.match(passed.content?.[0]?.text ?? "", /URL 契约对账通过：mock/);
+
+    await fs.writeFile(script, 'console.error("错误：URL 契约对账失败：mock"); process.exitCode = 1;\n', "utf8");
+    const failed = await client.callTool({
+      name: "package_contract_check",
+      arguments: { pkgDir: "extensions/tool/business/demo" },
+    });
+    assert.equal(failed.isError, true, "对账脚本非零退出必须返回 MCP isError");
+    assert.match(failed.content?.[0]?.text ?? "", /URL 契约对账失败：mock/);
+  } finally {
+    await client.close();
   }
 });

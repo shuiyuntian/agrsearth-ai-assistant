@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // =============================================================================
 // 文件作用：AGRSEarth 插件开发 MCP server（stdio）——面向第三方插件开发团队的 AI 编码工具
-//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 22 工具：
-//   本地能力（docs_read/package_scaffold/package_precheck/package_publish/hmr_get_guide）
+//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 23 工具：
+//   本地能力（docs_read/package_scaffold/package_precheck/package_contract_check/package_publish/hmr_get_guide）
 //   + 开发者中心 DC API 能力（package_list/package_register/package_manage/team_list/
 //   team_manage/task_get/task_retry/resource_list/resource_issue/resource_rotate/
 //   resource_revoke/instance_list/instance_logs：全部对接 DC 显式门面 controller）
@@ -17,8 +17,10 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.2.3
+// 版本：1.3.0
 // 修改记录：
+//   - 1.3.0 (2026-11-05) 新增 package_contract_check（第 23 工具），接入前后端 URL 契约对账
+//   - 1.2.4 (2026-11-04) loopback 清理改 Promise 包装 server.close，修复超时 finally 二次抛错
 //   - 1.2.3 (2026-11-04) Windows 开浏览器改 rundll32/直连 Chrome；HMR 指南改 watch + vite preview + 实际 ESM URL
 //   - 1.2.2 (2026-11-03) 模板仓 precheck/publish 直走 publish.mjs（process.execPath），不再经 bash/python
 //   - 1.2.1 (2026-11-02) 支持 AGRSEARTH_SOCKS_PROXY（SSH 动态转发），Node fetch 与
@@ -410,7 +412,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.2.1",
+  version: "1.3.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -537,7 +539,7 @@ server.registerTool("package_scaffold", {
 
 server.registerTool("package_precheck", {
   description: MODE === "template"
-    ? "发布前预检：直接以 Node 执行 publish.mjs --check-only（目录/manifest/components/menu/版本与组件版本轴），零网络、零副作用；不经 bash/python。"
+    ? "发布前预检：直接以 Node 执行 publish.mjs --check-only（目录/manifest/components/menu/版本/组件版本轴/前后端 URL 契约），零网络、零副作用；不经 bash/python。"
     : "发布前预检（平台仓模式）：publish-extension.sh --check-only 全闸口（manifest/track/tier/components/menu.json/号段台账/权限对账）。零副作用。",
   inputSchema: {
     pkgDir: pkgDirField,
@@ -548,6 +550,24 @@ server.registerTool("package_precheck", {
     return fmt(await run(process.execPath, ["tools/publish.mjs", pkgDir, "--check-only"], { timeoutMs: 120000 }), 250);
   }
   return fmt(await run("bash", ["scripts/publish-extension.sh", pkgDir, "--check-only"], { timeoutMs: 300000 }), 250);
+});
+
+// ===== 3.1 package_contract_check：前后端 URL 契约对账 =====
+
+server.registerTool("package_contract_check", {
+  description: "前后端 URL 契约对账：模板仓模式以 Node 执行 tools/check-api-contract.mjs，双向 diff 前端/管理页 src/api/index.ts 与公开后端 Spring Mapping 全路径，并检查业务文件散落服务 URL；零网络、零副作用。平台仓模式不适用。",
+  inputSchema: {
+    pkgDir: pkgDirField,
+  },
+}, async ({ pkgDir }) => {
+  assertPkgDir(pkgDir);
+  if (MODE !== "template") {
+    return fail("package_contract_check 仅适用于模板仓；平台仓模式无 tools/check-api-contract.mjs，请先在模板仓执行该检查");
+  }
+  const result = await run(process.execPath, ["tools/check-api-contract.mjs", pkgDir], { timeoutMs: 120000 });
+  const output = fmt(result, 250);
+  if (result.code !== 0) output.isError = true;
+  return output;
 });
 
 // ===== 4. package_publish：发布（整工具写操作，wrapper 闸 reason） =====
@@ -1031,6 +1051,16 @@ docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节�
 
 // ===== 19. auth_login：原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳） =====
 
+export function closeHttpServer(server) {
+  return new Promise((resolve) => {
+    if (!server.listening) {
+      resolve();
+      return;
+    }
+    server.close(() => resolve());
+  });
+}
+
 export function browserLaunchCommand(url, platform = process.platform) {
   if (platform === "darwin") return ["open", [url]];
   if (platform === "win32") return ["rundll32.exe", ["url.dll,FileProtocolHandler", url]];
@@ -1200,7 +1230,7 @@ RuoYi token 有效期：${tokenData.expire_in ?? "未知"} 秒（过期后重新
 dev_base=${DEV_BASE}  client_id=${NATIVE_CLIENT_ID}
 ${browserNote ? `浏览器通道：${browserNote}` : "浏览器通道：已自动打开系统浏览器"}`.trim());
   } finally {
-    loopback.close().catch(() => {});
+    await closeHttpServer(loopback);
   }
 });
 
@@ -1254,7 +1284,7 @@ server.registerTool("auth_logout", {
 
 // ---------- 启动（被测试 import 时不连 stdio）----------
 export const TOOL_MANIFEST = [
-  "docs_read", "package_scaffold", "package_precheck", "package_publish", "package_list",
+  "docs_read", "package_scaffold", "package_precheck", "package_contract_check", "package_publish", "package_list",
   "package_register", "package_manage", "team_list", "team_manage", "resource_list",
   "resource_issue", "resource_rotate", "resource_revoke", "instance_list", "instance_logs",
   "environment_status", "task_get", "task_retry", "hmr_get_guide", "auth_login", "auth_status", "auth_logout",

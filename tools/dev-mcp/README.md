@@ -6,13 +6,14 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（22 个，v1.2.1 统一命名）
+## 工具清单（23 个，v1.3.0 新增 URL 契约对账）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
 | 契约文档 | `docs_read` | 模板仓模式读 docs/L1-L10；平台仓模式读 PLUGIN_DEVELOPMENT.md | 无 |
 | 脚手架 | `package_scaffold` | 包装 create-extension.sh 建包（track/tier/delivery/backend/admin-ui） | 本地，可逆 |
-| 预检 | `package_precheck` | 版本五处一致性 + menu.json 校验（平台仓模式走 publish --check-only 全闸口） | 无 |
+| 预检 | `package_precheck` | 版本五处一致性 + menu.json + 前后端 URL 契约校验（平台仓模式走 publish --check-only 全闸口） | 无 |
+| 预检 | `package_contract_check` | 模板仓模式以 Node 执行 `tools/check-api-contract.mjs`：API 常量表 ↔ 公开 Spring Mapping 双向 diff；平台仓模式明确不适用 | 无 |
 | 发布 | `package_publish` | **写操作**：tools/publish.sh 编排 DC 发布门面——`release-prepare` → `upload-sessions`（预签名 postUrl/formFields，POST 直传）→ `complete` → `release-complete`（不再 MinIO SigV4 自签/RM 登记；prod 硬拒绝；平台仓模式拒绝） | 有 |
 | 包 | `package_list` | DC `GET /packages`：我可见的扩展包分页（keyword/track/tier） | 无 |
 | 包 | `package_register` | **写操作**：DC `POST /packages/register` 注册包（teamId 归属 + resources.postgres/menu 资源位开关） | 有 |
@@ -168,4 +169,4 @@ cd mcps/agrsearth-dev && npm test
 
 node:test 轻量测试（无新框架）：PKCE 纯函数（含 RFC 7636 测试向量）、完整登录/DC URL
 与 clientId 覆盖、自定义 loopback 端口段、令牌落盘 0600 回环、JSON-RPC `tools/list`
-冒烟（断言 22 工具齐全 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。
+冒烟（断言 23 工具齐全 + `package_contract_check` 模板模式真实调用/失败透传与平台模式边界 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。

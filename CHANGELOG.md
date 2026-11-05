@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- 登录与 Windows 兼容（2026-11-05，issues #3/#8）：dev-mcp 1.4.0 新增
+  `auth_login_start`/`auth_login_wait` 两步登录，兼容 token 有效期字段；支持 `AGRSEARTH_BASH` 与
+  `AGRSEARTH_PYTHON` 解释器覆盖，测试改 `pathToFileURL`；L9 与菜单号段样例警示同步。
+- publish 2.2.1（2026-11-05，issue #8）：MinIO 非 2xx 输出脱敏后的 `Code/Message`，不再只有裸 403。
 - URL 契约治理（2026-11-05，issues #5/#6/#7）：球端/管理页骨架内置 `src/api/index.ts`；
   新增 Node 跨平台 `tools/check-api-contract.mjs`，公开 Spring Mapping 与前端常量表双向对账并
   接入 `npm run check`、`publish.mjs --check-only` 及正式发布；AGENTS 补症状导航，L5/L8/L9 与

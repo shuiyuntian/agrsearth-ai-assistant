@@ -3,8 +3,9 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.2.0
+// 版本：2.2.1
 // 修改记录：
+//   - 2.2.1 (2026-11-05) MinIO 非 2xx 输出脱敏后的 Code/Message，避免裸 403（issue #8）
 //   - 2.2.0 (2026-11-05) check-only 与正式发布前执行前后端 URL 契约双向对账（issue #6）
 //   - 2.1.1 (2026-11-04) dev-url 输出补 vite preview 静态伺服指引
 //   - 2.1.0 (2026-11-03) 新增 check-only、data/sql 幂等布设入参与部署前 registry 预检
@@ -75,6 +76,14 @@ function fileSha256(file) {
 
 function toPosix(relativePath) {
   return relativePath.split(path.sep).join("/");
+}
+
+export function minioErrorDetail(body) {
+  const text = String(body ?? "").trim();
+  const code = text.match(/<Code>([^<]*)<\/Code>/)?.[1];
+  const message = text.match(/<Message>([^<]*)<\/Message>/)?.[1];
+  return (code || message ? [code, message].filter(Boolean).join("：") : text)
+    .replace(/[\x00-\x1F\x7F]+/g, " ").trim().slice(0, 500);
 }
 
 function isNonEmptyDirectory(directory) {
@@ -487,9 +496,10 @@ async function uploadArtifact(context, dispatcher, trace, artifacts, file, artif
       body: form,
       ...fetchOptions(dispatcher, 300000),
     });
-    await response.text();
+    const responseBody = await response.text();
     if (response.status < 200 || response.status >= 300) {
-      fail(`MinIO 直传失败（HTTP ${response.status}）：${filename}——会话 ${uploadId} 未 complete，不会执行 release-complete`);
+      const detail = minioErrorDetail(responseBody);
+      fail(`MinIO 直传失败（HTTP ${response.status}）：${filename}——会话 ${uploadId} 未 complete，不会执行 release-complete${detail ? `\nMinIO 响应：${detail}` : ""}`);
     }
   } catch (error) {
     if (error instanceof PublishError) throw error;

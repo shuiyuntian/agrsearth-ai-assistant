@@ -2,11 +2,12 @@
 // 文件作用：agrsearth-dev MCP 轻量测试（node:test，无新框架）——
 //   ① PKCE/端口段等纯函数单测（含 RFC 7636 官方测试向量）；② 令牌落盘/读取/清理
 //   （0600 权限）回环测试；③ JSON-RPC tools/list 冒烟：子进程起 server.mjs，
-//   initialize + tools/list 握手，断言 23 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
+//   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.3.0
+// 版本：1.4.0
 // 修改记录：
+//   - 1.4.0 (2026-11-05) 覆盖两步登录完整回环、Windows ESM 导入与解释器覆盖
 //   - 1.3.0 (2026-11-05) 覆盖第 23 工具注册、模板模式真实调用/失败透传与平台模式边界
 //   - 1.2.2 (2026-11-04) 新增 loopback HTTP 可等待/幂等关闭回归
 //   - 1.2.1 (2026-11-04) 覆盖 Windows rundll32 授权 URL 与 HMR watch/preview 指南
@@ -54,8 +55,8 @@ process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 const {
   computeS256Challenge, generatePkcePair, randomLoopbackPort,
   saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG, parseSocksProxy,
-  browserLaunchCommand, closeHttpServer,
-} = await import(SERVER);
+  browserLaunchCommand, closeHttpServer, bashCommand,
+} = await import(pathToFileURL(SERVER).href);
 
 process.on("exit", () => { fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {}); });
 
@@ -103,6 +104,12 @@ test("Windows 授权 URL 经 rundll32 原样传递，不经 cmd start", async ()
   ]);
   const source = await fs.readFile(SERVER, "utf8");
   assert.ok(!source.includes('["cmd", ["/c", "start"'));
+});
+
+test("Windows bash 支持环境变量覆盖且默认不依赖 WSL", () => {
+  assert.equal(bashCommand("win32", {}), "bash.exe");
+  assert.equal(bashCommand("darwin", {}), "bash");
+  assert.equal(bashCommand("win32", { AGRSEARTH_BASH: "C:\\Git\\bin\\bash.exe" }), "C:\\Git\\bin\\bash.exe");
 });
 
 test("HMR 指南使用 watch + vite preview 并指向实际 ESM 文件", async () => {
@@ -192,7 +199,7 @@ test("令牌保存/读取/清理回环（文件权限 0600）", async () => {
 
 // ---------- ③ JSON-RPC tools/list 冒烟 ----------
 
-test("JSON-RPC tools/list：23 个统一命名工具全部注册", { timeout: 30000 }, async () => {
+test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30000 }, async () => {
   const child = spawn(process.execPath, [SERVER], {
     env: { ...process.env, AGRSEARTH_TOKEN_FILE: process.env.AGRSEARTH_TOKEN_FILE },
     stdio: ["pipe", "pipe", "pipe"],
@@ -231,7 +238,7 @@ test("JSON-RPC tools/list：23 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.3.0");
+    assert.equal(init.result?.serverInfo?.version, "1.4.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});
@@ -241,7 +248,7 @@ test("JSON-RPC tools/list：23 个统一命名工具全部注册", { timeout: 30
     const expected = [...TOOL_MANIFEST].sort();
     assert.deepEqual(names, expected,
       `工具清单不符：缺 ${expected.filter((n) => !names.includes(n))} / 多 ${names.filter((n) => !expected.includes(n))}`);
-    assert.equal(tools.length, 23, "必须恰好 23 个工具");
+    assert.equal(tools.length, 25, "必须恰好 25 个工具");
     for (const t of tools) {
       assert.ok(t.description && t.description.length > 10, `${t.name} 缺描述`);
       assert.ok(t.inputSchema && t.inputSchema.type === "object", `${t.name} 缺 inputSchema`);
@@ -323,7 +330,7 @@ test("JSON-RPC tools/list：23 个统一命名工具全部注册", { timeout: 30
     assert.equal(ilog.inputSchema.properties.tasks?.default, false, "instance_logs tasks 默认 false（查日志）");
     // 全工具描述不应再有【未实现】占位
     for (const t of tools) {
-      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 23 工具已落地）`);
+      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 25 工具已落地）`);
     }
     // package_publish 描述应体现 DC 发布门面四步、不再 MinIO 直传/RM 登记
     assert.ok(pub.description.includes("release-prepare"), "package_publish 描述应含 release-prepare");
@@ -374,6 +381,92 @@ test("package_contract_check 在模板模式执行 Node 对账并透传失败", 
     });
     assert.equal(failed.isError, true, "对账脚本非零退出必须返回 MCP isError");
     assert.match(failed.content?.[0]?.text ?? "", /URL 契约对账失败：mock/);
+  } finally {
+    await client.close();
+  }
+});
+
+test("auth_login_start/wait 完成回跳、令牌落盘与有效期兼容", { timeout: 30000 }, async (t) => {
+  let sessionBody = null;
+  const mock = http.createServer(async (req, res) => {
+    if (req.method === "GET" && req.url === "/me") {
+      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ code: 200, data: { userId: 7, username: "tester" } }));
+      return;
+    }
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
+    if (req.method === "POST" && req.url === "/session") {
+      sessionBody = body;
+      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({
+        code: 200,
+        data: { state: "state-test", authorizeUrl: "http://example.invalid/authorize", expiresIn: 600 },
+      }));
+      return;
+    }
+    if (req.method === "POST" && req.url === "/callback") {
+      assert.equal(body.code, "auth-code");
+      assert.equal(body.state, "state-test");
+      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({
+        code: 200,
+        data: { access_token: "test-token", expires_in: 7200 },
+      }));
+      return;
+    }
+    res.writeHead(404).end();
+  });
+  await new Promise((resolve) => mock.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${mock.address().port}`;
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-two-step-login-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  await fs.writeFile(path.join(root, "tools", "publish.sh"), "#!/usr/bin/env sh\n", "utf8");
+  const tokenFile = path.join(root, "token.json");
+  t.after(async () => {
+    await new Promise((resolve) => mock.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+
+  const client = new Client({ name: "node:test-two-step-login", version: "1.0.0" });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...process.env,
+      AGRSEARTH_NATIVE_SESSION_URL: `${origin}/session`,
+      AGRSEARTH_NATIVE_CALLBACK_URL: `${origin}/callback`,
+      AGRSEARTH_DC_API_BASE: origin,
+      AGRSEARTH_TOKEN_FILE: tokenFile,
+      AGRSEARTH_SOCKS_PROXY: "",
+    },
+    stderr: "pipe",
+  });
+  await client.connect(transport);
+  try {
+    const started = await client.callTool({
+      name: "auth_login_start",
+      arguments: { openBrowser: false, timeoutSeconds: 30 },
+    });
+    const text = started.content?.[0]?.text ?? "";
+    const loginId = text.match(/loginId=([0-9a-f-]{36})/)?.[1];
+    assert.ok(loginId, text);
+    assert.ok(sessionBody?.redirectUri, "start 应已创建 loopback 与服务端会话");
+    const callback = await fetch(`${sessionBody.redirectUri}?code=auth-code&state=state-test`);
+    assert.equal(callback.status, 200);
+
+    const completed = await client.callTool({
+      name: "auth_login_wait",
+      arguments: { loginId },
+    });
+    assert.notEqual(completed.isError, true, completed.content?.[0]?.text);
+    assert.match(completed.content?.[0]?.text ?? "", /userId=7 username=tester/);
+    assert.match(completed.content?.[0]?.text ?? "", /7200 秒/);
+    const saved = JSON.parse(await fs.readFile(tokenFile, "utf8"));
+    assert.equal(saved.access_token, "test-token");
+    assert.equal(saved.expire_in, 7200);
   } finally {
     await client.close();
   }

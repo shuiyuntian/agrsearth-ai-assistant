@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // =============================================================================
 // 文件作用：AGRSEarth 插件开发 MCP server（stdio）——面向第三方插件开发团队的 AI 编码工具
-//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 23 工具：
+//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 25 工具：
 //   本地能力（docs_read/package_scaffold/package_precheck/package_contract_check/package_publish/hmr_get_guide）
 //   + 开发者中心 DC API 能力（package_list/package_register/package_manage/team_list/
 //   team_manage/task_get/task_retry/resource_list/resource_issue/resource_rotate/
 //   resource_revoke/instance_list/instance_logs：全部对接 DC 显式门面 controller）
-//   + 原生授权登录三工具（auth_login/auth_status/auth_logout）。
+//   + 原生授权登录五工具（auth_login_start/auth_login_wait/auth_login/auth_status/auth_logout）。
 //   双形态同源：平台仓 mcps/agrsearth-dev/（唯一事实源）与模板仓导出产物
 //   tools/dev-mcp/（禁止直接改，问题回报平台方）。落位脚本均在仓根下两层，ROOT 同为
 //   ../..；按 tools/publish.sh 是否存在判别模板仓/平台仓。
@@ -17,8 +17,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.3.0
+// 版本：1.4.0
 // 修改记录：
+//   - 1.4.0 (2026-11-05) 新增 auth_login_start/wait 两步登录，兼容 token 有效期字段；支持 AGRSEARTH_BASH
 //   - 1.3.0 (2026-11-05) 新增 package_contract_check（第 23 工具），接入前后端 URL 契约对账
 //   - 1.2.4 (2026-11-04) loopback 清理改 Promise 包装 server.close，修复超时 finally 二次抛错
 //   - 1.2.3 (2026-11-04) Windows 开浏览器改 rundll32/直连 Chrome；HMR 指南改 watch + vite preview + 实际 ESM URL
@@ -247,6 +248,10 @@ async function listenLoopback(handler) {
 // 通用执行器（本地脚本包装；stdout 为 MCP 协议通道，子进程输出一律只进结果文本）
 // =============================================================================
 
+export function bashCommand(platform = process.platform, env = process.env) {
+  return env.AGRSEARTH_BASH || (platform === "win32" ? "bash.exe" : "bash");
+}
+
 function run(cmd, args, { input, timeoutMs = 60000, cwd = ROOT } = {}) {
   return new Promise((resolve) => {
     const child = spawn(cmd, args, { cwd, env: process.env });
@@ -412,7 +417,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.3.0",
+  version: "1.4.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -532,7 +537,7 @@ server.registerTool("package_scaffold", {
   if (delivery) args.push("--delivery", delivery);
   if (withBackend) args.push("--with-backend");
   if (withAdminUi) args.push("--with-admin-ui");
-  return fmt(await run("bash", args, { timeoutMs: 120000 }), 150);
+  return fmt(await run(bashCommand(), args, { timeoutMs: 120000 }), 150);
 });
 
 // ===== 3. package_precheck：发布前预检 =====
@@ -549,7 +554,7 @@ server.registerTool("package_precheck", {
   if (MODE === "template") {
     return fmt(await run(process.execPath, ["tools/publish.mjs", pkgDir, "--check-only"], { timeoutMs: 120000 }), 250);
   }
-  return fmt(await run("bash", ["scripts/publish-extension.sh", pkgDir, "--check-only"], { timeoutMs: 300000 }), 250);
+  return fmt(await run(bashCommand(), ["scripts/publish-extension.sh", pkgDir, "--check-only"], { timeoutMs: 300000 }), 250);
 });
 
 // ===== 3.1 package_contract_check：前后端 URL 契约对账 =====
@@ -1122,13 +1127,13 @@ async function openSystemBrowser(url) {
   });
 }
 
-server.registerTool("auth_login", {
-  description: "浏览器原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA/首登改密均在 Casdoor 页内完成，本工具不接触密码）：本地 127.0.0.1 可配置端口段（默认 49152-65535）监听回跳 → 自动开系统浏览器（可关；手动/失败时授权链接实时输出到 MCP server stderr）→ 收授权码 → 换 RuoYi JWT 落盘 ~/.config/agrsearth/dev-mcp-token.json（0600）。网关、DC API、原生 session/callback 完整 URL、clientId 和回跳端口均可经环境变量或仓根 .env.local 覆盖。支持 AGRSEARTH_SOCKS_PROXY 经 SSH 动态转发访问隔离网络。已配置 AGRSEARTH_TOKEN 时本工具可不登录。",
-  inputSchema: {
-    openBrowser: z.boolean().default(true).describe("自动打开系统浏览器；false 时输出授权链接手动打开（无桌面/远程场景）"),
-    timeoutSeconds: z.number().int().min(30).max(900).default(300).describe("等待浏览器回跳的超时（秒），上限 900（state 服务端有效期 600 秒）"),
-  },
-}, async ({ openBrowser, timeoutSeconds }) => {
+const AUTH_SESSIONS = new Map();
+const authLoginInput = {
+  openBrowser: z.boolean().default(true).describe("自动打开系统浏览器；false 时输出授权链接手动打开（无桌面/远程场景）"),
+  timeoutSeconds: z.number().int().min(30).max(900).default(300).describe("等待浏览器回跳的超时（秒），上限 900（state 服务端有效期 600 秒）"),
+};
+
+async function authLoginFlow({ openBrowser, timeoutSeconds, onReady }) {
   const { codeVerifier, codeChallenge } = generatePkcePair();
 
   // 1. 起 loopback 监听（端口须先确定：服务端校验 redirectUri 逐字符一致，含端口）
@@ -1189,6 +1194,7 @@ server.registerTool("auth_login", {
       );
       browserNote += "（授权链接已实时输出到 MCP server stderr）";
     }
+    if (onReady) onReady({ authorizeUrl, waitSeconds, browserNote });
 
     // 4. 等回跳（超时兜底）
     const code = await new Promise((resolve, reject) => {
@@ -1208,10 +1214,12 @@ server.registerTool("auth_login", {
       redirectUri,
     }), "登录回调");
 
+    const expiresIn = tokenData.expire_in ?? tokenData.expires_in ?? tokenData.expiresIn ?? null;
+
     // 6. 落盘（0600，目录 0700）；响应文本绝不出现令牌本体
     await saveTokenFile({
       access_token: tokenData.access_token,
-      expire_in: tokenData.expire_in,
+      expire_in: expiresIn,
       obtained_at: new Date().toISOString(),
       dev_base: DEV_BASE,
       client_id: NATIVE_CLIENT_ID,
@@ -1226,12 +1234,75 @@ server.registerTool("auth_login", {
 
     return ok(`✅ 登录成功${who}
 令牌来源：auth_login（已落盘 ${TOKEN_FILE}，权限 0600；目录 0700）
-RuoYi token 有效期：${tokenData.expire_in ?? "未知"} 秒（过期后重新 auth_login）
+RuoYi token 有效期：${expiresIn ?? "未知"} 秒（过期后重新 auth_login）
 dev_base=${DEV_BASE}  client_id=${NATIVE_CLIENT_ID}
 ${browserNote ? `浏览器通道：${browserNote}` : "浏览器通道：已自动打开系统浏览器"}`.trim());
   } finally {
     await closeHttpServer(loopback);
   }
+}
+
+async function createAuthSession(args) {
+  const loginId = crypto.randomUUID();
+  const record = { completion: null, completed: false, cleanupTimer: null };
+  let readyResolve;
+  let readyReject;
+  const readyPromise = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject; });
+  AUTH_SESSIONS.set(loginId, record);
+  record.completion = authLoginFlow({ ...args, onReady: readyResolve });
+  record.completion.catch((error) => readyReject(error));
+  record.completion.catch(() => {});
+  const onSettled = () => {
+    record.completed = true;
+    record.cleanupTimer = setTimeout(() => {
+      if (AUTH_SESSIONS.get(loginId) === record) AUTH_SESSIONS.delete(loginId);
+    }, 300000);
+    record.cleanupTimer.unref();
+  };
+  record.completion.then(onSettled, onSettled);
+  try {
+    const { authorizeUrl, waitSeconds, browserNote } = await readyPromise;
+    return {
+      loginId,
+      result: ok(`登录会话已创建：loginId=${loginId}\n请在 ${waitSeconds}s 内打开授权链接完成登录：\n${authorizeUrl}\n完成后调用 auth_login_wait（loginId=\"${loginId}\"）。\n${browserNote}`.trim()),
+    };
+  } catch (error) {
+    AUTH_SESSIONS.delete(loginId);
+    throw error;
+  }
+}
+
+async function waitAuthSession(loginId) {
+  const record = AUTH_SESSIONS.get(loginId);
+  if (!record) return fail("登录会话不存在或已过期，请重新调用 auth_login_start");
+  try {
+    return await record.completion;
+  } finally {
+    if (record.completed) {
+      if (record.cleanupTimer) clearTimeout(record.cleanupTimer);
+      AUTH_SESSIONS.delete(loginId);
+    }
+  }
+}
+
+server.registerTool("auth_login_start", {
+  description: "启动浏览器原生授权登录并立即返回 loginId 与完整授权链接；后台保持 loopback 回跳监听，避免 MCP 客户端工具调用超时。完成后调用 auth_login_wait。零密码接触。",
+  inputSchema: authLoginInput,
+}, async (args) => (await createAuthSession(args)).result);
+
+server.registerTool("auth_login_wait", {
+  description: "等待 auth_login_start 创建的登录会话完成：接收 loopback 授权码、PKCE 核销、令牌落盘与 DC /me 复核；会话完成后可重复等待直至清理。",
+  inputSchema: {
+    loginId: z.string().uuid().describe("auth_login_start 返回的登录会话 ID"),
+  },
+}, async ({ loginId }) => waitAuthSession(loginId));
+
+server.registerTool("auth_login", {
+  description: "兼容入口：一次性完成原生授权登录（内部等价 auth_login_start + auth_login_wait）。若 MCP 客户端有较短工具超时，请改用两步工具。OIDC 授权码 + PKCE S256 + loopback 回跳，密码/MFA 均在 Casdoor 页内完成。",
+  inputSchema: authLoginInput,
+}, async (args) => {
+  const { loginId } = await createAuthSession(args);
+  return waitAuthSession(loginId);
 });
 
 // ===== 20. auth_status：凭据状态（DC GET /me 复核） =====
@@ -1287,7 +1358,8 @@ export const TOOL_MANIFEST = [
   "docs_read", "package_scaffold", "package_precheck", "package_contract_check", "package_publish", "package_list",
   "package_register", "package_manage", "team_list", "team_manage", "resource_list",
   "resource_issue", "resource_rotate", "resource_revoke", "instance_list", "instance_logs",
-  "environment_status", "task_get", "task_retry", "hmr_get_guide", "auth_login", "auth_status", "auth_logout",
+  "environment_status", "task_get", "task_retry", "hmr_get_guide", "auth_login_start", "auth_login_wait",
+  "auth_login", "auth_status", "auth_logout",
 ];
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === HERE;

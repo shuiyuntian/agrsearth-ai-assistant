@@ -2,8 +2,9 @@
 // 文件作用：Node 发布器协议、产物、失败中止与本地闸口回归测试
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：1.1.0
+// 版本：1.1.1
 // 修改记录：
+//   - 1.1.1 (2026-11-05) 断言 MinIO 403 返回 Code/Message 且仍中止发布
 //   - 1.1.0 (2026-11-05) 后端用例补 API 常量表与示例控制器，覆盖发布前 URL 契约闸口
 //   - 1.0.0 (2026-11-03) 初始创建
 //
@@ -170,7 +171,7 @@ async function startMockPlatform(t, options = {}) {
       }
       if (req.method === "POST" && url.pathname === "/minio/upload") {
         if (options.failMinio) {
-          res.writeHead(403).end("SignatureDoesNotMatch");
+          res.writeHead(403).end("<Error><Code>SignatureDoesNotMatch</Code><Message>check your key and signing method</Message></Error>");
           return;
         }
         const request = new Request("http://localhost/minio/upload", {
@@ -290,7 +291,7 @@ test("MinIO 失败立即中止且不执行 release-complete", async (t) => {
   const platform = await startMockPlatform(t, { failMinio: true });
   await assert.rejects(
     runPublish([pkg.relative, "--skip-build"], runOptions(platform)),
-    /MinIO 直传失败/,
+    /MinIO 直传失败[\s\S]*SignatureDoesNotMatch：check your key and signing method/,
   );
   assert.equal(platform.releaseComplete, 0);
   assert.equal(platform.requests.filter((request) => request.path.endsWith("/upload-sessions")).length, 1);

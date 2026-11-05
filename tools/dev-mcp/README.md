@@ -6,7 +6,7 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（23 个，v1.3.0 新增 URL 契约对账）
+## 工具清单（25 个，v1.4.0 新增两步登录）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
@@ -29,7 +29,8 @@
 | 任务 | `task_get` | DC `GET /tasks`（分页，只读）/ `GET /tasks/{taskId}`（详情含 outbox 轨迹）；`type=PACKAGE_MIGRATION` 展示包转移迁移状态；`type=QUOTA_APPROVAL` 为配额申请审批任务（team_manage quota_request 创建） | 无 |
 | 任务 | `task_retry` | **写操作**：DC `POST /tasks/{taskId}/retry` 幂等重试（仅 PARTIAL/可恢复 ERROR 回池，只补 FAILED 步） | 有 |
 | 联调 | `hmr_get_guide` | 生成 --dev-url HMR 回路命令 + 排障清单 | 无 |
-| 认证 | `auth_login` | 浏览器原生授权登录（OIDC 授权码 + PKCE S256 + loopback 回跳），令牌落盘 `~/.config/agrsearth`（0600） | 本地凭据 |
+| 认证 | `auth_login_start` / `auth_login_wait` | 两步原生授权登录：start 立即返回 loginId + 授权链接并后台监听回跳，wait 换 token 落盘；避免 MCP 调用超时 | 本地凭据 |
+| 认证 | `auth_login` | 兼容的一次性登录入口（内部等价 start + wait）；客户端工具超时较短时改用两步 | 本地凭据 |
 | 认证 | `auth_status` | 凭据来源 + DC `GET /me` 实测复核（不回显令牌） | 无 |
 | 认证 | `auth_logout` | 删除本地落盘令牌（env/.env.local 通道只提示不代删） | 本地凭据 |
 
@@ -60,11 +61,14 @@ cd tools/dev-mcp && npm install   # 仅首次
 
 日常交互式使用**无需手动申请 token**：
 
-1. 调用 `auth_login`（默认自动打开系统浏览器；无桌面场景用 `openBrowser=false`
-   拿授权链接手动打开）；
-2. 在 Casdoor 页面完成账密 + MFA/首登改密（密码不过本工具）；
-3. 浏览器回跳 `http://127.0.0.1:<49152-65535 随机端口>/callback`，工具收授权码换
-   RuoYi JWT，落盘 `~/.config/agrsearth/dev-mcp-token.json`（文件 0600、目录 0700）。
+1. 调用 `auth_login_start`（默认自动打开系统浏览器；无桌面场景用 `openBrowser=false`），
+   取得 `loginId` 和完整授权链接；该调用立即返回，不占用 MCP 客户端等待窗口；
+2. 在 Casdoor 页面完成账密 + MFA/首登改密（密码不过本工具），浏览器回跳
+   `http://127.0.0.1:<49152-65535 随机端口>/callback`；
+3. 调用 `auth_login_wait` 等待既有会话完成，换 RuoYi JWT 并落盘
+   `~/.config/agrsearth/dev-mcp-token.json`（文件 0600、目录 0700）。
+
+`auth_login` 仍保留为一次性兼容入口（内部等价 start + wait）；MCP 客户端工具超时较短时使用两步。
 
 令牌解析优先级（高→低）：`AGRSEARTH_TOKEN` 环境变量（CI 覆盖）＞ `~/.config/agrsearth`
 落盘文件 ＞ 仓根 `.env.local`（遗留兼容）。`auth_status` 可查来源并用 DC `/me` 实测；
@@ -96,6 +100,8 @@ aiearth01；其他开发测试服务器可整体覆盖，不需要修改 `server
 | `AGRSEARTH_LOOPBACK_PORT_MAX` | `65535` | 回跳端口段终点，须大于等于起点 |
 | `AGRSEARTH_TOKEN` | 无 | CI 覆盖用 Bearer token（优先级最高；交互场景推荐 auth_login） |
 | `AGRSEARTH_TOKEN_FILE` | `~/.config/agrsearth/dev-mcp-token.json` | 令牌落盘路径（测试/多实例可覆盖） |
+| `AGRSEARTH_BASH` | Windows=`bash.exe`，其他=`bash` | 脚手架/平台仓脚本解释器覆盖，如 `C:\Git\bin\bash.exe` |
+| `AGRSEARTH_PYTHON` | `python3` | 脚手架内部 Python 解释器覆盖，如 `python.exe` 或完整路径 |
 | `AGRSEARTH_SOCKS_PROXY` / `SOCKS_PROXY` | 无 | 可选 SOCKS5 代理，如 `socks5h://127.0.0.1:51080`；用于 SSH 动态转发 |
 
 自定义服务器示例（写入模板仓根 `.env.local`，真值不入 Git）：
@@ -169,4 +175,4 @@ cd mcps/agrsearth-dev && npm test
 
 node:test 轻量测试（无新框架）：PKCE 纯函数（含 RFC 7636 测试向量）、完整登录/DC URL
 与 clientId 覆盖、自定义 loopback 端口段、令牌落盘 0600 回环、JSON-RPC `tools/list`
-冒烟（断言 23 工具齐全 + `package_contract_check` 模板模式真实调用/失败透传与平台模式边界 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。
+冒烟（断言 25 工具齐全 + `package_contract_check` 真实调用 + `auth_login_start/wait` 本机完整回环 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。

@@ -145,13 +145,22 @@ A：旧仓缺少行尾约束时，Windows `autocrlf=true` 会把脚本签出为 
 已强制 `.sh/.py/.mjs` 为 LF，重新 clone 或重新签出即可，不要再用 sed 手工剥 `\r`。
 
 **Q：MinIO 返回 `SignatureDoesNotMatch`，或 API 前缀变成 `C:/Program Files/Git/...`？**
-A：两者分别来自 jq.exe 的 CRLF 输出与 MSYS argv 路径转换。新版发布器使用原生 JSON 与 Node multipart，
-不再经过 jq/curl/argv；保留服务端下发的 PostPolicy 字段和 host，不要自行改写。
+A：新版发布器使用原生 JSON 与 Node multipart，不再经过 jq/curl/argv，可消除旧链路的 CRLF 与
+MSYS 转换问题；保留服务端下发的 PostPolicy 字段和 host，不要自行改写。publish 2.2.1 起非 2xx
+会输出 MinIO 的 `Code/Message`；若仍报签名错误，按该详情核对服务端凭据与签名配置，不要先换密钥。
 
-**Q：经 MCP 发布命中 WSL bash，或 Docker Desktop 推不了 `localhost:32000`？**
-A：先在本机直接运行 `publish.cmd`/`publish.sh`，避开 dev-mcp 的 bash 选择问题。镜像推送使用
-`PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`，走 buildx `--load` + docker save + SSH 到
-aiearth01 后 load/push，不在 Docker Desktop VM 内解析集群 localhost。
+**Q：Qoder/Windows 经 MCP 调用报 `spawn bash ENOENT` 或 `spawn python3 ENOENT`？**
+A：dev-mcp 1.4.0 起可用 `AGRSEARTH_BASH` 指向 Git Bash（如 `C:\Git\bin\bash.exe`），
+用 `AGRSEARTH_PYTHON` 指向真实 `python.exe`；后者也会传入脚手架内部 Python 调用。
+precheck/publish 本身走 Node，不需要 bash/python。
+
+**Q：MCP 客户端在浏览器登录完成前就报工具调用超时？**
+A：dev-mcp 1.4.0 起改用 `auth_login_start` 获取 loginId 和完整授权链接，完成浏览器登录后调用
+`auth_login_wait`。原 `auth_login` 仍兼容保留，但客户端工具超时较短时不要再用一次性入口。
+
+**Q：Docker Desktop 推不了 `localhost:32000`？**
+A：镜像推送使用 `PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`，走 buildx `--load` +
+docker save + SSH 到 aiearth01 后 load/push，不在 Docker Desktop VM 内解析集群 localhost。
 
 **Q：拉取 arm64 基础镜像元数据经 hubproxy 失败？**
 A：aiearth01 为 x86_64，骨架已默认 `PLATFORMS=linux/amd64`；不要为该环境强制多平台构建。

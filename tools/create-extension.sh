@@ -5,8 +5,9 @@
 #          指向 vendored maven-repo）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-06
-# 版本：1.1.0
+# 版本：1.1.1
 # 修改记录：
+#   - 1.1.1 (2026-11-05) 支持 AGRSEARTH_PYTHON 覆盖解释器，适配 Windows MCP 环境（issue #8）
 #   - 1.1.0 (2026-11-05) 球端/管理页内置 api/index.ts；公开示例控制器与 API.exampleList 对齐
 #   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链：占位符替换与 skeleton 实际占位符全集
 #     对齐；backend 从 backend/svc-placeholder 实例化并改造 pom：relativePath 置空 +
@@ -33,6 +34,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+PYTHON="${AGRSEARTH_PYTHON:-python3}"
 
 PKG_ID=""
 TRACK=""
@@ -213,7 +215,7 @@ instantiate_backend_skeleton() {
     #   ② 注入 <repositories> 指向 vendored file:// 仓（依赖解析期插值生效，供传递 com.ruoyi 构件；
     #     basedir=<pkg>/backend/<svc>，六层到仓根）
     local pom="${backend_dir}/pom.xml"
-    python3 - "${pom}" <<'PYEOF'
+    "${PYTHON}" - "${pom}" <<'PYEOF'
 import re
 import sys
 p = sys.argv[1]
@@ -260,7 +262,7 @@ PYEOF
 
     if [ "${public_api}" = "public-api" ]; then
         local controller="${backend_dir}/src/main/java/com/ruoyi/${java_dir}/controller/SampleController.java"
-        python3 - "${controller}" <<'PYEOF'
+        "${PYTHON}" - "${controller}" <<'PYEOF'
 import sys
 p = sys.argv[1]
 s = open(p, encoding='utf-8').read()

@@ -1,6 +1,6 @@
 upstream-repo: AGRSEarth (git@github.com:shuiyuntian/AGRSEarth.git)
 upstream-paths: packages/ skeletons/{backend,container}/ scripts/build/menujson.py mcps/agrsearth-dev/
-upstream-head: c5fec93a39ff5252785cfab070c78e0e654b2b42
-synced-at:   2026-11-05 19:21:00 +0800
+upstream-head: 66bdc67df0cb0e32f4727b60e0e17eb205a7f700
+synced-at:   2026-11-06 13:18:23 +0800
 synced-by:   shuiyuntian
 suite-version: 2.0.0

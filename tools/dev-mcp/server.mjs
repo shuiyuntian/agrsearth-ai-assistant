@@ -17,8 +17,19 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.4.0
+// 版本：1.5.0
 // 修改记录：
+//   - 1.5.0 (2026-11-06) ① run() 增可选 env 覆盖（与 process.env 合并后仅注入该子
+//     进程，不改本进程环境、不进任何输出与审计）；package_publish 先 resolveToken
+//     再仅向 publish.mjs 子进程注入 AGRSEARTH_TOKEN（登录落盘文件/CI 环境变量同源
+//     生效，根治「登录 token 已落盘但 publish.mjs 拿不到」），令牌绝不打印、不进审计；
+//     ② instance_logs 增 tailLines 可选参数（int 1-2000，默认 500；tasks=true 时忽略）：
+//     GET /instances/{id}/logs?tailLines=...，展示截断上限与 tailLines 对齐（不再固定
+//     只显示前 300 行），描述删除「尾部行数服务端固定」旧口径；③ package_manage 增
+//     remove action：仅限 DC 测试环境移除测试包——DC DELETE /packages/{packageId}
+//     （dcFetch base 已含 /api/v1），服务端把 MinIO 产物移入同 Bucket
+//     _trash/<packageId>/<时间-短ID>/ 回收目录后删除包登记，透传 trashPrefix/
+//     movedObjects 真实响应、不假成功；写 action 需 reason（≥4 字符），审计保留
 //   - 1.4.0 (2026-11-05) 新增 auth_login_start/wait 两步登录，兼容 token 有效期字段；支持 AGRSEARTH_BASH
 //   - 1.3.0 (2026-11-05) 新增 package_contract_check（第 23 工具），接入前后端 URL 契约对账
 //   - 1.2.4 (2026-11-04) loopback 清理改 Promise 包装 server.close，修复超时 finally 二次抛错
@@ -252,9 +263,11 @@ export function bashCommand(platform = process.platform, env = process.env) {
   return env.AGRSEARTH_BASH || (platform === "win32" ? "bash.exe" : "bash");
 }
 
-function run(cmd, args, { input, timeoutMs = 60000, cwd = ROOT } = {}) {
+function run(cmd, args, { input, timeoutMs = 60000, cwd = ROOT, env } = {}) {
   return new Promise((resolve) => {
-    const child = spawn(cmd, args, { cwd, env: process.env });
+    // env 为可选覆盖：与 process.env 合并后仅作用于该子进程（如向 publish.mjs 注入
+    // AGRSEARTH_TOKEN），不改本进程环境，也绝不进入任何输出与审计
+    const child = spawn(cmd, args, { cwd, env: env ? { ...process.env, ...env } : process.env });
     let out = "";
     let err = "";
     const timer = setTimeout(() => {
@@ -277,6 +290,7 @@ function run(cmd, args, { input, timeoutMs = 60000, cwd = ROOT } = {}) {
 }
 
 function truncate(text, maxLines = 200) {
+  if (maxLines === 0) return text;
   const lines = text.split("\n");
   if (lines.length <= maxLines) return text;
   return lines.slice(0, maxLines).join("\n") +
@@ -417,7 +431,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.4.0",
+  version: "1.5.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -578,7 +592,7 @@ server.registerTool("package_contract_check", {
 // ===== 4. package_publish：发布（整工具写操作，wrapper 闸 reason） =====
 
 server.registerTool("package_publish", {
-  description: "【写操作，需审批】发布扩展包到 aiearth01 共享开发调试环境（直接以 Node 执行 tools/publish.mjs，不经 bash：DC release-prepare → upload-sessions + MinIO PostPolicy → complete → release-complete；allowedSecretRefs 仅服务端计算）。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability。prod 一律拒绝；deploy=true 追加触发部署。",
+  description: "【写操作，需审批】发布扩展包到 aiearth01 共享开发调试环境（直接以 Node 执行 tools/publish.mjs，不经 bash：DC release-prepare → upload-sessions + MinIO PostPolicy → complete → release-complete；allowedSecretRefs 仅服务端计算）。执行前先 resolveToken（auth_login 落盘文件 / AGRSEARTH_TOKEN 环境变量同源），令牌仅以 AGRSEARTH_TOKEN 注入 publish.mjs 子进程环境——绝不打印、不进审计；未登录时明确报错并指引 auth_login。入口闸 developercenter:package:manage + 包 owner/grant + PUBLISH capability。prod 一律拒绝；deploy=true 追加触发部署。",
   inputSchema: {
     pkgDir: pkgDirField,
     skipBuild: z.boolean().default(false).describe("跳过前端构建（复用已有产物）"),
@@ -590,10 +604,19 @@ server.registerTool("package_publish", {
     return fail("平台仓模式下请使用 agrsearth-ops 的 publish_extension 工具；package_publish 面向模板仓（第三方团队）");
   }
   assertPkgDir(pkgDir);
+  let resolved;
+  try {
+    resolved = await resolveToken();
+  } catch (e) {
+    return fail(e.message);
+  }
   const args = ["tools/publish.mjs", pkgDir];
   if (skipBuild) args.push("--skip-build");
   if (deploy) args.push("--deploy");
-  return fmt(await run(process.execPath, args, { timeoutMs: 1800000 }), 400);
+  return fmt(await run(process.execPath, args, {
+    timeoutMs: 1800000,
+    env: { AGRSEARTH_TOKEN: resolved.token },
+  }), 400);
 });
 
 // ===== 5. package_list：我可见的扩展包（DC GET /packages） =====
@@ -642,9 +665,9 @@ server.registerTool("package_register", {
 // ===== 7. package_manage：包委托（grants）+ 生命周期（archive/transfer；写 action 需 reason） =====
 
 server.registerTool("package_manage", {
-  description: "扩展包管理与委托：list-grants 查委托列表（GET /packages/{packageId}/grants）；create-grant 创建委托（POST，subjectType=TEAM/USER，role=TEAM_MAINTAINER/DEVELOPER/VIEWER，capabilities∈PUBLISH/PROVISION）；revoke-grant 删除委托（DELETE /grants/{grantId}）；archive 归档包（POST /packages/{packageId}/archive；TEAM_OWNER/TEAM_MAINTAINER；停止后续写操作、资源账号 NOLOGIN 数据保留、幂等）；transfer 转移归属（POST /packages/{packageId}/transfer，body {targetTeamId}；校验目标团队、菜单段保持不变；无 PG 数据直接过户，有 PG 数据建 PACKAGE_MIGRATION 显式任务并返回 migrationTaskId——用 task_get(taskId) 跟踪停写→导出→恢复→校验→切换）。写 action（create-grant/revoke-grant/archive/transfer）需 reason。",
+  description: "扩展包管理与委托：list-grants 查委托列表（GET /packages/{packageId}/grants）；create-grant 创建委托（POST，subjectType=TEAM/USER，role=TEAM_MAINTAINER/DEVELOPER/VIEWER，capabilities∈PUBLISH/PROVISION）；revoke-grant 删除委托（DELETE /grants/{grantId}）；archive 归档包（POST /packages/{packageId}/archive；TEAM_OWNER/TEAM_MAINTAINER；停止后续写操作、资源账号 NOLOGIN 数据保留、幂等）；transfer 转移归属（POST /packages/{packageId}/transfer，body {targetTeamId}；校验目标团队、菜单段保持不变；无 PG 数据直接过户，有 PG 数据建 PACKAGE_MIGRATION 显式任务并返回 migrationTaskId——用 task_get(taskId) 跟踪停写→导出→恢复→校验→切换）；remove 移除测试包（仅限 DC 测试环境：DELETE /packages/{packageId}；服务端将 MinIO 产物移至同 Bucket `_trash/<packageId>/<时间-短ID>/` 回收目录后删除包登记，审计保留；透传 trashPrefix/movedObjects 真实结果，不假成功）。写 action（create-grant/revoke-grant/archive/transfer/remove）需 reason。",
   inputSchema: {
-    action: z.enum(["list-grants", "create-grant", "revoke-grant", "archive", "transfer"]).describe("动作"),
+    action: z.enum(["list-grants", "create-grant", "revoke-grant", "archive", "transfer", "remove"]).describe("动作"),
     packageId: z.string().describe("包 ID"),
     subjectType: z.enum(["TEAM", "USER"]).optional().describe("create-grant：委托对象类型"),
     subjectId: z.number().int().positive().optional().describe("create-grant：委托对象 ID（团队 ID 或用户 ID）"),
@@ -678,6 +701,12 @@ server.registerTool("package_manage", {
   if (action === "archive") {
     return dcCall(async () => dcResult(
       await dcFetch(`/packages/${packageId}/archive`, { method: "POST" }), 150));
+  }
+  if (action === "remove") {
+    // 仅限 DC 测试环境：服务端把 MinIO 产物移入 _trash/<packageId>/<时间-短ID>/ 后删登记；
+    // 透传 trashPrefix/movedObjects 真实响应，不假成功
+    return dcCall(async () => dcResult(
+      await dcFetch(`/packages/${packageId}`, { method: "DELETE" }), 150));
   }
   if (action === "transfer") {
     if (!args.targetTeamId) return fail("transfer 需要 targetTeamId");
@@ -919,7 +948,8 @@ server.registerTool("resource_revoke", {
 
 // ===== 14-15. instance_*：运行运维门面（DC RuntimeOpsController，P2 已实现） =====
 // GET /instances?packageId=&status=（packageId 必填；读授权未过一律 404，不暴露存在性）
-// GET /instances/{id}/logs（服务端 LogMasker 逐行脱敏：只掩值不掩键；尾部行数服务端固定）
+// GET /instances/{id}/logs?tailLines=N（服务端 LogMasker 逐行脱敏：只掩值不掩键；
+// 尾部行数由 tailLines 查询参数控制：1-2000，默认 500）
 // GET /instances/{id}/tasks（实例运维任务，per-instance；与发放任务 /tasks 相互独立）
 
 const INSTANCE_ID_RE = /^(?!.*\.\.)[\w.-]+$/;
@@ -940,16 +970,22 @@ server.registerTool("instance_list", {
 });
 
 server.registerTool("instance_logs", {
-  description: "查实例日志或实例运维任务（DC 门面）：tasks=false → GET /instances/{id}/logs（instanceId→packageId 反查授权，未授权 404；日志服务端已逐行脱敏只掩值不掩键，尾部行数服务端固定）；tasks=true → GET /instances/{id}/tasks（per-instance 运维任务，与发放任务 /tasks 不同源）。输出按行数截断仅为展示裁剪，不改内容。",
+  description: "查实例日志或实例运维任务（DC 门面）：tasks=false → GET /instances/{id}/logs?tailLines=N（instanceId→packageId 反查授权，未授权 404；日志服务端已逐行脱敏只掩值不掩键；tailLines 控制返回尾部行数 1-2000、默认 500，MCP 不再二次截断 JSON）；tasks=true → GET /instances/{id}/tasks（per-instance 运维任务，与发放任务 /tasks 不同源，tailLines 忽略）。",
   inputSchema: {
     instanceId: z.string().describe("实例 ID（instance_list 返回）"),
     tasks: z.boolean().default(false).describe("true 查实例运维任务（/instances/{id}/tasks）；false 查日志"),
+    tailLines: z.number().int().min(1).max(2000).default(500)
+      .describe("日志尾部行数（1-2000，默认 500；仅 tasks=false 生效，tasks=true 时忽略）"),
   },
-}, async ({ instanceId, tasks }) => {
+}, async ({ instanceId, tasks, tailLines }) => {
   if (!INSTANCE_ID_RE.test(instanceId)) return fail("instanceId 含非法字符（仅允许字母/数字/中划线/点，禁 ..）");
-  return dcCall(async () => dcResult(
-    await dcFetch(tasks ? `/instances/${instanceId}/tasks` : `/instances/${instanceId}/logs`),
-    tasks ? 150 : 300));
+  return dcCall(async () => {
+    if (tasks) {
+      return dcResult(await dcFetch(`/instances/${instanceId}/tasks`), 150);
+    }
+    const qs = new URLSearchParams({ tailLines: String(tailLines) });
+    return dcResult(await dcFetch(`/instances/${instanceId}/logs?${qs}`), 0);
+  });
 });
 
 // ===== 16. environment_status：授权包级只读巡检（DC GET /environment/status） =====

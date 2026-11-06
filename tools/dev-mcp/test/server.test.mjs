@@ -5,8 +5,17 @@
 //   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.4.0
+// 版本：1.5.0
 // 修改记录：
+//   - (2026-11-06) 1.5.0 覆盖：run() env 可选覆盖 + package_publish 先 resolveToken 后
+//     仅向 publish.mjs 子进程注入 AGRSEARTH_TOKEN（本地 mock publish.mjs 只输出是否
+//     匹配期待值，绝不输出令牌本体；落盘文件/环境变量两通道各验一次；令牌不进输出
+//     与审计文件）；instance_logs tailLines（1-2000 默认 500，tasks=true 忽略）经本地
+//     mock DC 验证 query 透传；tools/list 断言 tailLines schema 与描述新口径、
+//     serverInfo.version=1.5.0
+//   - (2026-11-06) package_manage remove 覆盖：action 枚举/描述断言（仅限 DC 测试环境、
+//     _trash/<packageId>/<时间-短ID>/ 回收目录、审计保留）+ 本地 mock DC 真实 HTTP
+//     DELETE /packages/{packageId} 透传 trashPrefix/movedObjects；reason 闸口零请求拦截
 //   - 1.4.0 (2026-11-05) 覆盖两步登录完整回环、Windows ESM 导入与解释器覆盖
 //   - 1.3.0 (2026-11-05) 覆盖第 23 工具注册、模板模式真实调用/失败透传与平台模式边界
 //   - 1.2.2 (2026-11-04) 新增 loopback HTTP 可等待/幂等关闭回归
@@ -122,9 +131,21 @@ test("HMR 指南使用 watch + vite preview 并指向实际 ESM 文件", async (
 test("模板仓 precheck/publish 直接走 Node，不经 bash/python", async () => {
   const source = await fs.readFile(SERVER, "utf8");
   assert.match(source, /run\(process\.execPath, \["tools\/publish\.mjs", pkgDir, "--check-only"\]/);
-  assert.match(source, /run\(process\.execPath, args, \{ timeoutMs: 1800000 \}/);
+  assert.match(source, /run\(process\.execPath, args, \{\s*timeoutMs: 1800000,\s*env: \{ AGRSEARTH_TOKEN: resolved\.token \},\s*\}\)/);
   assert.ok(!source.includes('run("bash", ["tools/publish.sh"'));
   assert.ok(!source.includes('run("python3", ["tools/menujson.py"'));
+});
+
+test("run() 支持可选 env 覆盖且 package_publish 仅向子进程注入 AGRSEARTH_TOKEN", async () => {
+  const source = await fs.readFile(SERVER, "utf8");
+  // run() 第三参支持可选 env 覆盖（与 process.env 合并后仅作用于该子进程）
+  assert.match(source, /function run\(cmd, args, \{ input, timeoutMs = 60000, cwd = ROOT, env \} = \{\}\)/);
+  assert.ok(source.includes("env: env ? { ...process.env, ...env } : process.env"));
+  // package_publish：先 resolveToken，再仅向 publish.mjs 子进程注入令牌
+  assert.ok(source.includes("resolved = await resolveToken()"));
+  assert.ok(source.includes("env: { AGRSEARTH_TOKEN: resolved.token }"));
+  // 红线：不得向本进程环境写令牌（注入仅限子进程，本进程环境与审计绝不沾染）
+  assert.ok(!source.includes("process.env.AGRSEARTH_TOKEN ="), "不得给本进程 process.env.AGRSEARTH_TOKEN 赋值");
 });
 
 test("仓根 .env.local 可覆盖登录配置且优先于内置默认值", async () => {
@@ -238,7 +259,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.4.0");
+    assert.equal(init.result?.serverInfo?.version, "1.5.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});
@@ -301,6 +322,12 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
     assert.ok(pm.inputSchema.properties.targetTeamId, "package_manage 须声明 targetTeamId（transfer）");
     assert.ok(pm.description.includes("/packages/{packageId}/archive"), "package_manage 描述须含 archive 真实路径");
     assert.ok(pm.description.includes("/packages/{packageId}/transfer"), "package_manage 描述须含 transfer 真实路径");
+    // remove（DC 测试环境移除测试包）：枚举 + 描述语义（回收目录/测试环境限定/审计保留/真实响应）
+    assert.ok(pmActions.includes("remove"), "package_manage action 枚举须含 remove");
+    assert.ok(pm.description.includes("DELETE /packages/{packageId}"), "remove 描述须含 DELETE /packages/{packageId} 真实路径");
+    assert.ok(pm.description.includes("_trash/<packageId>/<时间-短ID>/"), "remove 描述须含 _trash 回收目录语义");
+    assert.ok(/仅限 DC 测试环境/.test(pm.description), "remove 须声明仅限 DC 测试环境");
+    assert.ok(pm.description.includes("trashPrefix") && pm.description.includes("movedObjects"), "remove 须声明透传 trashPrefix/movedObjects");
     const tm = tools.find((t) => t.name === "team_manage");
     const tmActions = tm.inputSchema.properties.action?.enum || [];
     for (const a of ["quota_request", "quota_approve", "quota_reject"]) {
@@ -328,6 +355,16 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
     const ilog = tools.find((t) => t.name === "instance_logs");
     assert.ok(ilog.inputSchema.required?.includes("instanceId"), "instance_logs 必填 instanceId");
     assert.equal(ilog.inputSchema.properties.tasks?.default, false, "instance_logs tasks 默认 false（查日志）");
+    // v1.5.0：tailLines 可选（1-2000 默认 500，tasks=true 忽略），描述走 query 参数口径
+    const tail = ilog.inputSchema.properties.tailLines;
+    assert.ok(tail, "instance_logs 须声明 tailLines 参数");
+    assert.equal(tail.type, "integer", "tailLines 必须为整数");
+    assert.equal(tail.minimum, 1, "tailLines 下限 1");
+    assert.equal(tail.maximum, 2000, "tailLines 上限 2000");
+    assert.equal(tail.default, 500, "tailLines 默认 500");
+    assert.ok(ilog.description.includes("/logs?tailLines"), "instance_logs 描述须含 tailLines query 参数");
+    assert.ok(ilog.description.includes("1-2000"), "instance_logs 描述须含 1-2000 区间");
+    assert.ok(!ilog.description.includes("服务端固定"), "instance_logs 描述不得再含「服务端固定」旧口径");
     // 全工具描述不应再有【未实现】占位
     for (const t of tools) {
       assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 25 工具已落地）`);
@@ -338,6 +375,9 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
     assert.ok(pub.description.includes("release-complete"), "package_publish 描述应含 release-complete");
     assert.ok(!pub.description.includes("MinIO 直传"), "package_publish 描述不应再写 MinIO 直传");
     assert.ok(!/RM 登记|resource-manager 登记/.test(pub.description), "package_publish 描述不应再写 RM 登记");
+    // v1.5.0：令牌仅注入 publish.mjs 子进程（不打印/不进审计）
+    assert.ok(pub.description.includes("AGRSEARTH_TOKEN"), "package_publish 描述须声明 AGRSEARTH_TOKEN 子进程注入");
+    assert.ok(pub.description.includes("resolveToken"), "package_publish 描述须声明执行前 resolveToken");
   } catch (e) {
     throw new Error(`${e.message}\n[server stderr]\n${stderrText}`);
   } finally {
@@ -470,4 +510,270 @@ test("auth_login_start/wait 完成回跳、令牌落盘与有效期兼容", { ti
   } finally {
     await client.close();
   }
+});
+
+test("package_manage remove：reason 闸口先拦截，通过后发真实 HTTP DELETE 透传 trashPrefix/movedObjects（本地 mock DC，零真实服务器/凭据）", { timeout: 30000 }, async (t) => {
+  const requests = [];
+  const mock = http.createServer((req, res) => {
+    requests.push({ method: req.method, url: req.url, authorization: req.headers.authorization });
+    if (req.method === "DELETE" && req.url === "/packages/wind-field-demo") {
+      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({
+        code: 200,
+        data: {
+          packageId: "wind-field-demo",
+          trashPrefix: "_trash/wind-field-demo/20261106-153012-a1b2c3/",
+          movedObjects: 7,
+          registrationDeleted: true,
+        },
+      }));
+      return;
+    }
+    res.writeHead(404, { "Content-Type": "application/json" }).end(JSON.stringify({ code: 404, msg: "not found" }));
+  });
+  await new Promise((resolve) => mock.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${mock.address().port}`;
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-remove-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  t.after(async () => {
+    await new Promise((resolve) => mock.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+
+  const client = new Client({ name: "node:test-remove", version: "1.0.0" });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...process.env,
+      AGRSEARTH_DC_API_BASE: origin, // 指向本地 mock，绝不触达真实 DC
+      AGRSEARTH_TOKEN: "fake-test-token", // 假令牌仅验证透传，不读真实凭据
+      AGRSEARTH_TOKEN_FILE: path.join(root, "token.json"),
+    },
+    stderr: "pipe",
+  });
+  await client.connect(transport);
+  try {
+    // ① 缺 reason：handler 闸口拒绝，且不得发起任何 DC 请求
+    const denied = await client.callTool({
+      name: "package_manage",
+      arguments: { action: "remove", packageId: "wind-field-demo" },
+    });
+    assert.equal(denied.isError, true, "remove 缺 reason 必须拒绝");
+    assert.match(denied.content?.[0]?.text ?? "", /必须携带 reason/);
+    assert.equal(requests.length, 0, "reason 闸口必须在任何 DC 请求之前拦截（零请求）");
+
+    // ② 带 reason：真实 DELETE /packages/{packageId}，透传 trashPrefix/movedObjects 不假成功
+    const removed = await client.callTool({
+      name: "package_manage",
+      arguments: { action: "remove", packageId: "wind-field-demo", reason: "DC 测试环境清理演示包" },
+    });
+    assert.notEqual(removed.isError, true, removed.content?.[0]?.text);
+    const text = removed.content?.[0]?.text ?? "";
+    assert.match(text, /HTTP 200/);
+    assert.ok(text.includes("_trash/wind-field-demo/20261106-153012-a1b2c3/"), "须透传服务端 trashPrefix");
+    assert.ok(text.includes('"movedObjects": 7'), "须透传服务端 movedObjects");
+    assert.equal(requests.length, 1, "恰好一次 DC 请求");
+    assert.equal(requests[0].method, "DELETE", "必须真实发 HTTP DELETE");
+    assert.equal(requests[0].url, "/packages/wind-field-demo", "dcFetch base 已含 /api/v1，路径不得带前缀");
+    assert.equal(requests[0].authorization, "Bearer fake-test-token");
+  } finally {
+    await client.close();
+  }
+});
+
+
+test("instance_logs tailLines 透传 /logs?tailLines=N 且 tasks=true 忽略（本地 mock DC，零真实服务器/凭据）", { timeout: 30000 }, async (t) => {
+  const requests = [];
+  const mock = http.createServer((req, res) => {
+    requests.push({ method: req.method, url: req.url });
+    if (req.method === "GET" && (req.url.startsWith("/instances/svc-1/logs") || req.url === "/instances/svc-1/tasks")) {
+      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ code: 200, data: {
+        instanceId: "svc-1", packageId: "demo", tailLines: 7,
+        lines: Array.from({ length: 7 }, (_, i) => `第 ${i + 1} 行日志`),
+      } }));
+      return;
+    }
+    res.writeHead(404, { "Content-Type": "application/json" }).end(JSON.stringify({ code: 404, msg: "not found" }));
+  });
+  await new Promise((resolve) => mock.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${mock.address().port}`;
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-logtails-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  t.after(async () => {
+    await new Promise((resolve) => mock.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+
+  const client = new Client({ name: "node:test-logtails", version: "1.0.0" });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...process.env,
+      AGRSEARTH_DC_API_BASE: origin, // 指向本地 mock，绝不触达真实 DC
+      AGRSEARTH_TOKEN: "fake-test-token", // 假令牌仅验证透传，不读真实凭据
+      AGRSEARTH_TOKEN_FILE: path.join(root, "token.json"),
+    },
+    stderr: "pipe",
+  });
+  await client.connect(transport);
+  try {
+    // ① 显式 tailLines=7 必须原样出现在 query
+    const custom = await client.callTool({
+      name: "instance_logs",
+      arguments: { instanceId: "svc-1", tailLines: 7 },
+    });
+    assert.notEqual(custom.isError, true, custom.content?.[0]?.text);
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].method, "GET");
+    assert.equal(requests[0].url, "/instances/svc-1/logs?tailLines=7", "tailLines 必须作为 query 参数透传");
+    const customText = custom.content?.[0]?.text || "";
+    assert.ok(!customText.includes("dev-mcp 截断"), "日志 JSON 不得按 tailLines 二次截断");
+    const customBody = JSON.parse(customText.slice(customText.indexOf("{")));
+    assert.equal(customBody.data.lines.length, 7);
+    assert.equal(customBody.data.lines[6], "第 7 行日志");
+
+    // ② 缺省 tailLines → 默认 500
+    const defaulted = await client.callTool({
+      name: "instance_logs",
+      arguments: { instanceId: "svc-1" },
+    });
+    assert.notEqual(defaulted.isError, true, defaulted.content?.[0]?.text);
+    assert.equal(requests.length, 2);
+    assert.equal(requests[1].url, "/instances/svc-1/logs?tailLines=500", "缺省 tailLines 必须发默认 500");
+
+    // ③ tasks=true：走 /tasks 且忽略 tailLines（query 不得出现 tailLines）
+    const tasks = await client.callTool({
+      name: "instance_logs",
+      arguments: { instanceId: "svc-1", tasks: true, tailLines: 42 },
+    });
+    assert.notEqual(tasks.isError, true, tasks.content?.[0]?.text);
+    assert.equal(requests.length, 3);
+    assert.equal(requests[2].url, "/instances/svc-1/tasks", "tasks=true 必须忽略 tailLines（不得拼进 query）");
+
+    // ④ schema 钳制：tailLines 越界在客户端侧拒绝，不得发起 DC 请求
+    const rejected = await client.callTool({
+      name: "instance_logs",
+      arguments: { instanceId: "svc-1", tailLines: 0 },
+    });
+    assert.equal(rejected.isError, true, "tailLines=0 必须被 schema 拒绝");
+    assert.equal(requests.length, 3, "schema 拒绝不得发起任何 DC 请求");
+  } finally {
+    await client.close();
+  }
+});
+
+test("package_publish 先 resolveToken 并仅向 publish.mjs 子进程注入 AGRSEARTH_TOKEN（模板沙箱 mock，两通道各验一次，零真实服务器）", { timeout: 60000 }, async (t) => {
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-pubtoken-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  await fs.writeFile(path.join(root, "tools", "publish.sh"), "#!/usr/bin/env sh\n", "utf8");
+  // 测试辅助 mock publish.mjs：对比子进程 AGRSEARTH_TOKEN 与期待值，只输出是否匹配，绝不输出令牌本体
+  await fs.writeFile(path.join(root, "tools", "publish.mjs"), [
+    "const actual = process.env.AGRSEARTH_TOKEN || \"\";",
+    "const expected = process.env.AGRSEARTH_DEV_MOCK_EXPECT_TOKEN || \"\";",
+    "console.log(JSON.stringify({",
+    "  tokenPresent: actual.length > 0,",
+    "  tokenMatch: actual.length > 0 && actual === expected,",
+    "  pkgDir: process.argv[2],",
+    "}));",
+    "",
+  ].join("\n"), "utf8");
+  const tokenFile = path.join(root, "token.json");
+  const FILE_CHANNEL_TOKEN = "file-channel-token-xyz";
+  const ENV_CHANNEL_TOKEN = "env-channel-token-abc";
+  await fs.writeFile(tokenFile, JSON.stringify({
+    access_token: FILE_CHANNEL_TOKEN, expire_in: 7200,
+    obtained_at: "2026-11-06T00:00:00.000Z", dev_base: "http://example", client_id: "agrsearth-dev-cli",
+  }), { mode: 0o600 });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const baseEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => key !== "AGRSEARTH_TOKEN" && key !== "AGRSEARTH_DEV_MOCK_EXPECT_TOKEN"),
+  );
+  const auditFiles = async () => {
+    const dir = path.join(root, "logs", "operations");
+    try {
+      const names = await fs.readdir(dir);
+      return (await Promise.all(names.map((n) => fs.readFile(path.join(dir, n), "utf8")))).join("\n");
+    } catch { return ""; }
+  };
+
+  // 通道一：AGRSEARTH_TOKEN 环境变量（resolveToken 第一优先级，CI 覆盖通道）
+  const envChannelClient = new Client({ name: "node:test-pubtoken-env", version: "1.0.0" });
+  const envChannelTransport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...baseEnv,
+      AGRSEARTH_TOKEN: ENV_CHANNEL_TOKEN,
+      AGRSEARTH_TOKEN_FILE: tokenFile, // 落盘文件同存异值：命中环境变量通道的证明
+      AGRSEARTH_DEV_MOCK_EXPECT_TOKEN: ENV_CHANNEL_TOKEN,
+      AGRSEARTH_DEV_BASE: "http://127.0.0.1:9", // 双保险：mock publish.mjs 零网络，绝不触达真实 DC
+    },
+    stderr: "pipe",
+  });
+  await envChannelClient.connect(envChannelTransport);
+  try {
+    const published = await envChannelClient.callTool({
+      name: "package_publish",
+      arguments: { pkgDir: "extensions/tool/business/wind-field", reason: "验证 CI 通道令牌子进程注入" },
+    });
+    assert.notEqual(published.isError, true, published.content?.[0]?.text);
+    const text = published.content?.[0]?.text ?? "";
+    assert.match(text, /"tokenPresent":true/, "子进程必须收到 AGRSEARTH_TOKEN");
+    assert.match(text, /"tokenMatch":true/, "环境变量通道令牌必须原样注入 publish.mjs 子进程");
+    assert.match(text, /"pkgDir":"extensions\/tool\/business\/wind-field"/, "pkgDir 参数须透传给 publish.mjs");
+    assert.ok(!text.includes(ENV_CHANNEL_TOKEN), "工具输出绝不出现令牌本体");
+    assert.ok(!text.includes(FILE_CHANNEL_TOKEN), "工具输出绝不出现任何通道令牌");
+  } finally {
+    await envChannelClient.close();
+  }
+
+  // 通道二：auth_login 落盘文件（环境变量缺席时 resolveToken 读文件）——本批修复主场景
+  const fileChannelClient = new Client({ name: "node:test-pubtoken-file", version: "1.0.0" });
+  const fileChannelTransport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...baseEnv, // 关键：不含 AGRSEARTH_TOKEN
+      AGRSEARTH_TOKEN_FILE: tokenFile,
+      AGRSEARTH_DEV_MOCK_EXPECT_TOKEN: FILE_CHANNEL_TOKEN,
+      AGRSEARTH_DEV_BASE: "http://127.0.0.1:9",
+    },
+    stderr: "pipe",
+  });
+  await fileChannelClient.connect(fileChannelTransport);
+  try {
+    const published = await fileChannelClient.callTool({
+      name: "package_publish",
+      arguments: { pkgDir: "extensions/tool/business/wind-field", skipBuild: true, reason: "验证落盘通道令牌子进程注入" },
+    });
+    assert.notEqual(published.isError, true, published.content?.[0]?.text);
+    const text = published.content?.[0]?.text ?? "";
+    assert.match(text, /"tokenPresent":true/, "子进程必须收到 AGRSEARTH_TOKEN");
+    assert.match(text, /"tokenMatch":true/, "登录落盘令牌必须经 AGRSEARTH_TOKEN 注入 publish.mjs 子进程（本批修复主判据）");
+    assert.ok(!text.includes(FILE_CHANNEL_TOKEN), "工具输出绝不出现令牌本体");
+    assert.ok(!text.includes(ENV_CHANNEL_TOKEN), "工具输出绝不出现任何通道令牌");
+  } finally {
+    await fileChannelClient.close();
+  }
+
+  // 审计红线：两通道令牌均不得出现在审计文件（审计只记参数与结果码）
+  const audited = await auditFiles();
+  assert.ok(audited.length > 0, "写操作必须留有审计记录");
+  assert.ok(!audited.includes(ENV_CHANNEL_TOKEN), "审计文件不得出现环境变量通道令牌");
+  assert.ok(!audited.includes(FILE_CHANNEL_TOKEN), "审计文件不得出现落盘通道令牌");
 });

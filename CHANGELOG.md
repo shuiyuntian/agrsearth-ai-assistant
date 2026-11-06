@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+- aiearth01 发布与移除链修复（2026-11-06，issue #9）：DC 升级 0.3.0、RM 更新；默认版本双写、
+  后端缺 bundle 拒发、Secret 占位符部署解析、日志 UTF-8/tailLines 已落地。dev-mcp 1.5.0 向发布子进程
+  注入登录令牌，并新增 `package_manage action=remove`：测试包产物移至同 Bucket
+  `_trash/<packageId>/<时间-短ID>/` 后清理登记，审计保留；正式模板同步待平台仓推送后执行。
+- aiearth01 动态路由修复（2026-11-06，issue #9）：DC 升级 0.2.0，网关补动态 dataId 监听与
+  组合路由，避免与静态 routes 列表互相覆盖；新增/删除探针免重启实测通过，L9 不再建议重烧插件版本号。
 - 跨 coding agent 能力一致性（2026-11-06）：新增 `tools/agent-doctor.mjs` 与
   `tools/check-agent-parity.mjs`；补齐 Codex `.agents`、Claude Code `.claude`、Qoder `.qoder`
   项目级 Skill 同源适配，统一 MCP 接入说明与任务验收矩阵；`npm run check` 纳入漂移闸口。

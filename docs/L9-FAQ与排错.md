@@ -105,8 +105,11 @@ A：k8s `resources.limits.memory` 必须 ≥ 镜像 `JAVA_OPTS` 的 `-Xmx` + non
 骨架 Dockerfile 默认 `-Xmx1024m`，配套 limit 至少 1536Mi（768Mi 实测必死）。
 
 **Q：发布后管理页调后端 404「No static resource <svc>/...」？**
-A：标准路由应为 `Path=/<svcId>/**` + `StripPrefix=1` + `lb://<svcId>`，由 DC 在 deploy 时自动注册。
-若响应没有 `gatewayRoutes`，先升级 DC 并重发新版本；已有路由但仍 404 再查服务发现与控制器前缀。
+A：标准路由应为 `Path=/<svcId>/**` + `StripPrefix=1` + `lb://<svcId>`，由 DC 在 deploy 时写入
+`ruoyi-gateway-dynamic-<profile>.yml`。若响应没有 `gatewayRoutes`，先确认当前环境 DC/网关运行产物
+确实包含动态路由能力，以及该 dynamic dataId 是否存在且已被网关加载；网关须通过独立监听器组合动态路由，
+不能再把动态 dataId 按同名 `routes` 列表 import 到静态配置（否则静态路由会被覆盖）。恢复既有包时只修动态配置，
+不要重烧插件版本号，也不要改静态路由表。仍 404 再查服务发现与控制器前缀。
 
 **Q：本地起的服务注册上了 Nacos，网关调接口却超时？**
 A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本机被防火墙/网段挡住（两态联调的

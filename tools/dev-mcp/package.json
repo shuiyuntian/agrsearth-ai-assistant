@@ -1,6 +1,6 @@
 {
   "name": "@agrsearth/dev-mcp",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "AGRSEarth 插件开发 MCP（stdio，面向第三方插件开发团队，默认目标 aiearth01、支持自定义开发环境；统一命名 25 工具 + 原生授权登录）",
   "type": "module",
   "private": true,

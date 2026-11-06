@@ -56,6 +56,15 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
       scripts/build/perms-allowlist.txt）才可 publish；黄灯（悬空按钮）限期整改或入白名单分类登记
 - [ ] 提测单要素齐：代码 + 版本 + CHANGELOG + 自测证据 + 依赖清单（docs/L8.2）
 
+## data/sql 内容完整性与布实验收
+
+- `data/sql/*.sql` 必须保持 UTF-8 原文；SHA-256 按原始文件字节计算，`dataSql[].content` 为同一份原文。
+- 发布前执行 `node tools/publish.mjs <包目录> --check-only`，利用文件名、非空、大小与 UTF-8 原文摘要校验。
+- SQL 注释中的 `<...>` 不得为绕过校验而手工转义或删改；摘要不符时核对服务端/客户端摘要，不得修改内容凑摘要。
+- 原文与 MinIO 一致而服务端摘要不同时，按平台侧内容改写问题上报；附两端摘要与字符/字节数，不附敏感 SQL 原文。
+- `dataResult.applied/skipped` 是 SQL 布设证据；`postgres.status=VERIFIED` 不代表业务表已创建。最终以业务表、真实接口和管理页 CRUD 验收，不以 Pod Ready 代替。
+- 已应用的历史 SQL 不得改内容冒充原迁移；需变更时新增 SQL 文件并保留幂等语义。
+
 ## 速查
 
 - ctx 全量 API：`packages/sdk-types/src/index.ts`；manifest schema（components 段）：docs/L6.2

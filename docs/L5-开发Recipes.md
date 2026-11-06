@@ -64,8 +64,9 @@
 
 1. `data/` 放建表/种子 SQL 与菜单声明 `menu.json`（菜单登记 SQL 通道已废止，存量归档
    `archives/menu-sql-legacy-20261004/`，批4 起由 menu-provision 幂等落地），SQL 文件头注明用途与执行方式；
-2. 含中文 SQL 一律**文件方式执行**（`kubectl exec -i ... mysql --default-character-set=utf8mb4 < x.sql`），禁止多层嵌套内联 `-e` 传中文；
-3. 菜单号段向平台方申请（两段制台账 `sys_config` 的 `menu.segment.<pkg>`：core/tool/system 百万段为
+2. 发布时 `data/sql/*.sql` 以 UTF-8 原文进入 `dataSql[].content`，摘要取原始文件字节；publish 预检会提前校验文件名、非空、大小与摘要一致性；
+3. 含中文 SQL 一律**文件方式执行**（`kubectl exec -i ... mysql --default-character-set=utf8mb4 < x.sql`），禁止多层嵌套内联 `-e` 传中文；
+4. 菜单号段向平台方申请（两段制台账 `sys_config` 的 `menu.segment.<pkg>`：core/tool/system 百万段为
    **菜单 band 分类**，包级千段预发；menuId 必须落本包段内，publish pre-check 服务端 fail-fast）。
 
 **验收**：

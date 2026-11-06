@@ -3,8 +3,9 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.2.1
+// 版本：2.2.2
 // 修改记录：
+//   - 2.2.2 (2026-11-06) data/sql 文件名、非空、大小与 UTF-8 原文摘要一致性前移至发布预检（issue #9）
 //   - 2.2.1 (2026-11-05) MinIO 非 2xx 输出脱敏后的 Code/Message，避免裸 403（issue #8）
 //   - 2.2.0 (2026-11-05) check-only 与正式发布前执行前后端 URL 契约双向对账（issue #6）
 //   - 2.1.1 (2026-11-04) dev-url 输出补 vite preview 静态伺服指引
@@ -318,6 +319,7 @@ export function loadPackage(pluginArg, env = process.env, options = {}) {
     fail("components.menu.enabled=true 但包内无 data/menu.json——请补菜单声明文件");
   }
   if (!manifest.icon) fail("manifest.json 缺少 icon 字段（Element Plus 图标名，如 MapLocation）");
+  validateDataSqlFiles(pluginDir);
   validateVersionConsistency(pluginDir, manifest, hasFrontend, hasAdminUi);
 
   const dcApiBase = env.DC_API_BASE || DEFAULT_DC_API_BASE;
@@ -448,6 +450,27 @@ function directFiles(directory) {
     .filter((entry) => entry.isFile())
     .map((entry) => path.join(directory, entry.name))
     .sort((a, b) => path.basename(a).localeCompare(path.basename(b)));
+}
+
+function validateDataSqlFiles(pluginDir) {
+  const files = directFiles(path.join(pluginDir, "data", "sql"))
+    .filter((file) => file.toLowerCase().endsWith(".sql"));
+  let totalBytes = 0;
+  for (const file of files) {
+    const filename = path.basename(file);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.sql$/.test(filename)) fail(`data/sql 文件名非法：${filename}`);
+    const content = readText(file);
+    if (!content.trim()) fail(`SQL 文件内容为空：${filename}`);
+    const size = Buffer.byteLength(content, "utf8");
+    totalBytes += size;
+    if (size > 1024 * 1024 || totalBytes > 5 * 1024 * 1024) {
+      fail(`SQL 发布内容超限（单文件 1MiB / 总计 5MiB）：${filename}`);
+    }
+    const textDigest = sha256(content);
+    if (fileSha256(file) !== textDigest) {
+      fail(`SQL 文件 UTF-8 原文与字节摘要不一致：${filename}（文件=${fileSha256(file)}，文本=${textDigest}）`);
+    }
+  }
 }
 
 function assertFlatAdminDist(directory) {

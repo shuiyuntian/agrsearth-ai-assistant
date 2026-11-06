@@ -362,6 +362,15 @@ test("check-only 无需 token 且只执行本地校验", async (t) => {
   });
 });
 
+test("data/sql 空文件在 check-only 阶段提前拒绝", async (t) => {
+  const pkg = makePackage(t, { dataSql: true });
+  fs.writeFileSync(path.join(pkg.dir, "data", "sql", "001-init.sql"), "", "utf8");
+  await assert.rejects(
+    runPublish([pkg.relative, "--check-only"], { env: { AGRSEARTH_NETWORK: "lan" }, logger: silentLogger }),
+    /SQL 文件内容为空：001-init\.sql/,
+  );
+});
+
 test("本地闸口覆盖菜单、拓扑、网络画像和参数", () => {
   assert.deepEqual(validateMenuDocument({
     schemaVersion: 1,

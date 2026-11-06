@@ -1,6 +1,6 @@
 ---
 name: agrsearth-plugin-dev
-description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, k8s deploy, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists.
+description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, menu.json 菜单声明, k8s deploy, publish 发布, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists. 新建/改造/发布插件、构建失败与 publish 校验失败排查时使用。
 ---
 
 # AGRSEarth Plugin Development（航遥业务中台插件开发）
@@ -52,8 +52,8 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 - [ ] **权限两层模型合规（docs/L6 权限节）**：页内只读接口注解=页面 view perms（整页共用，禁止按接口切碎）；
       写操作才建 xxx:add/edit/remove 按钮且注解 1:1 对应；禁止「有注解无按钮」（幽灵权限，非超管必撞 403）
       与「无意识裸奔」（无注解非豁免接口=登录即可调，安全缺口）
-- [ ] **权限对账全绿**：`scripts/check-perms-parity.sh` 红灯=0（代码注解值必须命中菜单 perms 或豁免白名单
-      scripts/build/perms-allowlist.txt）才可 publish；黄灯（悬空按钮）限期整改或入白名单分类登记
+- [ ] **权限对账全绿**（平台方在发布链路执行，本仓无需跑脚本）：代码注解值必须命中本包菜单 perms
+      （或平台侧豁免白名单），红灯阻塞发布；黄灯（悬空按钮）限期整改或报平台方入白名单分类登记
 - [ ] 提测单要素齐：代码 + 版本 + CHANGELOG + 自测证据 + 依赖清单（docs/L8.2）
 
 ## data/sql 内容完整性与布实验收
@@ -68,12 +68,11 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 ## 速查
 
 - ctx 全量 API：`packages/sdk-types/src/index.ts`；manifest schema（components 段）：docs/L6.2
-- **权限对账机制（2026-09-16 根治后固化）**：`scripts/check-perms-parity.sh` 静态扫描全仓
-  `@RequiresPermissions` 值，与「菜单 perms 全集（各包 data/menu.json + 存量 init SQL）」双向 diff——
-  代码有清单无=**红灯阻塞发布**（幽灵权限）；清单有代码无=黄灯警告（悬空按钮）；豁免接口
-  （纯辅助只读无敏感，@RequiresLogin 形态）必须注释标记 + 白名单登记。publish 前置强制
-  （--skip-perms-check 仅限应急）。历史教训：幽灵权限让「角色全勾仍 403」，tianditu-tile
-  曾整服务无鉴权——对账是唯一能保证「勾选清单=真实权限」的机制
+- **权限对账机制（2026-09-16 根治后固化）**：由平台方在发布链路执行（对账脚本在平台仓，本仓不含）——
+  静态扫描全仓 `@RequiresPermissions` 值，与「菜单 perms 全集（各包 data/menu.json + 存量 init SQL）」
+  双向 diff：代码有清单无=**红灯阻塞发布**（幽灵权限）；清单有代码无=黄灯警告（悬空按钮）；豁免接口
+  （纯辅助只读无敏感，@RequiresLogin 形态）必须注释标记 + 报平台方白名单登记。历史教训：幽灵权限让
+  「角色全勾仍 403」，tianditu-tile 曾整服务无鉴权——对账是唯一能保证「勾选清单=真实权限」的机制
 - UI 规范（管理页四段式/撑满式列表/操作列公式/面板几何 440-64-80-112/数据图表弹窗 70%×70vh 居中/
   浮层选用与弹窗嵌套禁忌——二次浮层用抽屉 55% 宽全高，含实拍正例/
   字号层级——EP 14px 基线：强调条标题 14/600、辅助说明 13、弱化 12，警示条模式显式 text-align:left）：docs/L10

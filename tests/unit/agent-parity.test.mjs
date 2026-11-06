@@ -2,9 +2,11 @@
 // 文件作用：跨 coding agent 资产一致性与 doctor 检测单元测试
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.0.0
+// 版本：1.1.0
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 覆盖 Skill 漂移、MCP 配置与 CLI 检测
+//   - 1.1.0 (2026-11-06) 适配 parity 1.1.0（{errors,warnings} 返回形态、7 客户端目录含
+//                       .codex/.opencode）；新增 --fix 修复回归与 description 触发词断言
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
 
@@ -14,13 +16,48 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkAgentParity } from "../../tools/check-agent-parity.mjs";
+import { checkAgentParity, fixAgentParity } from "../../tools/check-agent-parity.mjs";
 import { checkClient, codexMcpConfigured, projectMcpConfigured } from "../../tools/agent-doctor.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
+const SKILL_COPIES = [
+  ".kimi-code/skills/agrsearth-plugin-dev/SKILL.md",
+  ".agents/skills/agrsearth-plugin-dev/SKILL.md",
+  ".claude/skills/agrsearth-plugin-dev/SKILL.md",
+  ".codex/skills/agrsearth-plugin-dev/SKILL.md",
+  ".opencode/skills/agrsearth-plugin-dev/SKILL.md",
+  ".qoder/skills/agrsearth-plugin-dev/SKILL.md",
+  ".trae/skills/agrsearth-plugin-dev/SKILL.md",
+  ".codebuddy/skills/agrsearth-plugin-dev/SKILL.md",
+];
+
+const PARITY_FIXTURE = [
+  ...SKILL_COPIES,
+  ".kimi-code/mcp.json",
+  ".codex/config.toml",
+  ".qoder/settings.json",
+  ".trae/mcp.json",
+  ".mcp.json",
+  "opencode.json",
+  "AGENTS.md",
+  "tools/agent-doctor.mjs",
+  "docs/AGENT_PARITY.md",
+];
+
+function makeFixture(t) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-parity-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  for (const relative of PARITY_FIXTURE) {
+    const target = path.join(root, relative);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(REPO_ROOT, relative), target);
+  }
+  return root;
+}
+
 test("当前七客户端 Skill 与 MCP 权威入口一致", () => {
-  assert.deepEqual(checkAgentParity(REPO_ROOT), []);
+  assert.deepEqual(checkAgentParity(REPO_ROOT).errors, []);
 });
 
 test("七端项目级 MCP 配置均可被 doctor 识别", () => {
@@ -30,31 +67,28 @@ test("七端项目级 MCP 配置均可被 doctor 识别", () => {
 });
 
 test("任一客户端 Skill 漂移都会被闸口发现", (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "agent-parity-"));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  for (const relative of [
-    ".kimi-code/skills/agrsearth-plugin-dev/SKILL.md",
-    ".agents/skills/agrsearth-plugin-dev/SKILL.md",
-    ".claude/skills/agrsearth-plugin-dev/SKILL.md",
-    ".qoder/skills/agrsearth-plugin-dev/SKILL.md",
-    ".trae/skills/agrsearth-plugin-dev/SKILL.md",
-    ".codebuddy/skills/agrsearth-plugin-dev/SKILL.md",
-    ".kimi-code/mcp.json",
-    ".codex/config.toml",
-    ".qoder/settings.json",
-    ".trae/mcp.json",
-    ".mcp.json",
-    "opencode.json",
-    "AGENTS.md",
-    "tools/agent-doctor.mjs",
-    "docs/AGENT_PARITY.md",
-  ]) {
-    const target = path.join(root, relative);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.copyFileSync(path.join(REPO_ROOT, relative), target);
-  }
+  const root = makeFixture(t);
   fs.appendFileSync(path.join(root, ".qoder/skills/agrsearth-plugin-dev/SKILL.md"), "\n漂移\n");
-  assert.ok(checkAgentParity(root).some((error) => error.includes("Skill 与权威源不一致")));
+  assert.ok(checkAgentParity(root).errors.some((error) => error.includes("Skill 与权威源不一致")));
+});
+
+test("--fix 能从权威源重建全部副本并消除漂移", (t) => {
+  const root = makeFixture(t);
+  fs.appendFileSync(path.join(root, ".codex/skills/agrsearth-plugin-dev/SKILL.md"), "\n漂移\n");
+  fs.rmSync(path.join(root, ".opencode/skills/agrsearth-plugin-dev"), { recursive: true, force: true });
+  fs.mkdirSync(path.join(root, ".trae/skills/stale-skill"), { recursive: true });
+  fs.writeFileSync(path.join(root, ".trae/skills/stale-skill/SKILL.md"), "---\nname: stale\ndescription: stale\n---\n");
+  const actions = fixAgentParity(root);
+  assert.ok(actions.length >= 3, `应至少有 3 个修复动作，实际 ${actions.length}`);
+  assert.deepEqual(checkAgentParity(root).errors, []);
+});
+
+test("权威 Skill description 覆盖中英文触发词", () => {
+  const skill = fs.readFileSync(path.join(REPO_ROOT, ".kimi-code/skills/agrsearth-plugin-dev/SKILL.md"), "utf8");
+  const description = skill.split("---")[1] ?? "";
+  for (const keyword of ["plugin", "scaffold", "publish", "插件", "提测"]) {
+    assert.ok(description.includes(keyword), `description 缺少触发词：${keyword}`);
+  }
 });
 
 test("Codex TOML 必须包含独立 agrsearth-dev stdio 配置", () => {

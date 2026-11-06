@@ -8,21 +8,28 @@
 | 能力 | 权威源 | 客户端入口 |
 |---|---|---|
 | 项目契约与常用命令 | 仓根 `AGENTS.md` | Claude Code 经 `CLAUDE.md` 指针读取；其余工具按各自项目规则机制读取 |
-| 插件开发 Skill | `.kimi-code/skills/agrsearth-plugin-dev/SKILL.md` | Kimi=权威源；Codex/OpenCode=`.agents/skills/`；Claude=`.claude/skills/`；Qoder/Trae/CodeBuddy 分别用各自项目目录 |
+| 插件开发 Skill | `.kimi-code/skills/agrsearth-plugin-dev/SKILL.md` | Kimi=权威源；Codex=`.codex/skills/`；OpenCode=`.opencode/skills/`；Claude=`.claude/skills/`；Qoder/Trae/CodeBuddy 分别用各自项目目录；`.agents/skills/` 为 agentskills.io 通用入口 |
+| CesiumJS 技能（14 领域+orientation，平台仓 vendor 同步） | `.kimi-code/skills/cesiumjs-*`、`.kimi-code/skills/using-cesiumjs-skills/`（源头：平台仓 `scripts/build/sync-template.sh` 单向同步，pin 见 `.kimi-code/skills/.cesiumjs-skills-upstream`，**勿手改**） | 与插件开发 Skill 同通道分发 7 端副本 |
 | MCP 工具 | `tools/dev-mcp/server.mjs`（平台仓源头 `mcps/agrsearth-dev/`） | 全部客户端共享同一 stdio server 与工具清单 |
 | 开发/排错/验收知识 | `docs/L1-L10`、`RELEASE_CHECKLIST.md` | 所有客户端直接读取，不依赖 Skill 才能获取 |
 
-六个 Skill 实体文件内容必须逐字节一致。不要单独修改 `.agents/`、`.claude/`、`.qoder/`、`.trae/`
-或 `.codebuddy/` 下的副本；先改 Kimi Code 权威源，再同步副本并运行 `node tools/check-agent-parity.mjs`。
+权威源 `.kimi-code/skills/` 下全部技能（含 cesiumjs-*）与 7 端副本目录树必须逐字节一致。
+不要单独修改任何客户端目录下的副本；改 Skill 只改 `.kimi-code/skills/` 权威源
+（cesiumjs-* 源头在平台仓，须报平台方），然后运行 `node tools/check-agent-parity.mjs --fix`
+单向同步副本，再以 `node tools/check-agent-parity.mjs` 复核。
 
 ## 2. 目录收敛原则
 
-- **能共享就不新建**：OpenCode 官方兼容 `.agents/skills` 与 `.claude/skills`，所以不新增 `.opencode/skills`。
-- **MCP 同理**：Claude Code 与 CodeBuddy 共用仓根 `.mcp.json`，不维护两份同内容配置。
-- **固定目录只做发现适配**：Kimi/Codex/Qoder/Trae/CodeBuddy 的目录由客户端自动发现机制决定，不能强行合并；
+- **每端用各自官方自动发现目录**：Codex=`.codex/skills`、OpenCode=`.opencode/skills`、Claude=`.claude/skills`、
+  Qoder/Trae/CodeBuddy 同理；`.agents/skills` 保留为 agentskills.io 通用入口，覆盖其余兼容客户端。
+  不依赖任何「跨目录兼容发现」的隐式行为。
+- **MCP 同理收敛**：Claude Code 与 CodeBuddy 共用仓根 `.mcp.json`，不维护两份同内容配置。
+- **固定目录只做发现适配**：各端目录由客户端自动发现机制决定，不能强行合并；
   它们只是同内容副本，不是独立事实源。
-- **不以 symlink 为默认方案**：Windows 开发机权限和 Git 对 symlink 的支持不一致，当前采用同内容文件 + 一致性闸口。
-- **若未来客户端支持自定义共享目录**，再优先收敛到 `.agents/`；不为品牌展示额外制造根目录。
+- **不以 symlink 为默认方案**：Windows 开发机权限和 Git 对 symlink 的支持不一致，当前采用同内容文件 +
+  `check-agent-parity.mjs --fix` 同步 + 一致性闸口。
+- **docs/ 与 LICENSE 只留权威源**：`.kimi-code/skills/docs/`（DOMAINS.md 等参考件）与
+  `cesiumjs-skills.LICENSE` 不做 7 端副本——Skill 内引用为仓根相对路径，从任一端加载均可解析。
 
 ## 2. MCP 接入
 
@@ -88,5 +95,6 @@ npm run check
 npm run test:publish
 ```
 
-修改 Skill 后必须同步六份实体文件并覆盖七端；修改 MCP 工具后必须重跑 doctor 与任务矩阵。Windows 至少使用真实 Qoder
+修改 Skill 后必须运行 `node tools/check-agent-parity.mjs --fix` 同步 7 端副本；修改 MCP 工具后必须重跑
+doctor 与任务矩阵。Windows 至少使用真实 Qoder
 完成一次登录、预检和发布验收；Mac/Linux 通过不能替代 Windows 结论。

@@ -35,7 +35,7 @@
 - **Codex**：`.codex/config.toml`。
 - **Claude Code + CodeBuddy**：共用仓根 `.mcp.json`。
 - **Qoder**：`.qoder/settings.json`。
-- **OpenCode**：`opencode.json`；Skill 直接复用 `.agents/` 或 `.claude/`，不另建目录。
+- **OpenCode**：`opencode.json`；Skill 位于 `.opencode/skills/`。
 - **Trae**：`.trae/mcp.json`（IDE 中启用项目级 MCP 并信任项目）。
 - **其他支持 stdio MCP 的客户端**：入口 `node tools/dev-mcp/server.mjs`，工作目录 = 仓根。
 
@@ -43,9 +43,13 @@
 CI 才用 `AGRSEARTH_TOKEN` 覆盖。`node tools/agent-doctor.mjs --client <kimi|codex|claude|qoder|opencode|trae|codebuddy>`
 检查 MCP 与 Skill；完整矩阵见 `docs/AGENT_PARITY.md`。
 
-Skill 权威源为 `.kimi-code/skills/agrsearth-plugin-dev/SKILL.md`；Codex/OpenCode 复用 `.agents/skills/`，
-Claude 用 `.claude/skills/`，Qoder/Trae/CodeBuddy 分别用 `.qoder/skills/`、`.trae/skills/`、
-`.codebuddy/skills/` 的同内容副本。改后必须跑 `node tools/check-agent-parity.mjs`，禁止单端漂移。
+Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + CesiumJS `cesiumjs-*`/
+`using-cesiumjs-skills`，后者由平台仓 vendor 同步，**勿手改**）；Codex/OpenCode/Claude/Qoder/Trae/CodeBuddy
+分别用各自项目目录（`.codex/skills/`、`.opencode/skills/`、`.claude/skills/`、`.qoder/skills/`、
+`.trae/skills/`、`.codebuddy/skills/`）的同内容副本，`.agents/skills/` 为通用入口。
+改 Skill 只改权威源，然后跑 `node tools/check-agent-parity.mjs --fix` 同步副本，禁止单端漂移。
+**版本倒挂警示**：cesiumjs 技能基线为 CesiumJS v1.144，高于当前宿主球端 cesium 1.141.0——
+技能可能推荐宿主不存在的新 API（如 `GeoJsonPrimitive`、`Scene.snap`），落地前以宿主实际版本为准。
 **`tools/dev-mcp/` 是导出产物，禁止直接改**——问题回报平台方，源头在平台仓 `mcps/agrsearth-dev/`。
 
 ## 契约红线（违反即验收打回；交付前必须 grep 自查）

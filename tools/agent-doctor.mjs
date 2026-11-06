@@ -3,9 +3,11 @@
 // 文件作用：检查 Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 的 MCP 与 Skill 一致性
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.0.0
+// 版本：1.1.0
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 初始创建（跨 coding agent 能力一致性）
+//   - 1.1.0 (2026-11-06) Codex/OpenCode Skill 入口从 .agents 复用改为各自项目目录
+//                       （.codex/skills、.opencode/skills，官方自动发现路径）
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
 
@@ -23,7 +25,7 @@ export const CLIENTS = {
   },
   codex: {
     label: "Codex",
-    skill: ".agents/skills/agrsearth-plugin-dev/SKILL.md",
+    skill: ".codex/skills/agrsearth-plugin-dev/SKILL.md",
     cli: "codex",
     setup: "codex mcp add agrsearth-dev -- node tools/dev-mcp/server.mjs",
   },
@@ -41,9 +43,9 @@ export const CLIENTS = {
   },
   opencode: {
     label: "OpenCode",
-    skill: ".agents/skills/agrsearth-plugin-dev/SKILL.md",
+    skill: ".opencode/skills/agrsearth-plugin-dev/SKILL.md",
     cli: "opencode",
-    setup: "项目级配置已写入 opencode.json；OpenCode 复用 .agents/.claude Skill",
+    setup: "项目级配置已写入 opencode.json；Skill 位于 .opencode/skills/（官方自动发现路径）",
   },
   trae: {
     label: "Trae",

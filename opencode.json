@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "agrsearth-dev": {
+      "type": "local",
+      "command": ["node", "tools/dev-mcp/server.mjs"],
+      "enabled": true
+    }
+  }
+}

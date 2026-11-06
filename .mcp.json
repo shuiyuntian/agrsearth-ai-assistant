@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agrsearth-dev": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["tools/dev-mcp/server.mjs"]
+    }
+  }
+}

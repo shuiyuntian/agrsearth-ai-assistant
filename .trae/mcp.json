@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agrsearth-dev": {
+      "command": "node",
+      "args": ["${workspaceFolder}/tools/dev-mcp/server.mjs"]
+    }
+  }
+}

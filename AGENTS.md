@@ -31,18 +31,21 @@
 本仓附带 `tools/dev-mcp/`——插件开发辅助 MCP server（stdio）。接入后你的 AI 工具可直接
 查契约文档、跑脚手架、做发布预检、一键发布到共享调试环境、自助查实例/日志。
 
-- **Kimi Code**：开箱即用（仓根 `.kimi-code/mcp.json` 已注册 `agrsearth-dev`，按需加载）。
-- **Codex**（`~/.codex/config.toml`）：
-  ```toml
-  [mcp_servers.agrsearth-dev]
-  command = "node"
-  args = ["tools/dev-mcp/server.mjs"]
-  ```
-- **Claude Code**：`claude mcp add agrsearth-dev -- node tools/dev-mcp/server.mjs`
+- **Kimi Code**：仓根 `.kimi-code/mcp.json`（自动注册）。
+- **Codex**：`.codex/config.toml`。
+- **Claude Code + CodeBuddy**：共用仓根 `.mcp.json`。
+- **Qoder**：`.qoder/settings.json`。
+- **OpenCode**：`opencode.json`；Skill 直接复用 `.agents/` 或 `.claude/`，不另建目录。
+- **Trae**：`.trae/mcp.json`（IDE 中启用项目级 MCP 并信任项目）。
 - **其他支持 stdio MCP 的客户端**：入口 `node tools/dev-mcp/server.mjs`，工作目录 = 仓根。
 
-首次使用先 `cd tools/dev-mcp && npm install`；查实例/日志类工具需团队 token
-（`AGRSEARTH_TOKEN` 环境变量或仓根 `.env.local`，获取方式见 `test-env/README.md` §2）。
+首次使用先 `cd tools/dev-mcp && npm install`。登录统一用 `auth_login_start` / `auth_login_wait`；
+CI 才用 `AGRSEARTH_TOKEN` 覆盖。`node tools/agent-doctor.mjs --client <kimi|codex|claude|qoder|opencode|trae|codebuddy>`
+检查 MCP 与 Skill；完整矩阵见 `docs/AGENT_PARITY.md`。
+
+Skill 权威源为 `.kimi-code/skills/agrsearth-plugin-dev/SKILL.md`；Codex/OpenCode 复用 `.agents/skills/`，
+Claude 用 `.claude/skills/`，Qoder/Trae/CodeBuddy 分别用 `.qoder/skills/`、`.trae/skills/`、
+`.codebuddy/skills/` 的同内容副本。改后必须跑 `node tools/check-agent-parity.mjs`，禁止单端漂移。
 **`tools/dev-mcp/` 是导出产物，禁止直接改**——问题回报平台方，源头在平台仓 `mcps/agrsearth-dev/`。
 
 ## 契约红线（违反即验收打回；交付前必须 grep 自查）
@@ -70,6 +73,8 @@
 npm install                    # 首次：装全部 workspace 依赖（@agrsearth/* 自动链接）
 npm run check                  # 契约单测 + 全部 workspace 骨架构建
 npm run test:publish           # Node 发布协议 + golden master 回归
+node tools/check-agent-parity.mjs          # 七端 Skill/MCP 资产一致性
+node tools/agent-doctor.mjs --client qoder # 当前客户端接入自检
 node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 URL 双向对账
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
@@ -81,7 +86,7 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 
 ## 遇到问题 → 先去哪
 
-通用 R1–R7 recipe 见 `docs/L5-开发Recipes.md`（所有 agent 可读；SKILL 仅是 Kimi Code 的触发式增强）。
+通用 R1–R7 recipe 见 `docs/L5-开发Recipes.md`（所有 agent 可读；七端 Skill 同源，触发方式按客户端约定）。
 排错按下表选入口，不要先改服务器或共享配置：
 
 | 症状 | 处置入口 |

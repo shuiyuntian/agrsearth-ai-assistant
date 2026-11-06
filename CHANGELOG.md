@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+- 跨 coding agent 能力一致性（2026-11-06）：新增 `tools/agent-doctor.mjs` 与
+  `tools/check-agent-parity.mjs`；补齐 Codex `.agents`、Claude Code `.claude`、Qoder `.qoder`
+  项目级 Skill 同源适配，统一 MCP 接入说明与任务验收矩阵；`npm run check` 纳入漂移闸口。
+  同日新增 OpenCode/Trae/CodeBuddy：OpenCode 复用 `.agents`/`.claude` Skill，Claude/CodeBuddy
+  共用 `.mcp.json`，补齐各客户端项目级 MCP 配置，避免无意义的根目录和配置分叉。
 - 登录与 Windows 兼容（2026-11-05，issues #3/#8）：dev-mcp 1.4.0 新增
   `auth_login_start`/`auth_login_wait` 两步登录，兼容 token 有效期字段；支持 `AGRSEARTH_BASH` 与
   `AGRSEARTH_PYTHON` 解释器覆盖，测试改 `pathToFileURL`；L9 与菜单号段样例警示同步。

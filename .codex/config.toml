@@ -1,0 +1,3 @@
+[mcp_servers.agrsearth-dev]
+command = "node"
+args = ["tools/dev-mcp/server.mjs"]

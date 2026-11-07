@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-07
+
 - 上手摩擦点修复（2026-11-07）：`agent-doctor.mjs` 1.2.0 新增 dev-mcp 依赖硬检查——`tools/dev-mcp`
   未 `npm install` 时七端一律 FAIL 并给出安装指引（此前 doctor 全 PASS 但 MCP server 起不来）；
   新增 Windows 平台提示（缺 bash.exe 时指引 Git Bash 工具链，提示级不进退出码）与 FAIL 页脚

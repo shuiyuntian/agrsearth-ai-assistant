@@ -85,8 +85,13 @@ cd tools/dev-mcp && npm install   # 仅首次
 
 ## 环境配置
 
-所有连接参数均支持**进程环境变量 > 模板仓根 `.env.local` > 内置默认值**。默认仍指向
-aiearth01；其他开发测试服务器可整体覆盖，不需要修改 `server.mjs`。
+所有连接参数均支持**进程环境变量 > 模板仓根 `.env.local` > 用户级 `~/.config/agrsearth/config.json`
+> 内置默认值**。默认仍指向 aiearth01；其他开发测试服务器可整体覆盖，不需要修改 `server.mjs`。
+
+用户级 `config.json` 为机器级非密配置（与登录落盘同目录），适合放个人网络拓扑，例如
+`{"AGRSEARTH_NETWORK": "<平台方发放的画像标签>", "AGRSEARTH_SOCKS_PROXY": "socks5h://127.0.0.1:51080"}`；
+token 一律不进该文件（认证落盘走 `dev-mcp-token.json`，0600）。`tools/publish.mjs`（2.3.0 起）
+对 `DC_API_BASE`/`AGRSEARTH_NETWORK` 按同一分层口径自行读取，MCP 驱动与 CLI 直跑行为一致。
 
 | 环境变量 | 默认值 | 说明 |
 |---|---|---|

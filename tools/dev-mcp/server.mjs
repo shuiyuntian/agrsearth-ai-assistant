@@ -17,8 +17,11 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.5.0
+// 版本：1.6.0
 // 修改记录：
+//   - 1.6.0 (2026-11-07) 非密拓扑项配置分层升级：process.env > 仓根 .env.local >
+//     用户级 ~/.config/agrsearth/config.json > 默认值（与 publish.mjs 2.3.0 同口径；
+//     token 不进配置层）；publish.mjs 2.3.0 起自行读取配置层，子进程无需注入拓扑变量
 //   - 1.5.0 (2026-11-06) ① run() 增可选 env 覆盖（与 process.env 合并后仅注入该子
 //     进程，不改本进程环境、不进任何输出与审计）；package_publish 先 resolveToken
 //     再仅向 publish.mjs 子进程注入 AGRSEARTH_TOKEN（登录落盘文件/CI 环境变量同源
@@ -107,9 +110,17 @@ try {
   }
 } catch { /* .env.local 不存在时静默 */ }
 
-// ---------- 可覆盖的环境配置（process.env > 仓根 .env.local > 默认值）----------
+// ---------- 用户级非密配置（~/.config/agrsearth/config.json；token 不落此文件）----------
+const USER_CONFIG = {};
+try {
+  const parsed = JSON.parse(await fs.readFile(
+    path.join(os.homedir(), ".config", "agrsearth", "config.json"), "utf8"));
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) Object.assign(USER_CONFIG, parsed);
+} catch { /* config.json 不存在/非法时静默 */ }
+
+// ---------- 可覆盖的环境配置（process.env > 仓根 .env.local > 用户级 config.json > 默认值）----------
 function envValue(name, fallback) {
-  return process.env[name] || LOCAL_ENV[name] || fallback;
+  return process.env[name] || LOCAL_ENV[name] || USER_CONFIG[name] || fallback;
 }
 function httpUrl(name, value) {
   const parsed = new URL(value);

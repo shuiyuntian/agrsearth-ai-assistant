@@ -3,8 +3,13 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.2.2
+// 版本：2.3.0
 // 修改记录：
+//   - 2.3.0 (2026-11-07) networkProfile 解耦：删除 100.64.* 个人拓扑硬编码与 lan/tailscale
+//                       词汇表白名单（合法性交由 RM 服务端白名单裁决，客户端仅形态校验+
+//                       透传）；自动推导只认私网段 → lan；非密拓扑项（DC_API_BASE /
+//                       AGRSEARTH_NETWORK）配置分层：进程 env > 仓根 .env.local >
+//                       ~/.config/agrsearth/config.json > 默认值（token 不进配置层）
 //   - 2.2.2 (2026-11-06) data/sql 文件名、非空、大小与 UTF-8 原文摘要一致性前移至发布预检（issue #9）
 //   - 2.2.1 (2026-11-05) MinIO 非 2xx 输出脱敏后的 Code/Message，避免裸 403（issue #8）
 //   - 2.2.0 (2026-11-05) check-only 与正式发布前执行前后端 URL 契约双向对账（issue #6）
@@ -49,6 +54,37 @@ function fail(message, options) {
 
 function exists(file) {
   return fs.existsSync(file);
+}
+
+// ---------- 非密拓扑项配置分层（进程 env > 仓根 .env.local > 用户级 config.json > 默认值）----------
+// 仅适用于 DC_API_BASE / AGRSEARTH_NETWORK 等环境拓扑；token 一律走进程环境/注入，不进配置层。
+// 用户级 config.json 与 dev-mcp 登录落盘同目录体系（~/.config/agrsearth/），机器级、跨 clone 生效。
+const USER_CONFIG_FILE = path.join(os.homedir(), ".config", "agrsearth", "config.json");
+
+function loadDotEnv(file) {
+  const out = {};
+  try {
+    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+      if (m && !line.trimStart().startsWith("#")) out[m[1]] = m[2];
+    }
+  } catch { /* 不存在时静默 */ }
+  return out;
+}
+
+function loadUserConfig() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(USER_CONFIG_FILE, "utf8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch { /* 不存在/非法时静默 */ }
+  return {};
+}
+
+const LOCAL_ENV = loadDotEnv(path.join(REPO_ROOT, ".env.local"));
+const USER_CONFIG = loadUserConfig();
+
+export function envValue(name, env, fallback = "") {
+  return env[name] || LOCAL_ENV[name] || USER_CONFIG[name] || fallback;
 }
 
 function readText(file) {
@@ -98,10 +134,10 @@ function usage() {
   node tools/publish.mjs <package-dir> --dev-url <url>
   node tools/publish.mjs <package-dir> --dev-url --reset
 
-环境变量：
+环境变量（非密拓扑项支持配置分层：进程环境变量 > 仓根 .env.local > ~/.config/agrsearth/config.json > 默认值）：
   DC_API_BASE             默认 ${DEFAULT_DC_API_BASE}
-  AGRSEARTH_TOKEN         团队 token（RM_TOKEN 仅过渡兼容；--check-only 不需要）
-  AGRSEARTH_NETWORK       lan / tailscale；缺省按 DC 网关 IP 推导
+  AGRSEARTH_TOKEN         团队 token（RM_TOKEN 仅过渡兼容；--check-only 不需要；token 不进配置层）
+  AGRSEARTH_NETWORK       网络画像标签，取值由平台方按部署环境给定；缺省推导：私网段网关 → lan
   AGRSEARTH_SOCKS_PROXY   可选 SOCKS5，如 socks5h://127.0.0.1:51080
   REGISTRY                默认 localhost:32000
   CHANGELOG               覆盖 CHANGELOG.md 最新版本段
@@ -242,7 +278,11 @@ function validateVersionConsistency(pluginDir, manifest, hasFrontend, hasAdminUi
 
 export function resolveNetworkProfile(dcApiBase, explicit) {
   if (explicit) {
-    if (!["lan", "tailscale"].includes(explicit)) fail(`AGRSEARTH_NETWORK 仅支持 lan / tailscale：${explicit}`);
+    // 词汇表 owner 是 RM 服务端（rm.artifact-upload.endpoint.* 白名单，非法值 400 兜底）；
+    // 客户端只做形态校验 + 不透明透传，不内置任何环境拓扑
+    if (!/^[a-z0-9][a-z0-9-]{0,15}$/.test(explicit)) {
+      fail(`AGRSEARTH_NETWORK 形态非法：${explicit}（小写字母/数字/中划线，≤16 字符；合法取值由平台方按部署环境给定）`);
+    }
     return explicit;
   }
   let hostname;
@@ -251,13 +291,12 @@ export function resolveNetworkProfile(dcApiBase, explicit) {
   } catch (error) {
     fail(`DC_API_BASE 不是合法 URL：${dcApiBase}`, { cause: error });
   }
-  if (hostname.startsWith("100.64.")) return "tailscale";
   const parts = hostname.split(".").map(Number);
   if (parts.length === 4 && parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
     if (parts[0] === 10 || (parts[0] === 192 && parts[1] === 168) ||
         (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)) return "lan";
   }
-  fail(`无法从网关地址推导 networkProfile（host=${hostname}）——请显式设置 AGRSEARTH_NETWORK=lan|tailscale`);
+  fail(`无法从网关地址推导 networkProfile（host=${hostname}）——请显式设置 AGRSEARTH_NETWORK（取值由平台方按部署环境给定）`);
 }
 
 export function loadPackage(pluginArg, env = process.env, options = {}) {
@@ -322,8 +361,8 @@ export function loadPackage(pluginArg, env = process.env, options = {}) {
   validateDataSqlFiles(pluginDir);
   validateVersionConsistency(pluginDir, manifest, hasFrontend, hasAdminUi);
 
-  const dcApiBase = env.DC_API_BASE || DEFAULT_DC_API_BASE;
-  const networkProfile = resolveNetworkProfile(dcApiBase, env.AGRSEARTH_NETWORK || "");
+  const dcApiBase = envValue("DC_API_BASE", env, DEFAULT_DC_API_BASE);
+  const networkProfile = resolveNetworkProfile(dcApiBase, envValue("AGRSEARTH_NETWORK", env));
   let token = env.AGRSEARTH_TOKEN || "";
   if (!token && env.RM_TOKEN) token = env.RM_TOKEN;
   if (!token && options.requireToken !== false) fail("请经环境变量提供 AGRSEARTH_TOKEN（团队 token，申请方式见 test-env/README.md §2）");

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+- networkProfile 解耦（2026-11-07，publish.mjs 2.3.0 + dev-mcp 1.6.0）：删除 `100.64.*` 个人拓扑
+  硬编码与 `lan|tailscale` 词汇表客户端硬校验——词汇表 owner 归 RM 服务端（`rm.artifact-upload.endpoint.*`
+  白名单默认全拒 + 非法值明确 400，存量行为已覆盖兜底，服务端零改动）；客户端仅形态校验 +
+  不透明透传，自动推导收敛为「私网段网关 → lan，其余须显式指定」。非密拓扑项新增配置分层：
+  进程 env > 仓根 `.env.local` > 用户级 `~/.config/agrsearth/config.json` > 默认值（token 不进
+  配置层），publish.mjs 与 dev-mcp 双通道同口径，CLI 直跑与 MCP 驱动行为一致。
+
 ## [2.1.0] - 2026-11-07
 
 主线：发布链全 Node 化并切至 aiearth01 默认环境；七端 AI 编码工具一致性接入；前后端 URL 契约治理；Windows 工具链兼容。本期关联 issue #3~#9 已全部关闭。

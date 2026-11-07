@@ -385,9 +385,13 @@ test("本地闸口覆盖菜单、拓扑、网络画像和参数", () => {
     { serviceId: "a", dependsOn: ["b"] },
     { serviceId: "b", dependsOn: ["a"] },
   ]), /循环依赖/);
-  assert.equal(resolveNetworkProfile("http://100.64.0.4:18801/api", ""), "tailscale");
+  // networkProfile：客户端不内置环境拓扑——私网段自动推导 lan，其余必须显式指定（不透明透传，RM 服务端白名单裁决）
   assert.equal(resolveNetworkProfile("http://10.82.11.51:18801/api", ""), "lan");
+  assert.throws(() => resolveNetworkProfile("http://100.64.0.4:18801/api", ""), /无法从网关地址推导/);
   assert.throws(() => resolveNetworkProfile("http://example.com/api", ""), /无法从网关地址推导/);
+  assert.equal(resolveNetworkProfile("http://100.64.0.4:18801/api", "tailscale"), "tailscale");
+  assert.equal(resolveNetworkProfile("http://example.com/api", "partner-wan"), "partner-wan");
+  assert.throws(() => resolveNetworkProfile("http://example.com/api", "Bad_Value"), /形态非法/);
   assert.throws(() => parseArgs(["demo", "--prod"]), /不接受环境参数/);
   assert.throws(() => parseArgs(["demo", "--reset"]), /必须与 --dev-url 连用/);
 });

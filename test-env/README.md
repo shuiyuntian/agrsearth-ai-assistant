@@ -73,7 +73,11 @@ release-complete 前失败时版本保持**草稿态**可重放；一旦 release
 更新产物须递增版本号。
 
 networkProfile 按 `DC_API_BASE` 网关地址自动推导（内网私网段 → lan，其余 → 广域通道），
-或经 `AGRSEARTH_NETWORK` 显式指定（取值见 `tools/publish.mjs` 用法说明）。SOCKS5 代理同时覆盖 DC、MinIO 和冒烟。
+或经 `AGRSEARTH_NETWORK` 显式指定（取值由平台方按部署环境发放）。SOCKS5 代理同时覆盖 DC、MinIO 和冒烟。
+
+非密拓扑项（`DC_API_BASE` / `AGRSEARTH_NETWORK` 等）支持配置分层：**进程环境变量 > 仓根
+`.env.local` > 用户级 `~/.config/agrsearth/config.json` > 内置默认值**（publish.mjs 与 dev-mcp 同口径；
+token 不进配置层）。个人网络拓扑建议写用户级 config.json——机器级生效、不落任何仓库。
 
 自构后端镜像在 `container/<svc>/` 执行
 `PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`：默认 `PLATFORMS=linux/amd64`，buildx `--load`

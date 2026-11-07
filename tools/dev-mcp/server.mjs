@@ -643,7 +643,7 @@ server.registerTool("package_list", {
 // ===== 6. package_register：注册扩展包（DC POST /packages/register，写操作） =====
 
 server.registerTool("package_register", {
-  description: "【写操作，需审批】以归属团队名义注册扩展包（DC POST /packages/register）：packageId 唯一 owner（dc_package_owner 唯一索引兜底冲突），resources.postgres/menu 为资源位开关（契约固定键，不另起 minio/registry）。注册后团队方可对该包发布。",
+  description: "【写操作，需审批】以归属团队名义注册扩展包（DC POST /packages/register）：packageId 唯一 owner（dc_package_owner 唯一索引兜底冲突），resources.postgres/menu 为资源位开关（契约固定键，不另起 minio/registry）。HTTP 200 仅表示登记与任务受理；响应 provisionTaskId/provisionStatus 是发放真相，必须继续 task_get 跟踪到 ACTIVE 才发布，PARTIAL/ERROR 时先 task_retry 或排障，不得视为注册完成。",
   inputSchema: {
     packageId: z.string().min(2).describe("包 ID（小写字母/数字/中划线，如 wind-field）"),
     packageName: z.string().min(1).describe("包显示名"),
@@ -665,7 +665,7 @@ server.registerTool("package_register", {
 // ===== 7. package_manage：包委托（grants）+ 生命周期（archive/transfer；写 action 需 reason） =====
 
 server.registerTool("package_manage", {
-  description: "扩展包管理与委托：list-grants 查委托列表（GET /packages/{packageId}/grants）；create-grant 创建委托（POST，subjectType=TEAM/USER，role=TEAM_MAINTAINER/DEVELOPER/VIEWER，capabilities∈PUBLISH/PROVISION）；revoke-grant 删除委托（DELETE /grants/{grantId}）；archive 归档包（POST /packages/{packageId}/archive；TEAM_OWNER/TEAM_MAINTAINER；停止后续写操作、资源账号 NOLOGIN 数据保留、幂等）；transfer 转移归属（POST /packages/{packageId}/transfer，body {targetTeamId}；校验目标团队、菜单段保持不变；无 PG 数据直接过户，有 PG 数据建 PACKAGE_MIGRATION 显式任务并返回 migrationTaskId——用 task_get(taskId) 跟踪停写→导出→恢复→校验→切换）；remove 移除测试包（仅限 DC 测试环境：DELETE /packages/{packageId}；服务端将 MinIO 产物移至同 Bucket `_trash/<packageId>/<时间-短ID>/` 回收目录后删除包登记，审计保留；透传 trashPrefix/movedObjects 真实结果，不假成功）。写 action（create-grant/revoke-grant/archive/transfer/remove）需 reason。",
+  description: "扩展包管理与委托：list-grants 查委托列表（GET /packages/{packageId}/grants）；create-grant 创建委托（POST，subjectType=TEAM/USER，role=TEAM_MAINTAINER/DEVELOPER/VIEWER，capabilities∈PUBLISH/PROVISION）；revoke-grant 删除委托（DELETE /grants/{grantId}）；archive 归档包（POST /packages/{packageId}/archive；TEAM_OWNER/TEAM_MAINTAINER；停止后续写操作、资源账号 NOLOGIN 数据保留、幂等）；transfer 转移归属（POST /packages/{packageId}/transfer，body {targetTeamId}；校验目标团队、菜单段保持不变；无 PG 数据直接过户，有 PG 数据建 PACKAGE_MIGRATION 显式任务并返回 migrationTaskId——用 task_get(taskId) 跟踪停写→导出→恢复→校验→切换）；remove 移除测试包（仅限 DC 测试环境：DELETE /packages/{packageId}；服务端定点回收菜单/K8s/网关，MinIO 产物移至同 Bucket `_trash/<packageId>/<时间-短ID>/` 后物理清理登记，runtime Secret 删除、PG 数据默认保留；透传 cleanupResult 与 trashPrefix/movedObjects，审计保留、不假成功）。写 action（create-grant/revoke-grant/archive/transfer/remove）需 reason。",
   inputSchema: {
     action: z.enum(["list-grants", "create-grant", "revoke-grant", "archive", "transfer", "remove"]).describe("动作"),
     packageId: z.string().describe("包 ID"),

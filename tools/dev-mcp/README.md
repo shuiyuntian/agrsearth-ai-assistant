@@ -16,8 +16,8 @@
 | 预检 | `package_contract_check` | 模板仓模式以 Node 执行 `tools/check-api-contract.mjs`：API 常量表 ↔ 公开 Spring Mapping 双向 diff；平台仓模式明确不适用 | 无 |
 | 发布 | `package_publish` | **写操作**：tools/publish.sh 编排 DC 发布门面——`release-prepare` → `upload-sessions`（预签名 postUrl/formFields，POST 直传）→ `complete` → `release-complete`（不再 MinIO SigV4 自签/RM 登记；prod 硬拒绝；平台仓模式拒绝）。执行前 resolveToken（auth_login 落盘 / `AGRSEARTH_TOKEN` 环境变量同源），令牌仅以 `AGRSEARTH_TOKEN` 注入 publish.mjs 子进程环境，不打印、不进审计 | 有 |
 | 包 | `package_list` | DC `GET /packages`：我可见的扩展包分页（keyword/track/tier） | 无 |
-| 包 | `package_register` | **写操作**：DC `POST /packages/register` 注册包（teamId 归属 + resources.postgres/menu 资源位开关） | 有 |
-| 包 | `package_manage` | 包委托 grants（list/create/revoke）+ 生命周期：`archive`（POST /packages/{id}/archive 幂等归档，数据保留账号 NOLOGIN）、`transfer`（POST /packages/{id}/transfer {targetTeamId}；有 PG 数据返回 migrationTaskId，task_get 跟踪迁移）、`remove`（DELETE /packages/{id}；仅 DC 测试环境，产物移至 `_trash/<packageId>/<时间-短ID>/` 后清理登记，审计保留） | 读+写 |
+| 包 | `package_register` | **写操作**：DC `POST /packages/register` 注册包（teamId 归属 + resources.postgres/menu 资源位开关）；HTTP 200 仅表示受理，响应含 `provisionTaskId/provisionStatus`，必须 `task_get` 到 `ACTIVE` 后再发布 | 有 |
+| 包 | `package_manage` | 包委托 grants（list/create/revoke）+ 生命周期：`archive`（POST /packages/{id}/archive 幂等归档，数据保留账号 NOLOGIN）、`transfer`（POST /packages/{id}/transfer {targetTeamId}；有 PG 数据返回 migrationTaskId，task_get 跟踪迁移）、`remove`（DELETE /packages/{id}；仅 DC 测试环境，定点回收菜单/K8s/网关，产物移至 `_trash/<packageId>/<时间-短ID>/`，Secret 删除、PG 保留，返回 cleanupResult） | 读+写 |
 | 团队 | `team_list` | DC `GET /teams`、`/teams/{id}/members` 分页查询 | 无 |
 | 团队 | `team_manage` | `create` / `add-member` / `update-role` / `remove-member`（写，需 reason）；`search-users` 平台用户窄检索；`quota_request` 配额申请（POST /teams/{teamId}/quota-requests，items 1-8 项 `{quota:MENU_POOL\|PACKAGE\|PG, band?, additional:1-100}`，创建 QUOTA_APPROVAL 任务待审）；`quota_approve`/`quota_reject` 平台管理员审批（POST /tasks/{taskId}/quota-approve / quota-reject{reason}；21 工具定型不增 task_manage，审批承载于本工具） | 读+写 |
 | 资源 | `resource_list` | DC `GET /packages/{packageId}/resources`：包资源位列表；scope 为客户端过滤（`pg-admin` 会被明确拒绝——团队级账号无列表示端点） | 无 |

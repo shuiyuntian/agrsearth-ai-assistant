@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "packageId": "menu-invalid-demo",
+  "menus": [
+    {
+      "menuId": 150000,
+      "menuName": "夹具菜单",
+      "parentId": 0,
+      "orderNum": 1,
+      "path": "menu-invalid-demo",
+      "menuType": "M",
+      "visible": "0",
+      "status": "0"
+    }
+  ]
+}

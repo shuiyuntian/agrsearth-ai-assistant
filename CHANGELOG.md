@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+- 建包与版本校验工具 Node 化（2026-11-07，create-extension.mjs 2.0.0 + check-extension-versions.mjs 2.0.0）：
+  同 publish.mjs 2.0.0 模式收尾——两工具改为 Node 唯一实现，`.sh`/`.cmd` 退化为薄 shim
+  （`check-extension-versions.cmd` 为新增），Windows 建包/校验不再依赖 Git Bash/jq/Python；
+  jq 的 manifest 改写经实测与 `JSON.stringify(v,null,2)+"\n"` 字节一致，pom 改造与公开示例
+  控制器改写内联为 JS；menu.json 校验复用 publish.mjs `validateMenuDocument`（规则与
+  menujson.py 等价，golden 夹具背书）；校验输出表格按 UTF-8 字节宽补 padding 复刻 bash
+  `printf %-Ns` 语义。回归设施：golden master 组合快照（scaffold 6 组参数组合 / check-versions
+  9 夹具用例，含捕获与重放脚本及 fixtures README），`npm run test:tools` 并入 `npm run check`。
+  有意差异：脚手架复制骨架时跳过 `node_modules/`（gitignored 本地环境污染，非契约行为；
+  新包依赖经仓根 `npm install` 重建）。agent-doctor 1.2.1 同步收窄 Windows bash 提示文案。
 - networkProfile 解耦（2026-11-07，publish.mjs 2.3.0 + dev-mcp 1.6.0）：删除 `100.64.*` 个人拓扑
   硬编码与 `lan|tailscale` 词汇表客户端硬校验——词汇表 owner 归 RM 服务端（`rm.artifact-upload.endpoint.*`
   白名单默认全拒 + 非法值明确 400，存量行为已覆盖兜底，服务端零改动）；客户端仅形态校验 +

@@ -1,0 +1,153 @@
+{
+  "combo": "golden-sys-biz",
+  "args": [
+    "golden-sys-biz",
+    "--track",
+    "system",
+    "--tier",
+    "business",
+    "--name",
+    "金样业务系统"
+  ],
+  "capturedAt": "2026-11-07",
+  "exitCode": 0,
+  "stdout": "==========================================\n脚手架已生成：extensions/system/business/golden-sys-biz\n  extensions/system/business/golden-sys-biz/CHANGELOG.md\n  extensions/system/business/golden-sys-biz/README.md\n  extensions/system/business/golden-sys-biz/VERSION\n  extensions/system/business/golden-sys-biz/admin-ui/README.md\n  extensions/system/business/golden-sys-biz/admin-ui/auto-imports.d.ts\n  extensions/system/business/golden-sys-biz/admin-ui/package.json\n  extensions/system/business/golden-sys-biz/admin-ui/src/api/example.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/api/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/types/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/views/example/index.vue\n  extensions/system/business/golden-sys-biz/admin-ui/tsconfig.json\n  extensions/system/business/golden-sys-biz/admin-ui/tsconfig.node.json\n  extensions/system/business/golden-sys-biz/admin-ui/vite.config.ts\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/pom.xml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/GoldenSysBizServerApplication.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/controller/SampleController.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/resources/bootstrap.yml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/pom.xml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/GoldenSysBizWorkerApplication.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/controller/SampleController.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/Dockerfile\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/VERSION\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/build.sh\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/Dockerfile\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/VERSION\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/build.sh\n  extensions/system/business/golden-sys-biz/data/menu.json\n  extensions/system/business/golden-sys-biz/deploy/k8s/00-shared-configmap.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/10-golden-sys-biz-server.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/20-golden-sys-biz-worker.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/README.md\n  extensions/system/business/golden-sys-biz/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/system/business/golden-sys-biz\n==========================================\n",
+  "files": {
+    "CHANGELOG.md": {
+      "sha256": "584d426ee434ba364b4b86403624ca334122fc21e90f851336ddf806d8e14684",
+      "exec": false
+    },
+    "README.md": {
+      "sha256": "8f729a7421eadd3829fa847010865e9b8705b6a0223dd39c23738d92dd9059cd",
+      "exec": false
+    },
+    "VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "admin-ui/README.md": {
+      "sha256": "0af3ea1c478d94670078484838761629f1b98b2744af24d3146136372b15a2b6",
+      "exec": false
+    },
+    "admin-ui/auto-imports.d.ts": {
+      "sha256": "eb3519b5b5a59f3f79438485673defe7dcd3ab3ce3db756629f490ecaf69fb22",
+      "exec": false
+    },
+    "admin-ui/package.json": {
+      "sha256": "7e686e994e1fc66d55a89ed9d8ee6bf0a447205cc69f4e44dbb823631cada4d7",
+      "exec": false
+    },
+    "admin-ui/src/api/example.ts": {
+      "sha256": "4bf68f14ffa1e4d6e407601ef3538fe30ee94b44928769f571c00069f0037382",
+      "exec": false
+    },
+    "admin-ui/src/api/index.ts": {
+      "sha256": "05157c93fd57483a8f777ec52af267fdffbc46cb3f48c836e8c4c4fbee12cacc",
+      "exec": false
+    },
+    "admin-ui/src/index.ts": {
+      "sha256": "1a130ef87c6113fab10f0aea1635ddd604b8d2be470c4b48d5907bb1e482238f",
+      "exec": false
+    },
+    "admin-ui/src/types/index.ts": {
+      "sha256": "79f3f30b15ae92b4e129e4643d20f7fbb134e9c64df775208433c53f4d988ad6",
+      "exec": false
+    },
+    "admin-ui/src/views/example/index.vue": {
+      "sha256": "b8094355b9994baf0f22baa7971ecdde1ae7723d35a169fe18cc8b7e054b356c",
+      "exec": false
+    },
+    "admin-ui/tsconfig.json": {
+      "sha256": "8d422df862b4fa6a2651a29d651d9e47ad687f14a83975c14fe1cde3fe015e0d",
+      "exec": false
+    },
+    "admin-ui/tsconfig.node.json": {
+      "sha256": "bb9fd8592a9e364641441219f10d84daae9ba2ca5cc85db798efad6913bb8257",
+      "exec": false
+    },
+    "admin-ui/vite.config.ts": {
+      "sha256": "3af198a3785f234141bb3b3cfe4f87e0467b336e1d3e0e64138f45900a3371ff",
+      "exec": false
+    },
+    "backend/golden-sys-biz-server/pom.xml": {
+      "sha256": "ed7dc67fd45ba54600e0d52354d7f36d57c967b9d209348beaa58acf2539e367",
+      "exec": false
+    },
+    "backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/GoldenSysBizServerApplication.java": {
+      "sha256": "31143157afaf68c6a1b3d4c497214959c97a68eb685f9bc77b6ad7d92bd385e7",
+      "exec": false
+    },
+    "backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/controller/SampleController.java": {
+      "sha256": "97316936dfa590f47b09b3e22ae406f9ef036b5dc71c8b45f2dd8e554ecedaba",
+      "exec": false
+    },
+    "backend/golden-sys-biz-server/src/main/resources/bootstrap.yml": {
+      "sha256": "828afa856e132172d739d818bf456473002cff94693172d590dfafc653768ff0",
+      "exec": false
+    },
+    "backend/golden-sys-biz-worker/pom.xml": {
+      "sha256": "b7aad9dd1f052130df4e65f3cb0235955f24367f3f5a7059a072bb6a7e341df8",
+      "exec": false
+    },
+    "backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/GoldenSysBizWorkerApplication.java": {
+      "sha256": "2e0386a55d4f2463be86873434519964fb9f8af7cc7d2dd9343517fb25b8bcd8",
+      "exec": false
+    },
+    "backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/controller/SampleController.java": {
+      "sha256": "4decc3f1c4d0bc03e30d93692d50d06952689da86857e05497e83b98cead3460",
+      "exec": false
+    },
+    "backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml": {
+      "sha256": "13fd6dfc7ee54e8f7f10ec546cf6b2948870561fc5fc90203c6b16e3c7de04a3",
+      "exec": false
+    },
+    "container/golden-sys-biz-server/Dockerfile": {
+      "sha256": "07b87fafa8f12069877e8667919c0ce5f087c5d1b597fbdab235a701cb2b5190",
+      "exec": false
+    },
+    "container/golden-sys-biz-server/VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "container/golden-sys-biz-server/build.sh": {
+      "sha256": "32820bd800f3b29d1acbbccd3620e44fa2eb2e862ace303ce8e226112c4ff9df",
+      "exec": true
+    },
+    "container/golden-sys-biz-worker/Dockerfile": {
+      "sha256": "c30b066452d09f2def0a32491a19c157728686649a5bc4658693fc9a94e07407",
+      "exec": false
+    },
+    "container/golden-sys-biz-worker/VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "container/golden-sys-biz-worker/build.sh": {
+      "sha256": "be5585b6f84e146d86ec8c929166d103618264e0a786d20d6490f11045cfc20d",
+      "exec": true
+    },
+    "data/menu.json": {
+      "sha256": "9dfa7dfd9109d8883372bd3bda4fe9acdbaedd5e8afc02bafb70522fd3f88d2c",
+      "exec": false
+    },
+    "deploy/k8s/00-shared-configmap.yaml": {
+      "sha256": "c95e2fdcb4da9827b902ff5265012e31e98e1e631d0ffdf36a55b6c2267e80b4",
+      "exec": false
+    },
+    "deploy/k8s/10-golden-sys-biz-server.yaml": {
+      "sha256": "11ab6d8ad01337f79eec5fee92dc1ac45d8a10d6cb8ab81f8981498125940648",
+      "exec": false
+    },
+    "deploy/k8s/20-golden-sys-biz-worker.yaml": {
+      "sha256": "8fb38918734e6f145c9b6643921697f9427ba8893c6a67ff6e723bbf99975ef4",
+      "exec": false
+    },
+    "deploy/k8s/README.md": {
+      "sha256": "bba289411a438d5d0e90216fd161e4883fcf7e6c919d6e8af83122d55bd68f82",
+      "exec": false
+    },
+    "manifest.json": {
+      "sha256": "d5a8848bbb35f7df9458b8fd26336bb3c4bb01c24b200151b9339b771e69879c",
+      "exec": false
+    }
+  }
+}

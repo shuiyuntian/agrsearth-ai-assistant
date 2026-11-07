@@ -1,0 +1,8 @@
+{
+  "id": "mismatch-manifest-demo",
+  "name": "夹具包",
+  "version": "0.2.0",
+  "track": "tool",
+  "tier": "business",
+  "delivery": "optional"
+}

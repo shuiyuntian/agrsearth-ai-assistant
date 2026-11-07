@@ -14,8 +14,9 @@
     "build": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "check:api-contract": "node --test tests/unit/api-contract.test.mjs",
     "check:agents": "node tools/check-agent-parity.mjs && node --test tests/unit/agent-parity.test.mjs",
-    "check": "npm run check:agents && npm run check:api-contract && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
+    "check": "npm run check:agents && npm run check:api-contract && npm run test:tools && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "test:publish": "node --test tests/unit/publish.test.mjs tests/unit/publish-golden.test.mjs",
+    "test:tools": "node --test tests/unit/scaffold.test.mjs tests/unit/scaffold-golden.test.mjs tests/unit/check-versions.test.mjs tests/unit/check-versions-golden.test.mjs",
     "docs:html": "mkdir -p docs/html && for f in docs/L*.md; do python3 tools/md-to-html.py \"$f\" \"docs/html/$(basename \"$f\" .md).html\"; done"
   },
   "dependencies": {

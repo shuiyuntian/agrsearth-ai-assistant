@@ -1,0 +1,5 @@
+{
+  "case": "mismatch-frontend",
+  "exitCode": 1,
+  "stdout": "==============================================\n扩展包版本与文档一致性检查（extensions/）\n==============================================\n包                              版本一致 四必备 状态行 menu.json 结论\n-------------------------------- --------   ------   ------   --------- --------\nextensions/tool/business/mismatch-frontend-demo ✘        ✔      -        -        ✘ 失败\n==============================================\n共 1 个包：通过 0，失败 1\n\n失败详情：\n  [extensions/tool/business/mismatch-frontend-demo] 版本不一致：VERSION=0.1.0，frontend/package.json=0.9.9\n"
+}

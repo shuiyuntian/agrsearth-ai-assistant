@@ -3,7 +3,7 @@
 // 文件作用：检查 Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 的 MCP 与 Skill 一致性
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.2.0
+// 版本：1.2.1
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 初始创建（跨 coding agent 能力一致性）
 //   - 1.1.0 (2026-11-06) Codex/OpenCode Skill 入口从 .agents 复用改为各自项目目录
@@ -11,6 +11,8 @@
 //   - 1.2.0 (2026-11-07) 新增 dev-mcp 依赖硬检查（depsReady 计入 passed，未装即 FAIL 并给
 //                       安装指引）；新增 platformWarnings（win32 缺 bash 时提示 Git Bash
 //                       工具链，提示级不进 passed）；FAIL 时页脚补客户端信任/工作区根提示
+//   - 1.2.1 (2026-11-07) 脚手架/版本校验 Node 化后收窄 platformWarnings 文案：仅 dev-mcp
+//                       package_scaffold 通道仍需 Git Bash，CLI 直跑不再需要 bash/jq/python
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
 
@@ -81,7 +83,7 @@ export function devMcpDepsReady(root) {
 
 export function platformWarnings(platform = process.platform, bashAvailable = true) {
   if (platform !== "win32" || bashAvailable) return [];
-  return ["未检测到 bash.exe：建包脚手架（create-extension.sh 与 dev-mcp package_scaffold）依赖 Git Bash + jq + 真实 Python ≥3.9，安装指引见 docs/L2-接入准备-SSO与开发环境.md §2.4"];
+  return ["未检测到 bash.exe：dev-mcp package_scaffold 通道仍经 Git Bash 调起脚手架（CLI 直跑 tools\\create-extension.cmd 无需 bash），安装指引见 docs/L2-接入准备-SSO与开发环境.md §2.4"];
 }
 
 export function projectMcpConfigured(clientName, root) {

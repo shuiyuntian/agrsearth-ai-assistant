@@ -52,7 +52,7 @@
 
 各端 MCP 配置使用仓根相对路径（Trae 已用 `${workspaceFolder}`），**须以模板仓根目录为工作区打开**；
 嵌套为子目录打开会导致 MCP server 启动失败。Windows 建包入口为 `tools\create-extension.cmd`
-（Git Bash 薄 shim，缺 bash 时打印工具链指引）。
+（Node 薄 shim，无需 Git Bash；仅 dev-mcp `package_scaffold` 通道仍经 bash 调起）。
 
 ## 3. 接入自检
 
@@ -75,7 +75,7 @@ node tools/agent-doctor.mjs --client qoder --json
 
 doctor 只读，不修改用户配置。优先检查仓内项目级配置；缺失时才尝试客户端 `mcp list`，Codex 还会
 回查 `CODEX_HOME/config.toml`。任一客户端缺 MCP、Skill 漂移或 dev-mcp 依赖未安装都会返回非零退出码；
-Windows 上额外探测 bash 工具链（提示级，不进退出码）。
+Windows 上额外探测 bash 工具链（仅 dev-mcp `package_scaffold` 通道需要；提示级，不进退出码）。
 
 ## 4. 统一任务验收矩阵
 

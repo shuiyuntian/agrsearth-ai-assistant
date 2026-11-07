@@ -1,0 +1,5 @@
+{
+  "case": "design-no-status",
+  "exitCode": 1,
+  "stdout": "==============================================\n扩展包版本与文档一致性检查（extensions/）\n==============================================\n包                              版本一致 四必备 状态行 menu.json 结论\n-------------------------------- --------   ------   ------   --------- --------\nextensions/tool/business/design-no-status-demo ✔        ✔      ✘      -        ✘ 失败\n==============================================\n共 1 个包：通过 0，失败 1\n\n失败详情：\n  [extensions/tool/business/design-no-status-demo] DESIGN.md 文首缺少「状态：」行\n"
+}

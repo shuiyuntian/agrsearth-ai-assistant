@@ -1,0 +1,160 @@
+{
+  "combo": "golden-tool-full",
+  "args": [
+    "golden-tool-full",
+    "--track",
+    "tool",
+    "--tier",
+    "business",
+    "--delivery",
+    "bundled",
+    "--name",
+    "金样全配工具",
+    "--icon",
+    "Sunny",
+    "--with-admin-ui",
+    "--backend",
+    "golden-svc"
+  ],
+  "capturedAt": "2026-11-07",
+  "exitCode": 0,
+  "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-full\n  extensions/tool/business/golden-tool-full/CHANGELOG.md\n  extensions/tool/business/golden-tool-full/README.md\n  extensions/tool/business/golden-tool-full/VERSION\n  extensions/tool/business/golden-tool-full/admin-ui/README.md\n  extensions/tool/business/golden-tool-full/admin-ui/auto-imports.d.ts\n  extensions/tool/business/golden-tool-full/admin-ui/package.json\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/example.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/types/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/views/example/index.vue\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.json\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/admin-ui/vite.config.ts\n  extensions/tool/business/golden-tool-full/backend/golden-svc/pom.xml\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/GoldenSvcApplication.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/controller/SampleController.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-full/container/golden-svc/Dockerfile\n  extensions/tool/business/golden-tool-full/container/golden-svc/VERSION\n  extensions/tool/business/golden-tool-full/container/golden-svc/build.sh\n  extensions/tool/business/golden-tool-full/data/menu.json\n  extensions/tool/business/golden-tool-full/deploy/k8s/10-golden-svc.yaml\n  extensions/tool/business/golden-tool-full/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-full/frontend/package.json\n  extensions/tool/business/golden-tool-full/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-full/frontend/src/types.ts\n  extensions/tool/business/golden-tool-full/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-full/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-full\n==========================================\n",
+  "files": {
+    "CHANGELOG.md": {
+      "sha256": "82c462318d07648b31afbac59ada1a2358bc96d548d1d8e6ea3e0be7152d718b",
+      "exec": false
+    },
+    "README.md": {
+      "sha256": "6a7c9f9a126631e986f285f9769da0f10bffff5260dbbe1c40925f81fe88b333",
+      "exec": false
+    },
+    "VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "admin-ui/README.md": {
+      "sha256": "0af3ea1c478d94670078484838761629f1b98b2744af24d3146136372b15a2b6",
+      "exec": false
+    },
+    "admin-ui/auto-imports.d.ts": {
+      "sha256": "eb3519b5b5a59f3f79438485673defe7dcd3ab3ce3db756629f490ecaf69fb22",
+      "exec": false
+    },
+    "admin-ui/package.json": {
+      "sha256": "72d9c744ce377de3539124e76c0d69481a726cfe4d983ee4bb6c21df89941ed2",
+      "exec": false
+    },
+    "admin-ui/src/api/example.ts": {
+      "sha256": "4bf68f14ffa1e4d6e407601ef3538fe30ee94b44928769f571c00069f0037382",
+      "exec": false
+    },
+    "admin-ui/src/api/index.ts": {
+      "sha256": "ebab69d9f735c213e7a48462a09f4c91ef31bcaaf2510af60399a5f1a6ff29c5",
+      "exec": false
+    },
+    "admin-ui/src/index.ts": {
+      "sha256": "6be946bb8bd0272a47fd6ab9eba81ba7f2393f303a4c5bcacc35467b02e2d565",
+      "exec": false
+    },
+    "admin-ui/src/types/index.ts": {
+      "sha256": "79f3f30b15ae92b4e129e4643d20f7fbb134e9c64df775208433c53f4d988ad6",
+      "exec": false
+    },
+    "admin-ui/src/views/example/index.vue": {
+      "sha256": "b8094355b9994baf0f22baa7971ecdde1ae7723d35a169fe18cc8b7e054b356c",
+      "exec": false
+    },
+    "admin-ui/tsconfig.json": {
+      "sha256": "8d422df862b4fa6a2651a29d651d9e47ad687f14a83975c14fe1cde3fe015e0d",
+      "exec": false
+    },
+    "admin-ui/tsconfig.node.json": {
+      "sha256": "bb9fd8592a9e364641441219f10d84daae9ba2ca5cc85db798efad6913bb8257",
+      "exec": false
+    },
+    "admin-ui/vite.config.ts": {
+      "sha256": "15561ba8ba4b821f41a1ae616713c0efd2e688ad5c6e0a256ebcd09154214d7e",
+      "exec": false
+    },
+    "backend/golden-svc/pom.xml": {
+      "sha256": "73f4cf81ee8d20f1d975561b3b126f4b5052b99e29ea9749d29f2636d511179e",
+      "exec": false
+    },
+    "backend/golden-svc/src/main/java/com/ruoyi/goldensvc/GoldenSvcApplication.java": {
+      "sha256": "18982d3ea0c70c719804ed03741772e201d9bbb8345d5941058b295c63e23e5a",
+      "exec": false
+    },
+    "backend/golden-svc/src/main/java/com/ruoyi/goldensvc/controller/SampleController.java": {
+      "sha256": "f2d42cdb33044947805b1a0ed4daf8608af65092034339c9b17f66f011fb1ddd",
+      "exec": false
+    },
+    "backend/golden-svc/src/main/resources/bootstrap.yml": {
+      "sha256": "cda62a1f071c79d76bfdfc05ebf556867b1827144583defb322e7025cadb5fb2",
+      "exec": false
+    },
+    "container/golden-svc/Dockerfile": {
+      "sha256": "e5eac75e9df55de66c171f2f2fada3d962bacf7c24083f51279bdd9fe931c271",
+      "exec": false
+    },
+    "container/golden-svc/VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "container/golden-svc/build.sh": {
+      "sha256": "a1b273b8f83b9920fad248bbb4c7e5c10506f2f0a1d8395cfac85edecc19c11c",
+      "exec": true
+    },
+    "data/menu.json": {
+      "sha256": "f5b58cd8d0071af1bcd4aa5aa181aa0767715af8a930ddf4788d11786b953242",
+      "exec": false
+    },
+    "deploy/k8s/10-golden-svc.yaml": {
+      "sha256": "f097fff8e18bcfb80ffb170aad2ab86c5ab440507d5d1fd049cf138e88e0fc51",
+      "exec": false
+    },
+    "deploy/k8s/README.md": {
+      "sha256": "c8b5042d8fb53bda00742483beea5b454266937232f70040b16ddb458840e53a",
+      "exec": false
+    },
+    "frontend/package.json": {
+      "sha256": "5dbf798487fe3fbcaf028786b166b7dca215eb5203a45ae4b17cac59b1d11d84",
+      "exec": false
+    },
+    "frontend/src/api/index.ts": {
+      "sha256": "6c82aabc3889f197b9b651e0e1d0eed9158f1fb053ca1b3e63e63358a6c62d5f",
+      "exec": false
+    },
+    "frontend/src/index.ts": {
+      "sha256": "ec401a8bc023d214dfdd1d4a9b0e3a17483f9c32c335dac04f523c6a4525caa3",
+      "exec": false
+    },
+    "frontend/src/manifest.ts": {
+      "sha256": "fb3ccae47aa549b6b41b6978ae54972a1582bbd264dc5ce2eca45d2cb764184f",
+      "exec": false
+    },
+    "frontend/src/types.ts": {
+      "sha256": "57b9a72db78bcce6dfa81d1829d8b964ef957063cb9a332f4b517de23a86b8b6",
+      "exec": false
+    },
+    "frontend/src/utils/cesium.ts": {
+      "sha256": "3e2e98179995e53e1886636b1201367190897128b00244cda094169d03d24b2a",
+      "exec": false
+    },
+    "frontend/tsconfig.json": {
+      "sha256": "c49564e6314b4e7e06c13c3415b0ed47d3a70e9181102de5c85a5b2f4a3662cf",
+      "exec": false
+    },
+    "frontend/tsconfig.node.json": {
+      "sha256": "bb9fd8592a9e364641441219f10d84daae9ba2ca5cc85db798efad6913bb8257",
+      "exec": false
+    },
+    "frontend/vite.config.ts": {
+      "sha256": "d8f939e6f606524ba3005220f8b91c464e55ab5169292c573675469dfc1eb835",
+      "exec": false
+    },
+    "manifest.json": {
+      "sha256": "7b8cb812a7dfbbec04d2bad2a28df59f67c53ea59b885faf24e07bd1c1f9c5eb",
+      "exec": false
+    }
+  }
+}

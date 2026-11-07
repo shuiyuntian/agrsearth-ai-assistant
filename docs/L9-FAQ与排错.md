@@ -119,10 +119,11 @@ A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本�
 ## 9.6 开发机环境（Windows 实战落账 2026-10-24）
 
 **Q：跑 `create-extension.sh` 无任何输出、退出码 49，或报「目录已存在」但上次明明失败了？**
-A：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias 占位程序（`where python3`
-显示在 `WindowsApps` 下即中枪）：它以静默退出码 49 退出，且失败前已建包目录，二次运行被
-「目录已存在」挡住。处理：装真实 Python（winget `Python.Python.3.13` 等）并在 PATH 中前置；
-已留下的半成品目录删除后重跑脚手架即可。
+A：2026-11-07 起脚手架已 Node 化（`create-extension.mjs` 唯一实现），不再调用 python3，此坑仅影响
+手工运行 `tools/menujson.py`：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias
+占位程序（`where python3` 显示在 `WindowsApps` 下即中枪），它以静默退出码 49 退出。处理：
+装真实 Python（winget `Python.Python.3.13` 等）并在 PATH 中前置；历史 bash 版脚手架失败留下
+的半成品目录删除后重跑即可。
 
 **Q：`mvn` 报「failed to connect to the docker API at npipe://...」？**
 A：有些预装环境的 PATH 里 `mvn` 是包装脚本（优先找 `mvn.cmd`，找不到就回退 `docker run maven`），

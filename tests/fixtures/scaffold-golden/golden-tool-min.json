@@ -1,0 +1,81 @@
+{
+  "combo": "golden-tool-min",
+  "args": [
+    "golden-tool-min",
+    "--track",
+    "tool",
+    "--tier",
+    "platform",
+    "--name",
+    "金样最小工具"
+  ],
+  "capturedAt": "2026-11-07",
+  "exitCode": 0,
+  "stdout": "==========================================\n脚手架已生成：extensions/tool/platform/golden-tool-min\n  extensions/tool/platform/golden-tool-min/CHANGELOG.md\n  extensions/tool/platform/golden-tool-min/README.md\n  extensions/tool/platform/golden-tool-min/VERSION\n  extensions/tool/platform/golden-tool-min/data/menu.json\n  extensions/tool/platform/golden-tool-min/deploy/k8s/10-example-server.yaml\n  extensions/tool/platform/golden-tool-min/deploy/k8s/README.md\n  extensions/tool/platform/golden-tool-min/frontend/package.json\n  extensions/tool/platform/golden-tool-min/frontend/src/api/index.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/index.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/manifest.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/types.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/utils/cesium.ts\n  extensions/tool/platform/golden-tool-min/frontend/tsconfig.json\n  extensions/tool/platform/golden-tool-min/frontend/tsconfig.node.json\n  extensions/tool/platform/golden-tool-min/frontend/vite.config.ts\n  extensions/tool/platform/golden-tool-min/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/platform/golden-tool-min\n==========================================\n",
+  "files": {
+    "CHANGELOG.md": {
+      "sha256": "94290d0dcca96650315e7be7466789d010d9c702b68c26f9c542bc8d7f831292",
+      "exec": false
+    },
+    "README.md": {
+      "sha256": "5ac9a4b02036ab7c6b45ce7f85ade75b4e62d7f343892fff1efdd51a8f73795b",
+      "exec": false
+    },
+    "VERSION": {
+      "sha256": "e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67",
+      "exec": false
+    },
+    "data/menu.json": {
+      "sha256": "e3869d6a5b259965892f2a90925d79cdc31e9f328fb4704046937f795aa4824e",
+      "exec": false
+    },
+    "deploy/k8s/10-example-server.yaml": {
+      "sha256": "ece48d3cc117d6a8848a138d935e28bd1b8f8c2b8ab4dcce61ea47ae5ce59fc2",
+      "exec": false
+    },
+    "deploy/k8s/README.md": {
+      "sha256": "b6d8ddcc781f643c23ad6234a61b4c22cec3387ca1ae3d6172cba68b27fb3e4e",
+      "exec": false
+    },
+    "frontend/package.json": {
+      "sha256": "bd6592da4ae25b19b75091f7dd2b12f5f3e3ec5bb581d3ca47d536306136fed2",
+      "exec": false
+    },
+    "frontend/src/api/index.ts": {
+      "sha256": "105a7019ded18d39f974c385f17b1ae12ccc3568f1deba4abb512a0f4d5a03ff",
+      "exec": false
+    },
+    "frontend/src/index.ts": {
+      "sha256": "34fa60739e0d77ea777a47d6705927cc03196dba9a2659d34f715b5e3b9c767c",
+      "exec": false
+    },
+    "frontend/src/manifest.ts": {
+      "sha256": "3753a9f3ee2564671b3c19e1507363e59021fe58a99c00a5d2f2df9999ace36e",
+      "exec": false
+    },
+    "frontend/src/types.ts": {
+      "sha256": "57b9a72db78bcce6dfa81d1829d8b964ef957063cb9a332f4b517de23a86b8b6",
+      "exec": false
+    },
+    "frontend/src/utils/cesium.ts": {
+      "sha256": "3e2e98179995e53e1886636b1201367190897128b00244cda094169d03d24b2a",
+      "exec": false
+    },
+    "frontend/tsconfig.json": {
+      "sha256": "c49564e6314b4e7e06c13c3415b0ed47d3a70e9181102de5c85a5b2f4a3662cf",
+      "exec": false
+    },
+    "frontend/tsconfig.node.json": {
+      "sha256": "bb9fd8592a9e364641441219f10d84daae9ba2ca5cc85db798efad6913bb8257",
+      "exec": false
+    },
+    "frontend/vite.config.ts": {
+      "sha256": "1bcc9647c21bd7f008ff82eb97ffb05b41bf0d125e8b60bc50fb20e3492e4235",
+      "exec": false
+    },
+    "manifest.json": {
+      "sha256": "d40bbc20168f91256e10566aa4b54ef65baa20c4a7058ae2e809b949a9e3fb84",
+      "exec": false
+    }
+  }
+}

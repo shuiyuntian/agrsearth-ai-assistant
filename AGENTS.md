@@ -19,8 +19,8 @@
 - `packages/` — `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk /
   icon-kit / layer-factory / ts-config），**只读勿改**
 - `skeletons/` — tool / system / admin-ui 三套骨架，建包一律走脚手架，不手抄
-- `tools/` — create-extension.sh（建包）、publish.mjs（Node 发布唯一实现；publish.sh/publish.cmd 为薄 shim）、
-  check-extension-versions.sh、menujson.py、dev-mcp/
+- `tools/` — create-extension.mjs（建包）/ publish.mjs（发布）/ check-extension-versions.mjs（版本校验）
+  均为 Node 唯一实现（.sh/.cmd 为薄 shim，免 bash/jq/python）、menujson.py、dev-mcp/
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
 - `test-env/` — 共享开发调试环境（aiearth01）地址表与账号申请说明
@@ -46,7 +46,7 @@ CI 才用 `AGRSEARTH_TOKEN` 覆盖。`node tools/agent-doctor.mjs --client <kimi
 > MCP 配置使用仓根相对路径（Trae 除外，已用 `${workspaceFolder}`）——**请以模板仓根目录为工作区打开**，
 > 把本仓嵌套为更大工作区的子目录会导致 MCP server 启动失败。各端首次接入还需在客户端信任/批准
 > 项目级 MCP 配置（Claude Code 弹批准提示、Trae 需在 IDE 启用项目级 MCP）。
-> Windows 建包走 `tools\create-extension.cmd`（Git Bash 薄 shim；Git Bash + jq + 真实 Python 为必装，见 L2 §2.4）。
+> Windows 建包走 `tools\create-extension.cmd`（Node 薄 shim，无需 Git Bash/jq/Python）。
 
 Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + CesiumJS `cesiumjs-*`/
 `using-cesiumjs-skills`，后者由平台仓 vendor 同步，**勿手改**）；Codex/OpenCode/Claude/Qoder/Trae/CodeBuddy
@@ -88,7 +88,7 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
 # Windows：tools\create-extension.cmd <id> --track ...（Git Bash 薄 shim）
-./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验
+./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验（Windows：tools\check-extension-versions.cmd）
 ./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>
 ./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/tool.es.js  # HMR：watch + vite preview

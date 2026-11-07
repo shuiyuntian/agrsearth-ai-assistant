@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "packageId": "pass-full-demo",
+  "menus": [
+    {
+      "menuId": 2001001,
+      "menuName": "夹具菜单",
+      "parentId": 0,
+      "orderNum": 1,
+      "path": "pass-full-demo",
+      "menuType": "M",
+      "visible": "0",
+      "status": "0",
+      "roleIds": [
+        1
+      ]
+    }
+  ]
+}

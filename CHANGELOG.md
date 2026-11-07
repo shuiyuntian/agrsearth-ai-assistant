@@ -6,66 +6,25 @@
 
 ## [2.1.0] - 2026-11-07
 
-- 上手摩擦点修复（2026-11-07）：`agent-doctor.mjs` 1.2.0 新增 dev-mcp 依赖硬检查——`tools/dev-mcp`
-  未 `npm install` 时七端一律 FAIL 并给出安装指引（此前 doctor 全 PASS 但 MCP server 起不来）；
-  新增 Windows 平台提示（缺 bash.exe 时指引 Git Bash 工具链，提示级不进退出码）与 FAIL 页脚
-  「客户端信任/以仓根为工作区打开」提醒；新增 `tools/create-extension.cmd`（Git Bash 薄 shim，
-  缺 bash 时打印 L2 §2.4 工具链指引）；AGENTS.md / docs/AGENT_PARITY.md 补相对路径与工作区根说明。
-- aiearth01 发布与移除链修复（2026-11-06，issue #9）：DC 升级 0.3.0、RM 更新；默认版本双写、
-  后端缺 bundle 拒发、Secret 占位符部署解析、日志 UTF-8/tailLines 已落地。dev-mcp 1.5.0 向发布子进程
-  注入登录令牌，并新增 `package_manage action=remove`：测试包产物移至同 Bucket
-  `_trash/<packageId>/<时间-短ID>/` 后清理登记，审计保留；已完成正式模板同步。
-- data/sql 摘要校验修复（2026-11-06，issue #9）：定位网关 XSS 清洗改写 SQL 注释中的 `<...>`，精确排除
-  DC release-complete；publish 2.2.2 预检补文件名、非空、大小与 UTF-8 原文摘要一致性。天气包 0.1.4
-  两个 SQL 已应用，管理列表与球端取数接口均恢复 200。
-- aiearth01 动态路由修复（2026-11-06，issue #9）：DC 升级 0.2.0，网关补动态 dataId 监听与
-  组合路由，避免与静态 routes 列表互相覆盖；新增/删除探针免重启实测通过，L9 不再建议重烧插件版本号。
-- 跨 coding agent 能力一致性（2026-11-06）：新增 `tools/agent-doctor.mjs` 与
-  `tools/check-agent-parity.mjs`；补齐 Codex `.agents`、Claude Code `.claude`、Qoder `.qoder`
-  项目级 Skill 同源适配，统一 MCP 接入说明与任务验收矩阵；`npm run check` 纳入漂移闸口。
-  同日新增 OpenCode/Trae/CodeBuddy：OpenCode 复用 `.agents`/`.claude` Skill，Claude/CodeBuddy
-  共用 `.mcp.json`，补齐各客户端项目级 MCP 配置，避免无意义的根目录和配置分叉。
-- 登录与 Windows 兼容（2026-11-05，issues #3/#8）：dev-mcp 1.4.0 新增
-  `auth_login_start`/`auth_login_wait` 两步登录，兼容 token 有效期字段；支持 `AGRSEARTH_BASH` 与
-  `AGRSEARTH_PYTHON` 解释器覆盖，测试改 `pathToFileURL`；L9 与菜单号段样例警示同步。
-- publish 2.2.1（2026-11-05，issue #8）：MinIO 非 2xx 输出脱敏后的 `Code/Message`，不再只有裸 403。
-- URL 契约治理（2026-11-05，issues #5/#6/#7）：球端/管理页骨架内置 `src/api/index.ts`；
-  新增 Node 跨平台 `tools/check-api-contract.mjs`，公开 Spring Mapping 与前端常量表双向对账并
-  接入 `npm run check`、`publish.mjs --check-only` 及正式发布；AGENTS 补症状导航，L5/L8/L9 与
-  验收清单同步，公开示例控制器与管理页示例 API 对齐。
-- 依赖工具链升级（2026-11-05，issue #4）：骨架与演示包升级 Vite 6.4.4+、`vue-tsc` 3.3.14、
-  `unplugin-auto-import` 20.3.0 与 `@vitejs/plugin-vue` 5.2.4；非破坏性传递依赖已更新。
-  平台源头 `@agrsearth/vite-config` 1.2.0 保留 Vite 5 兼容并支持 Vite 6；同步后 `npm audit` 为 0。
-- dev-mcp 1.3.0（2026-11-05，平台仓 issue #1）：新增第 23 工具 `package_contract_check`，
-  模板仓直接执行 Node URL 对账并透传失败；`package_precheck` 报告同步覆盖 URL 契约。
-- dev-mcp 1.2.4（2026-11-04）：修复 auth_login 超时清理把回调式 `server.close()` 当 Promise
-  使用导致的二次抛错；统一为可等待、幂等的 `closeHttpServer`。
-- dev-mcp 1.2.3（2026-11-04）：Windows 授权链接改由 `rundll32` 原样打开，避免 `cmd start`
-  截断 `&`；SOCKS5 Chrome 直接启动解析后的 chrome.exe。HMR 指南修正为 watch 构建 +
-  `vite preview` 伺服 dist，`--dev-url` 指向实际 `tool.es.js` 而非 preview 根路径。
-- 跨平台发布链修复（2026-11-03）：新增 `tools/publish.mjs` 作为唯一发布实现，bash/jq/curl
-  协议层退役；`.sh/.cmd` 仅保留薄 shim。新增 `.gitattributes` 固定脚本 LF，支持 SOCKS5、
-  请求 golden master 对拍与失败中止回归测试；后端骨架补服务级 actuator 探针、Hikari schema、
-  DC PostgreSQL 四键 Secret 引用；镜像构建默认 `linux/amd64`，新增 `PUSH_VIA=ssh` 搬运通道。
-  macOS 与 Ubuntu 开发机均完成 aiearth01 真实发布，中文菜单、产物冒烟和 Pod 探针验证通过。
-- 平台联动（2026-11-03）：发布器新增 `--check-only`、`data/sql/*.sql` 原文+SHA-256 提交和 deploy 前
-  registry HEAD 预检；dev-mcp 1.2.2 的 precheck/publish 直走 Node。平台侧新增动态网关路由、
-  owner 角色菜单绑定、DB_* 自动注入与 SQL applied/skipped 幂等回执。
-- 默认开发支撑环境切至 aiearth01（LAN `10.82.11.51` / Tailscale `100.64.0.4`）；
-  aiearth02 仅用于部署测试。`tools/publish.sh`、后端 Nacos 骨架、demo 与文档同步调整。
-  dev-mcp 支持经环境变量或仓根 `.env.local` 覆盖网关、DC/native 完整 URL、clientId 和回跳端口；
-  新增 `AGRSEARTH_SOCKS_PROXY` 支持 SSH 动态转发，DC 与独立 Chrome 登录页共用 SOCKS5。
+主线：发布链全 Node 化并切至 aiearth01 默认环境；七端 AI 编码工具一致性接入；前后端 URL 契约治理；Windows 工具链兼容。本期关联 issue #3~#9 已全部关闭。
 
-- 文档修正（2026-10-24 外部开发者实战落账）：`docs/L2` §2.4 开发机准备——补 jq 硬依赖行
-  （脚手架/publish/check 工具链必需，原完全未提）；Python 3 适用范围由「仅 md-to-html.py」
-  更正为「建包脚手架 pom 改造 + 文档工具」；Java 17 + Maven 适用范围由「仅系统轨后端」更正为
-  「凡带 --with-backend 的包（不分轨道）」；新增 Windows 注意事项（Store 占位 python3 静默
-  退出码 49）。`docs/L9` 新增 §9.6 开发机环境排错两则（同上落账）。README 快速开始补
-  工具链前提指引（→ L2 §2.4）。
-- 文档补强（2026-10-24 外部开发者实战落账）：后端「两态联调」成文——`docs/L8` 新增 §8.6
-  本地开发态（mvn spring-boot:run，Nacos 默认指 aiearth02、optional 配置、双向可达前提）
-  ↔ 底座验证态（publish --deploy 才能验的镜像/k8s/集群内寻址清单）+ 共享 Nacos 注意事项；
-  `docs/L5` R4 补本地联调回路步骤与验收项；`docs/L9` §9.5 补「注册上但网关超时」排错一则。
+- **跨平台发布链（issues #8/#9）**：
+  - `tools/publish.mjs` 成为唯一发布实现（2026-11-03）：bash/jq/curl 协议层退役，`.sh/.cmd` 仅保留薄 shim；新增 `.gitattributes` 固定脚本 LF，支持 SOCKS5、请求 golden master 对拍与失败中止回归；镜像构建默认 `linux/amd64`、新增 `PUSH_VIA=ssh` 搬运通道；macOS 与 Ubuntu 均完成 aiearth01 真实发布（中文菜单、产物冒烟、Pod 探针验证通过）。
+  - 发布协议加固：`--check-only` 零网络预检、`data/sql/*.sql` 原文+SHA-256 提交、deploy 前 registry HEAD 预检（11-03）；publish 2.2.1 输出 MinIO 非 2xx 脱敏后的 Code/Message（11-05）；2.2.2 预检补文件名/非空/大小/UTF-8 摘要一致性，网关 XSS 清洗精确排除 DC release-complete（11-06，天气包 0.1.4 两个 SQL 应用后恢复 200 实测）。
+  - developer-center 0.2.0/0.3.0（11-06）：动态网关路由（动态 dataId 监听 + 组合路由，新增/删除探针免重启实测）、默认版本双写、后端缺 bundle 拒发、Secret 占位符部署解析、日志 UTF-8/tailLines。
+  - 骨架加固（11-03）：后端骨架补服务级 actuator 探针、Hikari schema、DC PostgreSQL 四键 Secret 引用。
+- **默认开发环境切至 aiearth01**（2026-11-02）：LAN `10.82.11.51` / Tailscale `100.64.0.4`，aiearth02 仅用于部署测试；publish、后端 Nacos 骨架、demo 与文档同步调整；dev-mcp 支持环境变量/仓根 `.env.local` 覆盖网关与登录端点，新增 `AGRSEARTH_SOCKS_PROXY`（SSH 动态转发）。
+- **七端 AI 编码工具接入（2026-11-06~07）**：
+  - 新增 `tools/agent-doctor.mjs` 与 `tools/check-agent-parity.mjs`：Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 七端项目级 Skill 同源副本 + MCP 配置一致性闸口（`.agents/skills` 为通用入口，Claude/CodeBuddy 共用 `.mcp.json`），`npm run check` 纳入漂移检查；统一 MCP 接入说明与任务验收矩阵（docs/AGENT_PARITY.md）。
+  - cesiumjs-skills（14 领域 + orientation，上游 v1.144 pin）由平台仓 vendor 同步纳入，随七端副本分发（`sync-template.sh` 1.2.0）。
+  - doctor 1.2.0（11-07）：dev-mcp 依赖硬检查（未装 node_modules 即 FAIL 并给出安装指引）、Windows bash 工具链提示、FAIL 页脚「客户端信任/以仓根为工作区打开」提醒；新增 `tools/create-extension.cmd`（Windows 建包 Git Bash 薄 shim）。
+- **dev-mcp 迭代 1.2.2→1.5.0（issues #3/#8 + 平台仓 issue #1）**：
+  - 登录：新增 `auth_login_start`/`auth_login_wait` 两步原生登录（1.4.0）；Windows 授权链接改 `rundll32` 原样打开、SOCKS5 Chrome 直启解析后的 chrome.exe（1.2.3）；`AGRSEARTH_BASH`/`AGRSEARTH_PYTHON` 解释器覆盖；HMR 指南修正为 watch 构建 + `vite preview` 伺服 dist。
+  - 修复：auth_login 超时清理二次抛错（1.2.4，统一为可等待幂等 `closeHttpServer`）。
+  - 能力：precheck/publish 直走 Node 不经 bash/python（1.2.2）；新增第 23 工具 `package_contract_check`（1.3.0）；发布子进程令牌注入 + `package_manage action=remove` 产物回收（1.5.0：测试包产物移至 `_trash/<packageId>/<时间-短ID>/` 后清理登记，审计保留）。
+- **前后端 URL 契约治理（issues #5/#6/#7，2026-11-05）**：球端/管理页骨架内置 `src/api/index.ts` 常量表单源化；新增 Node 跨平台 `tools/check-api-contract.mjs`（公开 Spring Mapping ↔ 前端常量表双向对账），接入 `npm run check`、`publish.mjs --check-only` 与正式发布；AGENTS 症状导航、L5/L8/L9 与验收清单同步，公开示例控制器与管理页示例 API 对齐。
+- **依赖升级（issue #4，2026-11-05）**：骨架与演示包升级 Vite 6.4.4+、`vue-tsc` 3.3.14、`unplugin-auto-import` 20.3.0、`@vitejs/plugin-vue` 5.2.4；`@agrsearth/vite-config` 1.2.0 保留 Vite 5 兼容并支持 Vite 6；`npm audit` 清零。
+- **文档（2026-10-24 外部开发者实战落账）**：L2 §2.4 补 jq 硬依赖、Python 3/Java 17+Maven 适用范围更正、Windows 注意事项（Store 占位 python3 静默退出码 49）；L8 §8.6 后端「两态联调」、L5 R4 本地联调回路、L9 §9.5/9.6 排错三则；README 快速开始补工具链前提指引。
 
 ## [2.0.0] - 2026-10-22
 

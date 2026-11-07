@@ -5,8 +5,10 @@
 //   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.6.1
+// 版本：1.6.2
 // 修改记录：
+//   - (2026-11-07) 1.6.2 覆盖 package_scaffold 直调 Node 脚手架（两模式 .mjs，不经 bash）
+//     与平台模式 withAdminUi 显式报错；serverInfo.version 断言随包版本升 1.6.2
 //   - (2026-11-07) 1.6.1 覆盖 listenLoopback 瞬态错误重试：EACCES 首败后重试成功、
 //     全程瞬态失败耗尽聚合报错文案（30 次/最后错误码/重调提示）、EPERM 非瞬态不重试
 //     （模板仓 issue #11 回归）；serverInfo.version 断言随包版本升 1.6.1
@@ -137,6 +139,15 @@ test("模板仓 precheck/publish 直接走 Node，不经 bash/python", async () 
   assert.match(source, /run\(process\.execPath, args, \{\s*timeoutMs: 1800000,\s*env: \{ AGRSEARTH_TOKEN: resolved\.token \},\s*\}\)/);
   assert.ok(!source.includes('run("bash", ["tools/publish.sh"'));
   assert.ok(!source.includes('run("python3", ["tools/menujson.py"'));
+});
+
+test("package_scaffold 两模式直调 Node 脚手架，不经 bash", async () => {
+  const source = await fs.readFile(SERVER, "utf8");
+  assert.ok(source.includes('MODE === "template" ? "tools/create-extension.mjs" : "scripts/create-extension.mjs"'));
+  assert.match(source, /run\(process\.execPath, args, \{ timeoutMs: 120000 \}\)/);
+  assert.ok(!source.includes('run(bashCommand(), args'));
+  // 平台仓模式无 admin-ui 骨架能力：显式报错而非透传
+  assert.ok(source.includes("平台仓脚手架不支持管理端页面骨架"));
 });
 
 test("run() 支持可选 env 覆盖且 package_publish 仅向子进程注入 AGRSEARTH_TOKEN", async () => {
@@ -301,7 +312,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.6.1");
+    assert.equal(init.result?.serverInfo?.version, "1.6.2");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

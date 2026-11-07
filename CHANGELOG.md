@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- dev-mcp 1.6.2（平台仓同步下发）：`package_scaffold` 双模式直调 node create-extension.mjs
+  （不经 bash），Windows 端经 MCP 建包免 Git Bash；平台仓模式 `withAdminUi` 显式报错。
+  agent-doctor 1.2.2 同步撤掉 Windows Git Bash 提示（platformWarnings 恒空、bash 探针移除），
+  L9/AGENT_PARITY/AGENTS.md 文案对齐。
 - 建包与版本校验工具 Node 化（2026-11-07，create-extension.mjs 2.0.0 + check-extension-versions.mjs 2.0.0）：
   同 publish.mjs 2.0.0 模式收尾——两工具改为 Node 唯一实现，`.sh`/`.cmd` 退化为薄 shim
   （`check-extension-versions.cmd` 为新增），Windows 建包/校验不再依赖 Git Bash/jq/Python；

@@ -1,6 +1,6 @@
 upstream-repo: AGRSEarth (git@github.com:shuiyuntian/AGRSEarth.git)
 upstream-paths: packages/ skeletons/{backend,container}/ scripts/build/menujson.py mcps/agrsearth-dev/ .kimi-code/skills/(cesiumjs-*+using-cesiumjs-skills+docs/)
-upstream-head: 869fc6e5fc8c0bb395f15bfc61148bc9220e9630
-synced-at:   2026-11-07 19:47:44 +0800
+upstream-head: 93074822ffcf64340eb266d21e60270526e75eb6
+synced-at:   2026-11-07 21:46:32 +0800
 synced-by:   shuiyuntian
 suite-version: 2.1.0

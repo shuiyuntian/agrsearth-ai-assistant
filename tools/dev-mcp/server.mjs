@@ -17,8 +17,12 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.6.1
+// 版本：1.6.2
 // 修改记录：
+//   - 1.6.2 (2026-11-07) package_scaffold 双模式改直调 Node 脚手架（tools/ 或 scripts/
+//     create-extension.mjs，process.execPath），不再经 bash——配合两仓脚手架 Node 化
+//     （薄 shim 模式），Windows 端建包免 Git Bash；平台仓模式下 withAdminUi 显式报错
+//     （admin-ui 骨架为模板仓能力，原为透传后被脚本拒绝）
 //   - 1.6.1 (2026-11-07) listenLoopback 瞬态错误纳入重试：EACCES/EADDRNOTAVAIL 与
 //     EADDRINUSE 同待遇（Windows 端口瞬时保留实测 EACCES 硬失败，模板仓 issue #11），
 //     耗尽后聚合报错含尝试次数/最后错误码/可直接重调提示；不采纳 listen(0)——服务端
@@ -459,7 +463,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.6.1",
+  version: "1.6.2",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -560,8 +564,8 @@ server.registerTool("docs_read", {
 
 server.registerTool("package_scaffold", {
   description: MODE === "template"
-    ? "脚手架建包（tools/create-extension.sh）：按 track/tier 实例化骨架到 extensions/<track>/<tier>/<id>/，可选后端/管理端骨架。本地操作，可逆（删目录即撤销）。"
-    : "脚手架建包（平台仓模式，scripts/create-extension.sh）：实例化到 extensions/<track>/<tier>/<id>/。",
+    ? "脚手架建包（Node 直调 tools/create-extension.mjs，不经 bash/python）：按 track/tier 实例化骨架到 extensions/<track>/<tier>/<id>/，可选后端/管理端骨架。本地操作，可逆（删目录即撤销）。"
+    : "脚手架建包（平台仓模式，Node 直调 scripts/create-extension.mjs，不经 bash/python）：实例化到 extensions/<track>/<tier>/<id>/。",
   inputSchema: {
     id: z.string().describe("包 ID（小写字母/数字/中划线），如 wind-field"),
     track: z.enum(["tool", "system"]).describe("tool=轻量工具轨；system=子系统轨"),
@@ -573,13 +577,16 @@ server.registerTool("package_scaffold", {
   },
 }, async ({ id, track, tier, name, delivery, withBackend, withAdminUi }) => {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) return fail("包 ID 仅允许小写字母/数字/中划线");
-  const script = MODE === "template" ? "tools/create-extension.sh" : "scripts/create-extension.sh";
+  const script = MODE === "template" ? "tools/create-extension.mjs" : "scripts/create-extension.mjs";
   const args = [script, id, "--track", track, "--tier", tier];
   if (name) args.push("--name", name);
   if (delivery) args.push("--delivery", delivery);
   if (withBackend) args.push("--with-backend");
-  if (withAdminUi) args.push("--with-admin-ui");
-  return fmt(await run(bashCommand(), args, { timeoutMs: 120000 }), 150);
+  if (withAdminUi) {
+    if (MODE !== "template") return fail("平台仓脚手架不支持管理端页面骨架（--with-admin-ui 为模板仓能力）");
+    args.push("--with-admin-ui");
+  }
+  return fmt(await run(process.execPath, args, { timeoutMs: 120000 }), 150);
 });
 
 // ===== 3. package_precheck：发布前预检 =====

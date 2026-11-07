@@ -132,8 +132,8 @@ test("dev-mcp 依赖未安装时 doctor FAIL（MCP 与 Skill 正常也不放行�
   assert.equal(devMcpDepsReady(REPO_ROOT).ready, true, "本仓 dev-mcp 依赖应已安装");
 });
 
-test("platformWarnings 仅对缺 bash 的 Windows 产出工具链指引", () => {
-  assert.ok(platformWarnings("win32", false).some((warning) => warning.includes("Git Bash")));
+test("platformWarnings 恒为空（dev-mcp 1.6.2 起全通道 Node 化，零 bash 依赖）", () => {
+  assert.deepEqual(platformWarnings("win32", false), []);
   assert.deepEqual(platformWarnings("win32", true), []);
   assert.deepEqual(platformWarnings("darwin", false), []);
 });

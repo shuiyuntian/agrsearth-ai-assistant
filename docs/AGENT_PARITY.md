@@ -52,7 +52,7 @@
 
 各端 MCP 配置使用仓根相对路径（Trae 已用 `${workspaceFolder}`），**须以模板仓根目录为工作区打开**；
 嵌套为子目录打开会导致 MCP server 启动失败。Windows 建包入口为 `tools\create-extension.cmd`
-（Node 薄 shim，无需 Git Bash；仅 dev-mcp `package_scaffold` 通道仍经 bash 调起）。
+（Node 薄 shim，无需 Git Bash；dev-mcp 1.6.2 起 `package_scaffold` 也直调 node，Windows 全链零 bash 依赖）。
 
 ## 3. 接入自检
 

@@ -87,7 +87,7 @@ node tools/agent-doctor.mjs --client qoder # 当前客户端接入自检
 node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 URL 双向对账
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
-# Windows：tools\create-extension.cmd <id> --track ...（Git Bash 薄 shim）
+# Windows：tools\create-extension.cmd <id> --track ...（Node 薄 shim，无需 Git Bash）
 ./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验（Windows：tools\check-extension-versions.cmd）
 ./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>

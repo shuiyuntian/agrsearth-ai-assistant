@@ -11,7 +11,7 @@
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
 | 契约文档 | `docs_read` | 模板仓模式读 docs/L1-L10；平台仓模式读 PLUGIN_DEVELOPMENT.md | 无 |
-| 脚手架 | `package_scaffold` | 包装 create-extension.sh 建包（track/tier/delivery/backend/admin-ui） | 本地，可逆 |
+| 脚手架 | `package_scaffold` | 直调 create-extension.mjs 建包（Node 唯一实现，不经 bash；track/tier/delivery/backend/admin-ui） | 本地，可逆 |
 | 预检 | `package_precheck` | 版本五处一致性 + menu.json + 前后端 URL 契约校验（平台仓模式走 publish --check-only 全闸口） | 无 |
 | 预检 | `package_contract_check` | 模板仓模式以 Node 执行 `tools/check-api-contract.mjs`：API 常量表 ↔ 公开 Spring Mapping 双向 diff；平台仓模式明确不适用 | 无 |
 | 发布 | `package_publish` | **写操作**：tools/publish.sh 编排 DC 发布门面——`release-prepare` → `upload-sessions`（预签名 postUrl/formFields，POST 直传）→ `complete` → `release-complete`（不再 MinIO SigV4 自签/RM 登记；prod 硬拒绝；平台仓模式拒绝）。执行前 resolveToken（auth_login 落盘 / `AGRSEARTH_TOKEN` 环境变量同源），令牌仅以 `AGRSEARTH_TOKEN` 注入 publish.mjs 子进程环境，不打印、不进审计 | 有 |

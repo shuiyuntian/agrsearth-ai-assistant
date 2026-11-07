@@ -3,7 +3,7 @@
 // 文件作用：检查 Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 的 MCP 与 Skill 一致性
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.2.1
+// 版本：1.2.2
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 初始创建（跨 coding agent 能力一致性）
 //   - 1.1.0 (2026-11-06) Codex/OpenCode Skill 入口从 .agents 复用改为各自项目目录
@@ -11,6 +11,9 @@
 //   - 1.2.0 (2026-11-07) 新增 dev-mcp 依赖硬检查（depsReady 计入 passed，未装即 FAIL 并给
 //                       安装指引）；新增 platformWarnings（win32 缺 bash 时提示 Git Bash
 //                       工具链，提示级不进 passed）；FAIL 时页脚补客户端信任/工作区根提示
+//   - 1.2.2 (2026-11-07) dev-mcp 1.6.2 起 package_scaffold 也直调 node（两仓脚手架已 Node 化），
+//                       Windows 全链零 bash 依赖：platformWarnings 不再产生 Git Bash 提示
+//                       （保留函数签名兼容），win32 的 bash 探针一并移除
 //   - 1.2.1 (2026-11-07) 脚手架/版本校验 Node 化后收窄 platformWarnings 文案：仅 dev-mcp
 //                       package_scaffold 通道仍需 Git Bash，CLI 直跑不再需要 bash/jq/python
 //
@@ -81,9 +84,12 @@ export function devMcpDepsReady(root) {
   return { ready: fs.existsSync(marker), detail: marker };
 }
 
+// 1.2.2 起 dev-mcp 全通道 Node 化（含 package_scaffold 直调 create-extension.mjs），
+// Windows 零 bash 依赖——不再产出 Git Bash 提示；保留函数签名兼容既有调用/测试
 export function platformWarnings(platform = process.platform, bashAvailable = true) {
-  if (platform !== "win32" || bashAvailable) return [];
-  return ["未检测到 bash.exe：dev-mcp package_scaffold 通道仍经 Git Bash 调起脚手架（CLI 直跑 tools\\create-extension.cmd 无需 bash），安装指引见 docs/L2-接入准备-SSO与开发环境.md §2.4"];
+  void platform;
+  void bashAvailable;
+  return [];
 }
 
 export function projectMcpConfigured(clientName, root) {
@@ -166,12 +172,7 @@ export function checkClient(clientName, options = {}) {
   const skillAligned = fs.existsSync(skillFile)
     && fs.readFileSync(skillFile, "utf8") === canonical;
   const deps = devMcpDepsReady(root);
-  let bashAvailable = true;
-  if (process.platform === "win32") {
-    const probe = runner(env.AGRSEARTH_BASH ?? "bash.exe", ["--version"]);
-    bashAvailable = !probe.error && probe.status === 0;
-  }
-  const warnings = platformWarnings(process.platform, bashAvailable);
+  const warnings = platformWarnings();
   return {
     client: clientName,
     label: client.label,

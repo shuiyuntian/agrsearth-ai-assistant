@@ -154,9 +154,10 @@ MSYS 转换问题；保留服务端下发的 PostPolicy 字段和 host，不要�
 会输出 MinIO 的 `Code/Message`；若仍报签名错误，按该详情核对服务端凭据与签名配置，不要先换密钥。
 
 **Q：Qoder/Windows 经 MCP 调用报 `spawn bash ENOENT` 或 `spawn python3 ENOENT`？**
-A：dev-mcp 1.4.0 起可用 `AGRSEARTH_BASH` 指向 Git Bash（如 `C:\Git\bin\bash.exe`），
-用 `AGRSEARTH_PYTHON` 指向真实 `python.exe`；后者也会传入脚手架内部 Python 调用。
-precheck/publish 本身走 Node，不需要 bash/python。
+A：dev-mcp 1.6.2 起全部本地通道（package_scaffold/package_precheck/package_contract_check/
+package_publish）直调 Node，**不再需要 bash/python**——升级到最新 tools/dev-mcp 即可根治。
+旧版本可用 `AGRSEARTH_BASH` 指向 Git Bash（如 `C:\Git\bin\bash.exe`）、`AGRSEARTH_PYTHON`
+指向真实 `python.exe` 兜底。
 
 **Q：MCP 客户端在浏览器登录完成前就报工具调用超时？**
 A：dev-mcp 1.4.0 起改用 `auth_login_start` 获取 loginId 和完整授权链接，完成浏览器登录后调用

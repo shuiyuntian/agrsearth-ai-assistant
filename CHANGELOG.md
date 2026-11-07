@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+- 上手摩擦点修复（2026-11-07）：`agent-doctor.mjs` 1.2.0 新增 dev-mcp 依赖硬检查——`tools/dev-mcp`
+  未 `npm install` 时七端一律 FAIL 并给出安装指引（此前 doctor 全 PASS 但 MCP server 起不来）；
+  新增 Windows 平台提示（缺 bash.exe 时指引 Git Bash 工具链，提示级不进退出码）与 FAIL 页脚
+  「客户端信任/以仓根为工作区打开」提醒；新增 `tools/create-extension.cmd`（Git Bash 薄 shim，
+  缺 bash 时打印 L2 §2.4 工具链指引）；AGENTS.md / docs/AGENT_PARITY.md 补相对路径与工作区根说明。
 - aiearth01 发布与移除链修复（2026-11-06，issue #9）：DC 升级 0.3.0、RM 更新；默认版本双写、
   后端缺 bundle 拒发、Secret 占位符部署解析、日志 UTF-8/tailLines 已落地。dev-mcp 1.5.0 向发布子进程
   注入登录令牌，并新增 `package_manage action=remove`：测试包产物移至同 Bucket

@@ -3,11 +3,14 @@
 // 文件作用：检查 Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 的 MCP 与 Skill 一致性
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.1.0
+// 版本：1.2.0
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 初始创建（跨 coding agent 能力一致性）
 //   - 1.1.0 (2026-11-06) Codex/OpenCode Skill 入口从 .agents 复用改为各自项目目录
 //                       （.codex/skills、.opencode/skills，官方自动发现路径）
+//   - 1.2.0 (2026-11-07) 新增 dev-mcp 依赖硬检查（depsReady 计入 passed，未装即 FAIL 并给
+//                       安装指引）；新增 platformWarnings（win32 缺 bash 时提示 Git Bash
+//                       工具链，提示级不进 passed）；FAIL 时页脚补客户端信任/工作区根提示
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
 
@@ -69,6 +72,16 @@ export function codexMcpConfigured(text) {
 
 function validNodeArgs(args) {
   return Array.isArray(args) && args.some((value) => /(^|\/)tools\/dev-mcp\/server\.mjs$/.test(String(value)));
+}
+
+export function devMcpDepsReady(root) {
+  const marker = path.join(root, "tools", "dev-mcp", "node_modules", "@modelcontextprotocol", "sdk", "package.json");
+  return { ready: fs.existsSync(marker), detail: marker };
+}
+
+export function platformWarnings(platform = process.platform, bashAvailable = true) {
+  if (platform !== "win32" || bashAvailable) return [];
+  return ["未检测到 bash.exe：建包脚手架（create-extension.sh 与 dev-mcp package_scaffold）依赖 Git Bash + jq + 真实 Python ≥3.9，安装指引见 docs/L2-接入准备-SSO与开发环境.md §2.4"];
 }
 
 export function projectMcpConfigured(clientName, root) {
@@ -150,6 +163,13 @@ export function checkClient(clientName, options = {}) {
   const canonical = fs.readFileSync(canonicalFile, "utf8");
   const skillAligned = fs.existsSync(skillFile)
     && fs.readFileSync(skillFile, "utf8") === canonical;
+  const deps = devMcpDepsReady(root);
+  let bashAvailable = true;
+  if (process.platform === "win32") {
+    const probe = runner(env.AGRSEARTH_BASH ?? "bash.exe", ["--version"]);
+    bashAvailable = !probe.error && probe.status === 0;
+  }
+  const warnings = platformWarnings(process.platform, bashAvailable);
   return {
     client: clientName,
     label: client.label,
@@ -157,8 +177,11 @@ export function checkClient(clientName, options = {}) {
     mcpDetail,
     skillAligned,
     skillFile,
+    depsReady: deps.ready,
+    depsDetail: deps.detail,
+    warnings,
     setup: client.setup,
-    passed: mcpConfigured && skillAligned,
+    passed: mcpConfigured && skillAligned && deps.ready,
   };
 }
 
@@ -180,7 +203,12 @@ function main(argv) {
       console.log(`${report.passed ? "PASS" : "FAIL"} ${report.label}`);
       console.log(`  MCP：${report.mcpConfigured ? "已配置" : "未配置"}（${report.mcpDetail}）`);
       console.log(`  Skill：${report.skillAligned ? "与权威源一致" : "缺失或内容漂移"}（${report.skillFile}）`);
+      console.log(`  依赖：${report.depsReady ? "dev-mcp 依赖已安装" : "dev-mcp 依赖未安装（修复：cd tools/dev-mcp && npm install）"}`);
+      for (const warning of report.warnings) console.log(`  提示：${warning}`);
       if (!report.mcpConfigured) console.log(`  接入：${report.setup}`);
+    }
+    if (reports.some((report) => !report.passed)) {
+      console.log("提示：首次接入还需在客户端信任/批准项目级 MCP 配置（Claude Code 批准提示、Trae 需启用项目级 MCP）；MCP 配置为仓根相对路径，请以模板仓根目录为工作区打开。");
     }
   }
   if (reports.some((report) => !report.passed)) process.exitCode = 1;

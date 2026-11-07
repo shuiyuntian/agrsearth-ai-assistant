@@ -33,7 +33,7 @@
 
 ## 2. MCP 接入
 
-先执行 `cd tools/dev-mcp && npm install`，然后在模板仓根选择客户端：
+先执行 `cd tools/dev-mcp && npm install`（`agent-doctor` 会把缺依赖判为 FAIL 并给出该修复命令），然后在模板仓根选择客户端：
 
 项目级配置已随仓提供，客户端信任/批准项目后即可使用：
 
@@ -49,6 +49,10 @@
 仍可使用各客户端的 `mcp add` 命令配置用户级入口，但不得与项目级配置形成不同实现。
 不要把 token 写进 MCP 配置；登录统一使用 `auth_login_start` / `auth_login_wait`，CI 才使用
 `AGRSEARTH_TOKEN` 覆盖。
+
+各端 MCP 配置使用仓根相对路径（Trae 已用 `${workspaceFolder}`），**须以模板仓根目录为工作区打开**；
+嵌套为子目录打开会导致 MCP server 启动失败。Windows 建包入口为 `tools\create-extension.cmd`
+（Git Bash 薄 shim，缺 bash 时打印工具链指引）。
 
 ## 3. 接入自检
 
@@ -70,7 +74,8 @@ node tools/agent-doctor.mjs --client qoder --json
 ```
 
 doctor 只读，不修改用户配置。优先检查仓内项目级配置；缺失时才尝试客户端 `mcp list`，Codex 还会
-回查 `CODEX_HOME/config.toml`。任一客户端缺 MCP 或 Skill 漂移都会返回非零退出码。
+回查 `CODEX_HOME/config.toml`。任一客户端缺 MCP、Skill 漂移或 dev-mcp 依赖未安装都会返回非零退出码；
+Windows 上额外探测 bash 工具链（提示级，不进退出码）。
 
 ## 4. 统一任务验收矩阵
 

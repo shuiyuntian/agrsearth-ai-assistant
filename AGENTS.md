@@ -39,9 +39,14 @@
 - **Trae**：`.trae/mcp.json`（IDE 中启用项目级 MCP 并信任项目）。
 - **其他支持 stdio MCP 的客户端**：入口 `node tools/dev-mcp/server.mjs`，工作目录 = 仓根。
 
-首次使用先 `cd tools/dev-mcp && npm install`。登录统一用 `auth_login_start` / `auth_login_wait`；
+首次使用先 `cd tools/dev-mcp && npm install`（`agent-doctor` 会把缺依赖判为 FAIL）。登录统一用 `auth_login_start` / `auth_login_wait`；
 CI 才用 `AGRSEARTH_TOKEN` 覆盖。`node tools/agent-doctor.mjs --client <kimi|codex|claude|qoder|opencode|trae|codebuddy>`
 检查 MCP 与 Skill；完整矩阵见 `docs/AGENT_PARITY.md`。
+
+> MCP 配置使用仓根相对路径（Trae 除外，已用 `${workspaceFolder}`）——**请以模板仓根目录为工作区打开**，
+> 把本仓嵌套为更大工作区的子目录会导致 MCP server 启动失败。各端首次接入还需在客户端信任/批准
+> 项目级 MCP 配置（Claude Code 弹批准提示、Trae 需在 IDE 启用项目级 MCP）。
+> Windows 建包走 `tools\create-extension.cmd`（Git Bash 薄 shim；Git Bash + jq + 真实 Python 为必装，见 L2 §2.4）。
 
 Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + CesiumJS `cesiumjs-*`/
 `using-cesiumjs-skills`，后者由平台仓 vendor 同步，**勿手改**）；Codex/OpenCode/Claude/Qoder/Trae/CodeBuddy
@@ -82,6 +87,7 @@ node tools/agent-doctor.mjs --client qoder # 当前客户端接入自检
 node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 URL 双向对账
 ./tools/create-extension.sh <id> --track tool|system --tier platform|business \
     [--name 中文名] [--with-backend] [--with-admin-ui]
+# Windows：tools\create-extension.cmd <id> --track ...（Git Bash 薄 shim）
 ./tools/check-extension-versions.sh        # 版本一致性 + 四必备校验
 ./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>

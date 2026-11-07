@@ -2,11 +2,13 @@
 // 文件作用：跨 coding agent 资产一致性与 doctor 检测单元测试
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-06
-// 版本：1.1.0
+// 版本：1.2.0
 // 修改记录：
 //   - 1.0.0 (2026-11-06) 覆盖 Skill 漂移、MCP 配置与 CLI 检测
 //   - 1.1.0 (2026-11-06) 适配 parity 1.1.0（{errors,warnings} 返回形态、7 客户端目录含
 //                       .codex/.opencode）；新增 --fix 修复回归与 description 触发词断言
+//   - 1.2.0 (2026-11-07) 适配 doctor 1.2.0：新增 dev-mcp 依赖缺失负例与 platformWarnings
+//                       平台提示用例
 //
 // 版权所有 (C) 2026 AGRSEarth 项目
 
@@ -17,7 +19,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkAgentParity, fixAgentParity } from "../../tools/check-agent-parity.mjs";
-import { checkClient, codexMcpConfigured, projectMcpConfigured } from "../../tools/agent-doctor.mjs";
+import { checkClient, codexMcpConfigured, devMcpDepsReady, platformWarnings, projectMcpConfigured } from "../../tools/agent-doctor.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -118,4 +120,20 @@ test("doctor 同时检查 MCP 与 Skill，不被单一成功项误导", (t) => {
   assert.equal(missing.mcpConfigured, false);
   assert.equal(missing.skillAligned, true);
   assert.equal(missing.passed, false);
+});
+
+test("dev-mcp 依赖未安装时 doctor FAIL（MCP 与 Skill 正常也不放行）", (t) => {
+  const root = makeFixture(t);
+  const report = checkClient("kimi", { root });
+  assert.equal(report.mcpConfigured, true);
+  assert.equal(report.skillAligned, true);
+  assert.equal(report.depsReady, false, "fixture 仓不含 tools/dev-mcp/node_modules");
+  assert.equal(report.passed, false);
+  assert.equal(devMcpDepsReady(REPO_ROOT).ready, true, "本仓 dev-mcp 依赖应已安装");
+});
+
+test("platformWarnings 仅对缺 bash 的 Windows 产出工具链指引", () => {
+  assert.ok(platformWarnings("win32", false).some((warning) => warning.includes("Git Bash")));
+  assert.deepEqual(platformWarnings("win32", true), []);
+  assert.deepEqual(platformWarnings("darwin", false), []);
 });

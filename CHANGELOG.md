@@ -13,7 +13,7 @@
   - 发布协议加固：`--check-only` 零网络预检、`data/sql/*.sql` 原文+SHA-256 提交、deploy 前 registry HEAD 预检（11-03）；publish 2.2.1 输出 MinIO 非 2xx 脱敏后的 Code/Message（11-05）；2.2.2 预检补文件名/非空/大小/UTF-8 摘要一致性，网关 XSS 清洗精确排除 DC release-complete（11-06，天气包 0.1.4 两个 SQL 应用后恢复 200 实测）。
   - developer-center 0.2.0/0.3.0（11-06）：动态网关路由（动态 dataId 监听 + 组合路由，新增/删除探针免重启实测）、默认版本双写、后端缺 bundle 拒发、Secret 占位符部署解析、日志 UTF-8/tailLines。
   - 骨架加固（11-03）：后端骨架补服务级 actuator 探针、Hikari schema、DC PostgreSQL 四键 Secret 引用。
-- **默认开发环境切至 aiearth01**（2026-11-02）：LAN `10.82.11.51` / Tailscale `100.64.0.4`，aiearth02 仅用于部署测试；publish、后端 Nacos 骨架、demo 与文档同步调整；dev-mcp 支持环境变量/仓根 `.env.local` 覆盖网关与登录端点，新增 `AGRSEARTH_SOCKS_PROXY`（SSH 动态转发）。
+- **默认开发环境切至 aiearth01**（2026-11-02）：公司网 LAN `10.82.11.51`，aiearth02 仅用于部署测试；publish、后端 Nacos 骨架、demo 与文档同步调整；dev-mcp 支持环境变量/仓根 `.env.local` 覆盖网关与登录端点，新增 `AGRSEARTH_SOCKS_PROXY`（SSH 动态转发）。
 - **七端 AI 编码工具接入（2026-11-06~07）**：
   - 新增 `tools/agent-doctor.mjs` 与 `tools/check-agent-parity.mjs`：Kimi Code / Codex / Claude Code / Qoder / OpenCode / Trae / CodeBuddy 七端项目级 Skill 同源副本 + MCP 配置一致性闸口（`.agents/skills` 为通用入口，Claude/CodeBuddy 共用 `.mcp.json`），`npm run check` 纳入漂移检查；统一 MCP 接入说明与任务验收矩阵（docs/AGENT_PARITY.md）。
   - cesiumjs-skills（14 领域 + orientation，上游 v1.144 pin）由平台仓 vendor 同步纳入，随七端副本分发（`sync-template.sh` 1.2.0）。

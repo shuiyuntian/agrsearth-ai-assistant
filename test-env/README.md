@@ -1,6 +1,6 @@
 # 开发支撑环境（aiearth01）使用说明
 
-> 默认开发支撑环境由公司网 aiearth01 承载（LAN `10.82.11.51` / Tailscale `100.64.0.4`）。
+> 默认开发支撑环境由公司网 aiearth01 承载（LAN `10.82.11.51`）。
 > aiearth01 同时是预备生产环境，不能沿用独立测试底座的隔离假设；开发操作仍须受
 > developer-center 授权与审计约束。aiearth02 当前用于部署测试，不作为模板仓默认开发环境。
 > 团队自助发布只走 developer-center；正式生产发布由平台管理员执行。
@@ -18,9 +18,8 @@
 
 `tools/publish.mjs` 已按上表设置默认值；如需覆盖，用环境变量
 `DC_API_BASE`（认证与发布控制全走 developer-center）。
-公司网外访问（居家/出差）可经 Tailscale 把 `10.82.11.51` 换成 `100.64.0.4`
-（发布器会按网关 IP 自动推导上传网络画像 `networkProfile`，也可经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定）。
-本机与目标网段隔离时，使用 SSH 动态转发：`ssh -N -D 127.0.0.1:51080 aiearth01`，再设置
+公司网外访问（居家/出差）一律经 SSH 动态转发：本机与目标网段隔离时，使用
+`ssh -N -D 127.0.0.1:51080 aiearth01`，再设置
 `AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`；DC、MinIO 与冒烟请求均走该代理。
 
 ## 2. 账号申请流程
@@ -73,8 +72,8 @@ Node multipart 直传 MinIO（预签名短 TTL，host 不得改写）→ `upload
 release-complete 前失败时版本保持**草稿态**可重放；一旦 release-complete 成功即发布不可变，
 更新产物须递增版本号。
 
-networkProfile 按 `DC_API_BASE` 网关 IP 自动推导（`100.64.*` → tailscale，内网私网段 → lan），
-或经 `AGRSEARTH_NETWORK=lan|tailscale` 显式指定。SOCKS5 代理同时覆盖 DC、MinIO 和冒烟。
+networkProfile 按 `DC_API_BASE` 网关地址自动推导（内网私网段 → lan，其余 → 广域通道），
+或经 `AGRSEARTH_NETWORK` 显式指定（取值见 `tools/publish.mjs` 用法说明）。SOCKS5 代理同时覆盖 DC、MinIO 和冒烟。
 
 自构后端镜像在 `container/<svc>/` 执行
 `PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`：默认 `PLATFORMS=linux/amd64`，buildx `--load`

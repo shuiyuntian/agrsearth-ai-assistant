@@ -5,8 +5,11 @@
 //   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.5.0
+// 版本：1.6.1
 // 修改记录：
+//   - (2026-11-07) 1.6.1 覆盖 listenLoopback 瞬态错误重试：EACCES 首败后重试成功、
+//     全程瞬态失败耗尽聚合报错文案（30 次/最后错误码/重调提示）、EPERM 非瞬态不重试
+//     （模板仓 issue #11 回归）；serverInfo.version 断言随包版本升 1.6.1
 //   - (2026-11-06) 1.5.0 覆盖：run() env 可选覆盖 + package_publish 先 resolveToken 后
 //     仅向 publish.mjs 子进程注入 AGRSEARTH_TOKEN（本地 mock publish.mjs 只输出是否
 //     匹配期待值，绝不输出令牌本体；落盘文件/环境变量两通道各验一次；令牌不进输出
@@ -62,7 +65,7 @@ process.env.AGRSEARTH_LOOPBACK_PORT_MIN = "51000";
 process.env.AGRSEARTH_LOOPBACK_PORT_MAX = "51010";
 
 const {
-  computeS256Challenge, generatePkcePair, randomLoopbackPort,
+  computeS256Challenge, generatePkcePair, randomLoopbackPort, listenLoopback,
   saveTokenFile, loadTokenFile, clearTokenFile, TOOL_MANIFEST, DEV_MCP_CONFIG, parseSocksProxy,
   browserLaunchCommand, closeHttpServer, bashCommand,
 } = await import(pathToFileURL(SERVER).href);
@@ -202,6 +205,45 @@ test("loopback HTTP 清理可等待且重复调用安全", async () => {
   await closeHttpServer(server);
 });
 
+const listenError = (code, message) => Object.assign(new Error(message), { code });
+
+test("listenLoopback 瞬态 EACCES 重试后成功（模板仓 issue #11 回归）", async () => {
+  let calls = 0;
+  const { server, port } = await listenLoopback((req, res) => res.end("ok"), () => {
+    calls += 1;
+    return calls === 1 ? listenError("EACCES", "listen EACCES: permission denied 127.0.0.1:51003") : null;
+  });
+  assert.equal(calls, 2, "首次 EACCES 必须重试而不是直接失败");
+  assert.ok(port >= 51000 && port <= 51010, `端口越界: ${port}`);
+  assert.equal(server.listening, true);
+  await closeHttpServer(server);
+});
+
+test("listenLoopback 全程瞬态失败耗尽后聚合报错（含尝试次数/最后错误码/重调提示）", async () => {
+  await assert.rejects(
+    () => listenLoopback((req, res) => res.end("ok"),
+      () => listenError("EACCES", "listen EACCES: permission denied 127.0.0.1:51003")),
+    (e) => {
+      assert.match(e.message, /30 个端口/);
+      assert.match(e.message, /EACCES/);
+      assert.match(e.message, /重调 auth_login_start/);
+      return true;
+    },
+  );
+});
+
+test("listenLoopback 非瞬态错误码（EPERM）不重试直接抛", async () => {
+  let calls = 0;
+  await assert.rejects(
+    () => listenLoopback((req, res) => res.end("ok"), () => {
+      calls += 1;
+      return listenError("EPERM", "listen EPERM: operation not permitted");
+    }),
+    /operation not permitted/,
+  );
+  assert.equal(calls, 1, "非可重试错误码不得消耗剩余重试次数");
+});
+
 // ---------- ② 令牌落盘（0600）回环 ----------
 
 test("令牌保存/读取/清理回环（文件权限 0600）", async () => {
@@ -259,7 +301,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.5.0");
+    assert.equal(init.result?.serverInfo?.version, "1.6.1");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

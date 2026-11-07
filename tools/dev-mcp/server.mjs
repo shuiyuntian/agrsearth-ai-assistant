@@ -17,8 +17,12 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.6.0
+// 版本：1.6.1
 // 修改记录：
+//   - 1.6.1 (2026-11-07) listenLoopback 瞬态错误纳入重试：EACCES/EADDRNOTAVAIL 与
+//     EADDRINUSE 同待遇（Windows 端口瞬时保留实测 EACCES 硬失败，模板仓 issue #11），
+//     耗尽后聚合报错含尝试次数/最后错误码/可直接重调提示；不采纳 listen(0)——服务端
+//     native-clients allowed-ports 硬校验 49152-65535，OS 分配端口可能越界被拒
 //   - 1.6.0 (2026-11-07) 非密拓扑项配置分层升级：process.env > 仓根 .env.local >
 //     用户级 ~/.config/agrsearth/config.json > 默认值（与 publish.mjs 2.3.0 同口径；
 //     token 不进配置层）；publish.mjs 2.3.0 起自行读取配置层，子进程无需注入拓扑变量
@@ -242,13 +246,21 @@ export function randomLoopbackPort() {
   return LOOPBACK_PORT_MIN + crypto.randomInt(LOOPBACK_PORT_MAX - LOOPBACK_PORT_MIN + 1);
 }
 
-/** 在 49152-65535 段随机挑空闲端口起 loopback 监听（EADDRINUSE 重试，最多 30 次） */
-async function listenLoopback(handler) {
+/** listen 瞬态可重试错误码：端口被撞/被瞬时保留，换个端口即可，其余错误码才致命 */
+const RETRYABLE_LISTEN_CODES = new Set(["EADDRINUSE", "EACCES", "EADDRNOTAVAIL"]);
+
+/**
+ * 在 49152-65535 段随机挑空闲端口起 loopback 监听（EADDRINUSE/EACCES/EADDRNOTAVAIL
+ * 等瞬态错误重试，最多 30 次）。injectFailure 仅测试用：返回 Error 即模拟本次 listen 失败。
+ */
+export async function listenLoopback(handler, injectFailure = null) {
   const server = http.createServer(handler);
   let lastErr = null;
   for (let attempt = 0; attempt < 30; attempt++) {
     const port = randomLoopbackPort();
     try {
+      const injected = injectFailure?.(attempt, port);
+      if (injected) throw injected;
       return await new Promise((resolve, reject) => {
         const onErr = (e) => reject(e);
         server.once("error", onErr);
@@ -259,11 +271,16 @@ async function listenLoopback(handler) {
       });
     } catch (e) {
       lastErr = e;
-      if (e.code === "EADDRINUSE") continue;
+      if (RETRYABLE_LISTEN_CODES.has(e.code)) continue;
       throw e;
     }
   }
-  throw new Error(`无法在 ${LOOPBACK_PORT_MIN}-${LOOPBACK_PORT_MAX} 段找到空闲 loopback 端口：${lastErr?.message || "端口耗尽"}`);
+  throw new Error(
+    `loopback 监听失败：${LOOPBACK_PORT_MIN}-${LOOPBACK_PORT_MAX} 段随机尝试 30 个端口均被拒绝`
+    + `（最后一次 ${lastErr?.code || "未知错误"}: ${lastErr?.message || "无详情"}）。`
+    + `EADDRINUSE/EACCES 多为端口瞬时占用，可直接重调 auth_login_start；`
+    + `持续失败请检查本机端口保留区间与安全软件拦截`,
+  );
 }
 
 // =============================================================================
@@ -442,7 +459,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.5.0",
+  version: "1.6.1",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);

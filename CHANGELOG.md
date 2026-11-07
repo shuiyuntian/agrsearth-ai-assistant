@@ -91,7 +91,7 @@
   公开仓推送前扫描内网地址/凭据。
 - **同步机制**：导出脚本退役，平台侧改 `sync-template.sh` 单向同步（见 `.upstream`）。
 
-## [Unreleased]（历史注记：以下为 1.x 时期未发布段，随 2.0.0 一并发出）
+**附：1.x 时期未发布段修复（随 2.0.0 一并发出）**：
 
 - 实战检验修复（2026-10-06 wind-field 外部开发者演练产出；组件级版本见各文件头）：
   ① `tools/publish.sh` 1.0.1——测试底座不可达场景报错体验（s3_upload 30s 超时 + 友好指认
@@ -107,8 +107,27 @@
 
 ## [1.0.0] - 2026-10-06
 
-- 导出工具链 v2.0.0（scripts/build/export-plugin-template.sh 2.0.0）：产物为完全自包含独立仓——
-  ① 新增 `tools/create-extension.sh`（本地脚手架，生成到 `packages/<id>/`，后端 pom 自动改造指向 vendored `maven-repo/`：relativePath 直指 vendored 根 pom + `<repositories>` file 仓）；
+首个发布版本（Initial release）。
+
+**这是什么**：AGRSEarth 航遥业务中台的插件（能力包）开发模板仓。第三方开发团队经
+GitHub「Use this template」派生自有仓，在仓内完成脚手架建包、本地构建、发布到共享
+开发调试环境联调；验收后由平台管理员移植进平台仓同名路径，生产发布由平台管理员执行。
+
+**初始构成**：
+
+- `skeletons/` — tool / system / admin-ui 三套最小骨架（建包一律走脚手架实例化）；
+- `packages/` — `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk），只读勿改；
+- `tools/` — create-extension.sh（建包脚手架）、publish.sh（测试底座发布器）、
+  menujson.py（菜单声明工具）、check-extension-versions.sh（版本一致性校验）；
+- `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，插件后端构建免平台仓）；
+- `test-env/` — 共享开发调试环境地址表与账号申请说明（默认环境历经调整，见 2.1.0）；
+- `docs/` — L1-L10 分层开发指南；
+- 官方演示包 wind-field（发测试底座验证通路用，禁止提测；2.0.0 起迁至
+  `extensions/tool/business/wind-field-demo/`）。
+
+**工具链明细**（导出工具链 v2.0.0，scripts/build/export-plugin-template.sh 产出完全自包含独立仓）：
+
+- ① 新增 `tools/create-extension.sh`（本地脚手架，生成到 `packages/<id>/`，后端 pom 自动改造指向 vendored `maven-repo/`：relativePath 直指 vendored 根 pom + `<repositories>` file 仓）；
   ② 新增 `tools/publish.sh`（仅测试底座：构建 + MinIO SigV4 直传 + resource-manager 注册 + `--dev-url` HMR 回路，prod 一律拒绝）；
   ③ 新增 `tools/menujson.py`（主仓同步副本）与 `tools/check-extension-versions.sh`（packages/ 适配版）；
   ④ 新增 `maven-repo/`（vendored file:// 仓：com.ruoyi 构件闭包 7 件，后端构建免平台仓）；

@@ -25,7 +25,7 @@
       "exec": false
     },
     "README.md": {
-      "sha256": "ac17c4f4a00192803a13cd9ddc8037184b922a18f1a3c966a5f975cd7d4a0125",
+      "sha256": "83a73568b5f1491bdda2aaac1dc6244ddfcbf842c8a87e39b5b9fb46cfde40ae",
       "exec": false
     },
     "VERSION": {
@@ -105,7 +105,7 @@
       "exec": true
     },
     "data/menu.json": {
-      "sha256": "f5b58cd8d0071af1bcd4aa5aa181aa0767715af8a930ddf4788d11786b953242",
+      "sha256": "d9750b22a5cde7fc8195094bd517af8a9abe0f204d8ed8680774292ab42ec263",
       "exec": false
     },
     "deploy/k8s/10-golden-svc.yaml": {

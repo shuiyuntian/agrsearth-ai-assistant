@@ -21,6 +21,8 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 4. **管理页红线（ADR-007）**：不自建 `createApp`；不用 `import.meta.env`（用 `@agrsearth/admin-sdk` 的 `getBaseApi()`）；不 import 宿主内部组件/store。
 5. **显式声明零推断**：manifest `track`/`tier` 必填（tool|system / platform|business；`delivery` 仅 tool·business 象限用，旧 `class` 字段已全退役勿再填）；`components` 段（frontend/backend[]/adminUi/menu{enabled,menuPath}/data）与包内实际结构一致；禁止 latest 镜像 tag；时区 `TZ=Asia/Shanghai` 一票否决。
 6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自 `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落 `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前执行双向对账。
+7. **环境零 SSH/零直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行任何操作——初始化数据库、kubectl、改配置、直查 MySQL/PG 一律禁止；一切环境侧变更只经 DC 控制 API（dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = `data/sql/*.sql` 随 release-complete 幂等落库。文档中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的 SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。
+8. **菜单号段零申请**：menuId 禁止自编、禁止照抄 skeleton/演示包示意值（2004000/3004000 段）。号段**不需要申请**——`package_register`（resources.menu=true）自动从团队池切出本包专属千段：`task_get` 跟踪发放任务到 ACTIVE（回执含 `band:start-end`）→ `resource_list` 复核 menu 资源位 → `data/menu.json` 全部 menuId（含 parentId 引用）落本包段内 → publish。**「禁止越段写菜单」fail-fast ≠ 缺号段、不要 quota_request**——报错文本自带本包实分段 [start-end]，把 menu.json 改成它重发即可。仅团队池真正用尽（默认 10 块×10000 号/band，约 100 个带菜单的包才触得到）才走 `team_manage quota_request`（quota=MENU_POOL, band=tool|system）→ QUOTA_APPROVAL PENDING → **平台管理员审批**（18850 开发者中心→任务页，或平台方 dev-mcp `quota_approve`）；TEAM_OWNER 不能自审（403 是设计如此），PENDING 期间不要重发版本烧号。
 
 ## 任务 Recipe 索引（每条带验收 checklist，详见 docs/L5-开发Recipes.md）
 
@@ -76,4 +78,5 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 - UI 规范（管理页四段式/撑满式列表/操作列公式/面板几何 440-64-80-112/数据图表弹窗 70%×70vh 居中/
   浮层选用与弹窗嵌套禁忌——二次浮层用抽屉 55% 宽全高，含实拍正例/
   字号层级——EP 14px 基线：强调条标题 14/600、辅助说明 13、弱化 12，警示条模式显式 text-align:left）：docs/L10
+- 菜单号段查询：dev-mcp `resource_list`（menu 资源位含本包实分段）/ `task_get`（注册发放任务回执）；越段 fail-fast、配额 PENDING 排错见 docs/L9 §9.4
 - 排错：docs/L9（构建/球端/管理面/发布四组 FAQ）

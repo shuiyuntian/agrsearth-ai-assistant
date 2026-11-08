@@ -19,7 +19,7 @@
       "exec": false
     },
     "README.md": {
-      "sha256": "ba00a6f399e7b0f8828c09d0a9f4b0740b95de274a0fb1f38d9a34b391a8b1ee",
+      "sha256": "9033a9fbb57a2d485079a5d723ee567e51cee51db246dda93dad4d17ee9dbafe",
       "exec": false
     },
     "VERSION": {
@@ -71,7 +71,7 @@
       "exec": false
     },
     "data/menu.json": {
-      "sha256": "7ef35cdb719aa3ccd2558befacb3a6639ace422fab211d571ed6f8167aa94f31",
+      "sha256": "ca2938af61aa6580fa92ec0b6512d9b6826ebadf4d59147720e0a45a4090b584",
       "exec": false
     },
     "deploy/k8s/10-example-server.yaml": {

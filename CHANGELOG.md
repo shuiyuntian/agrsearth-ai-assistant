@@ -4,6 +4,20 @@
 
 ## [Unreleased]
 
+- 菜单号段 DC 流程 + 禁 SSH 红线补全（2026-11-08，issue #12 闭环）：skill `agrsearth-plugin-dev`
+  契约红线新增第 7 条（环境零 SSH/零直连——禁止登录 aiearth01 执行任何操作，DB 初始化走
+  `data/sql` 随 release-complete 落库；文档中的 `ssh -N -D`/`PUSH_VIA=ssh` 仅为客户端侧通道）与
+  第 8 条（菜单号段零申请——`package_register` 自动从团队池切本包千段，`resource_list` 实查后
+  menuId 落段；「禁止越段写菜单」fail-fast 报错自带本包实分段，改 menu.json 重发即可，
+  **不要 quota_request**；配额审批仅团队池真用尽时走，审批权在平台管理员 18850 开发者中心→任务页），
+  7 端副本经 check-agent-parity --fix 同步；AGENTS.md 红线与「遇到问题」导航表同源更新；
+  L5（R3/R5）/L8（§8.4 约束 + 提测单模板）/L9（§9.4 新增越段/配额 PENDING/禁 SSH 三条 Q&A）/
+  test-env README（§2 申请流程去号段旧通道 + §5 边界红线段）改 DC 现行口径；skeletons
+  tool/system `data/menu.json` 与 wind-field-demo 注释、create-extension.mjs 生成 README
+  清除「号段向平台方申请」旧口径（演示包重申禁止提测）；menujson.py 退役残留死引用
+  （L2/L5/L9/test-env）改指 `publish.mjs --check-only` 内置校验；scaffold-golden 6 夹具
+  按新文案再基线化（有意变更）。根因记录：issue #12 的配额审批卡死并非配额不足——团队池默认
+  10 块×10000 号/band 正常团队用不完，系示意值越段 fail-fast + 旧文档口径诱导的误申请。
 - menujson.py 全退役（2026-11-08，create-extension.mjs 2.0.1 + check-extension-versions.mjs 2.0.1）：
   `tools/menujson.py` 自仓内删除（平台仓 sync-template 停止下发并清理本地残留；平台仓原件归档
   `archives/menujson-legacy-20261108/`）——validate 能力自 2.0.0 起已由 publish.mjs

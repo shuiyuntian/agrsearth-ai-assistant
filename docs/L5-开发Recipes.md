@@ -35,13 +35,13 @@
 2. 页面：`src/views/<view>/index.vue`（骨架 = 查询区/工具栏/表格/分页/对话框，风格见 L10-A）；
 3. API：URL 集中在 `src/api/index.ts` 的 `API` 常量表；`src/api/*.ts` 只引用常量并用 `@/utils/request` 封装请求，业务页面禁止散落 `/<serviceId>/...` 字面量；类型 `import type ... from '@/types'`；
 4. 入口：`src/index.ts` 的 `adminViews` 键 = viewPath；
-5. 菜单：`data/menu.json` 样例改 packageId/号段/权限串为本包（号段向平台方申请，批4 通道，publish 时 menu-provision 幂等落地）；
+5. 菜单：`data/menu.json` 样例改 packageId/号段/权限串为本包。号段**不需要向平台方申请**——dev-mcp `package_register`（resources.menu=true）发放任务自动从团队池切出本包专属千段，`task_get` 跟踪到 ACTIVE 后 `resource_list` 查本包实分段 [start-end]，把 menu.json 全部 menuId（含 parentId 引用）改成段内值；publish 时 menu-provision 幂等落地，越段服务端 fail-fast（报错自带本包实分段）；
 6. manifest：`components.adminUi=true`、`components.menu={enabled:true, menuPath:<顶层 path>}`。
 
 **验收**：
 - [ ] `npm run build` 产出 `admin.es.js/admin.umd.js`，其中 `@/utils/request` 与 vue 均为 external import
 - [ ] 无 `createApp`、无 `import.meta.env`（grep 源码）
-- [ ] `data/menu.json` 通过 `menujson.py validate` 校验，menuId 落平台方分配的本包号段（menu-provision 幂等 upsert，重复发布计数 unchanged）
+- [ ] `data/menu.json` 通过 `node tools/publish.mjs <包目录> --check-only` 内置菜单校验，menuId 全部落 `resource_list` 实查的本包号段（menu-provision 幂等 upsert，重复发布计数 unchanged）
 - [ ] 页面验收走查符合 L10-A（权限按钮显隐、空态/加载态）
 
 ## R4 加后端服务
@@ -66,8 +66,11 @@
    `archives/menu-sql-legacy-20261004/`，批4 起由 menu-provision 幂等落地），SQL 文件头注明用途与执行方式；
 2. 发布时 `data/sql/*.sql` 以 UTF-8 原文进入 `dataSql[].content`，摘要取原始文件字节；publish 预检会提前校验文件名、非空、大小与摘要一致性；
 3. 含中文 SQL 一律**文件方式执行**（`kubectl exec -i ... mysql --default-character-set=utf8mb4 < x.sql`），禁止多层嵌套内联 `-e` 传中文；
-4. 菜单号段向平台方申请（两段制台账 `sys_config` 的 `menu.segment.<pkg>`：core/tool/system 百万段为
-   **菜单 band 分类**，包级千段预发；menuId 必须落本包段内，publish pre-check 服务端 fail-fast）。
+4. 菜单号段零申请：`package_register` 自动从本团队 band 池切千段包级号段并写台账 `menu.segment.<pkg>`
+   （两段制：core/tool/system 百万段为 **菜单 band 分类**，包级千段；dev-mcp `resource_list` 可实查本包段）。
+   menuId 必须落本包段内，越段服务端 fail-fast「禁止越段写菜单」——**这不是缺号段、不要 quota_request**，
+   报错文本自带本包实分段，改 menu.json 重发即可；仅团队池真用尽（默认 10 块×10000 号/band）才
+   `team_manage quota_request`，审批权在平台管理员（18850 开发者中心→任务页），TEAM_OWNER 不能自审。
 
 **验收**：
 - [ ] SQL 幂等可重跑；`components.data=true` 与 data/ 实际内容一致；`menu.enabled=true` 时 `data/menu.json` 齐备且过校验

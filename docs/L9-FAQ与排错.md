@@ -70,6 +70,23 @@ tool·business 象限填 bundled/optional）；平台仓内包目录必须是 `e
 A：告警不阻断——确认 `data/menu.json` 已随包发布并经 menu-provision 布设（缺文件会被 pre-check 拒发），
 角色授权后复测。
 
+**Q：release-complete 失败「禁止越段写菜单」？**
+A：**这不是缺号段，不要 quota_request**。号段在 `package_register`（resources.menu=true）时已自动
+从团队池切好——报错文本自带本包实分段 [start-end]（或 dev-mcp `resource_list` 查 menu 资源位），
+把 `data/menu.json` 全部 menuId（含 parentId 引用）改成段内值、递增版本重发即可。典型根因：
+skeleton/演示包示意值（2004000/3004000 段）忘了替换，或照抄了别的包的段。
+
+**Q：`team_manage quota_request` 之后任务一直 PENDING？**
+A：quota_request 仅用于团队菜单池真正用尽（默认 10 块×10000 号/band，约 100 个带菜单的包才触得到，
+正常团队用不到——多数「以为要申请」其实是上一条的越段误读）。审批权在平台管理员：
+18850 管理面「开发者中心→任务」页按钮，或平台方 dev-mcp `quota_approve`；TEAM_OWNER 自审 403
+属设计行为。PENDING 期间联系平台方审批，不要重发版本烧号；误提交的申请请平台方 `quota_reject` 收口。
+
+**Q：AI 工具/同事想 SSH 到 aiearth01 初始化数据库或改配置？**
+A：一律禁止。开发团队对服务端零 SSH、零直连——数据库初始化 = `data/sql/*.sql` 随 release-complete
+幂等落库；配置/实例/日志全部走 DC 控制 API（dev-mcp 工具）。文档中出现的 `ssh -N -D`（SOCKS 转发）
+与 `PUSH_VIA=ssh`（镜像搬运）只是本机发起的客户端通道，不代表可以登录服务器执行任何命令。
+
 **Q：部署后接口 404？**
 A：先确认发布响应含 `gatewayRoutes` 且网关已加载 `ruoyi-gateway-dynamic-<profile>.yml`；标准 apiPrefix 由 DC 自动注册。仍 404 时查动态配置与 Nacos 发布日志，不要手工改静态路由表。
 
@@ -119,11 +136,10 @@ A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本�
 ## 9.6 开发机环境（Windows 实战落账 2026-10-24）
 
 **Q：跑 `create-extension.sh` 无任何输出、退出码 49，或报「目录已存在」但上次明明失败了？**
-A：2026-11-07 起脚手架已 Node 化（`create-extension.mjs` 唯一实现），不再调用 python3，此坑仅影响
-手工运行 `tools/menujson.py`：九成是 `python3` 命中了 Microsoft Store 的 App Execution Alias
-占位程序（`where python3` 显示在 `WindowsApps` 下即中枪），它以静默退出码 49 退出。处理：
-装真实 Python（winget `Python.Python.3.13` 等）并在 PATH 中前置；历史 bash 版脚手架失败留下
-的半成品目录删除后重跑即可。
+A：2026-11-07 起脚手架已 Node 化（`create-extension.mjs` 唯一实现），不再调用 python3；菜单声明
+手工校验也已内置进 `node tools/publish.mjs <包目录> --check-only`（`tools/menujson.py` 已退役删除，
+勿再找它）。历史 bash 版脚手架失败留下的半成品目录删除后重跑即可；若仍有 `python3` 相关诡异退出，
+检查是否命中 Microsoft Store 的 App Execution Alias 占位程序（`where python3` 显示在 `WindowsApps` 下即中枪）。
 
 **Q：`mvn` 报「failed to connect to the docker API at npipe://...」？**
 A：有些预装环境的 PATH 里 `mvn` 是包装脚本（优先找 `mvn.cmd`，找不到就回退 `docker run maven`），

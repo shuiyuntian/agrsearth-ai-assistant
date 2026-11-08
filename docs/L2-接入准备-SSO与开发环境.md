@@ -39,14 +39,12 @@
 |:---|:---|:---|
 | Node.js | ≥ 18（建议 22） | npm workspaces + `tools/publish.mjs`；发布不再需要 bash/jq/curl |
 | Git | 任意近期版本 | 仓根 `.gitattributes` 固定 `.sh/.py/.mjs` 为 LF；Windows 无需手工 sed 修行尾 |
-| Python 3 | ≥ 3.9 | 仅 `tools/menujson.py`（菜单声明手工校验）与文档转 HTML 工具需要；建包/校验/发布均已 Node 化，不再需要 jq |
+| Python 3 | ≥ 3.9 | 仅文档转 HTML 工具需要；菜单声明校验已内置 `node tools/publish.mjs --check-only`（`tools/menujson.py` 已退役），建包/校验/发布均已 Node 化，不再需要 jq |
 | Java 17 + Maven | JDK 17 + Maven 3.8+ | 凡带 `--with-backend` 的包（不分轨道）本地构建自研服务需要；com.ruoyi 构件由仓根 `maven-repo/` vendored 仓供给，免平台仓 |
 | Docker + SSH | 近期稳定版 | 仅自构后端镜像需要；默认 `linux/amd64`，经 `PUSH_VIA=ssh` 搬运到 aiearth01 |
 
 > Windows 注意：建包/校验/发布均可直接在 CMD/PowerShell 执行（`tools\create-extension.cmd` /
-> `tools\check-extension-versions.cmd` / `tools\publish.cmd`），不依赖 WSL/Git Bash/jq。
-> 仅手工跑 `menujson.py` 时需真实 Python 安装（≥3.9），勿用 Microsoft Store 的 `python3`
-> App Execution Alias 占位程序（症状与排错见 L9 §9.6）。
+> `tools\check-extension-versions.cmd` / `tools\publish.cmd`），不依赖 WSL/Git Bash/jq/python。
 
 ## 2.5 模板仓获取
 

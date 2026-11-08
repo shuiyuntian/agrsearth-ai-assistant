@@ -75,6 +75,19 @@ Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + 
 6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自
    `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落
    `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前双向对账。
+7. **环境零 SSH/零直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行任何操作——初始化
+   数据库、kubectl、改配置、直查 MySQL/PG 一律禁止；一切环境侧变更只经 DC 控制 API
+   （dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = `data/sql/*.sql` 随 release-complete
+   幂等落库。本文档与 test-env/README 中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的
+   SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。
+8. **菜单号段零申请**：menuId 禁止自编、禁止照抄 skeleton/演示包示意值（2004000/3004000 段）。
+   号段**不需要申请**——`package_register`（resources.menu=true）自动从团队池切出本包专属千段：
+   `task_get` 跟踪发放任务到 ACTIVE → `resource_list` 复核 menu 资源位 → `data/menu.json`
+   全部 menuId（含 parentId 引用）落本包段内 → publish。**「禁止越段写菜单」fail-fast ≠ 缺号段、
+   不要 quota_request**——报错文本自带本包实分段 [start-end]，把 menu.json 改成它重发即可。
+   仅团队池真正用尽（默认 10 块×10000 号/band）才走 `team_manage quota_request` →
+   QUOTA_APPROVAL PENDING → 平台管理员审批（18850 开发者中心→任务页）；TEAM_OWNER 不能自审
+   （403 是设计如此），PENDING 期间不要重发版本烧号。
 
 ## 常用命令
 
@@ -104,6 +117,7 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 | 构建/骨架/URL 契约自检失败 | `npm run check`；`node tools/check-api-contract.mjs <包目录>`；`docs/L9-FAQ与排错.md` |
 | 球端加载失败 / 联调报错 | dev-mcp `hmr_get_guide` + docs/L9 |
 | 发布失败 | `node tools/publish.mjs <包目录> --check-only`；dev-mcp `package_precheck` / `task_get` / `task_retry` |
+| 菜单注册失败 / 越段 fail-fast / 配额 PENDING | 红线 8 流程：dev-mcp `resource_list` 查本包实分段改 menu.json 重发（不要 quota_request）；docs/L9 §9.4 |
 | 实例异常 / 查日志 | dev-mcp `instance_list` / `instance_logs` |
 | 环境不通 | dev-mcp `environment_status` |
 | 权限不生效 | 核 `data/menu.json`、`v-hasPermi` 与 docs/L10；平台方执行权限对账 |

@@ -432,7 +432,7 @@ ${track} 轨能力包（track: ${track}，tier: ${tier}${deliveryText}）。
 ${hasAdminUi ? "- admin-ui/          管理面远程页（cd admin-ui && npm run build）" : ""}
 ${hasBackend ? "- backend/<svc>/     后端微服务（mvn package；com.ruoyi 构件由仓根 maven-repo/ 供给）\n- container/<svc>/   镜像构建（Dockerfile+build.sh+VERSION 组件版本轴）" : ""}
 ${track === "system" ? "- deploy/k8s/        k8s-bundle（publish 打包一键安装）" : ""}
-- data/menu.json     管理面菜单声明样例（号段向平台方申请后替换；tools/publish.sh 发布时自动校验）
+- data/menu.json     管理面菜单声明样例（示意段禁止直发：package_register 自动切段，dev-mcp resource_list 查实分段后全文替换 menuId；tools/publish.sh 发布时自动校验）
 
 ## 开发 → 发布
 

@@ -19,7 +19,7 @@
       "exec": false
     },
     "README.md": {
-      "sha256": "18b1505e5eb25df4f0a767529a86d793cc68eec018bf8ad9335519ace13e1ffe",
+      "sha256": "6052dab54743dce29b5c05cd954e75e970854a523c459f0185743a45fd185d66",
       "exec": false
     },
     "VERSION": {
@@ -55,7 +55,7 @@
       "exec": true
     },
     "data/menu.json": {
-      "sha256": "73c0f7804ac2a1182b672da833209b43c0527ce01cebcb389a1a46cde52e195a",
+      "sha256": "b433021e8af0a3799503771e52ce2a38b14338c09b5ec3fde59830b3b9cfe8e4",
       "exec": false
     },
     "deploy/k8s/10-golden-tool-backend-server.yaml": {

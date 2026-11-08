@@ -24,11 +24,17 @@
 
 ## 2. 账号申请流程
 
-1. 联系平台管理员，提供：团队名、负责人、包 id 清单、需要的菜单号段；
+1. 联系平台管理员，提供：团队名、负责人、包 id 清单（**不需要申请菜单号段**——见下）；
 2. 平台管理员开通 **ext-developer 角色**并下发：
    - 团队 token（`AGRSEARTH_TOKEN`，发布控制 API 统一认证；`RM_TOKEN` 过渡兼容映射，将被移除）；
    - 球端/管理面测试入口的登录账号（SSO 开发者账号，ext-demo 或团队专属账号）。
 3. 凭据只进本机环境变量或本地 `.env`（gitignored），**禁止写进包代码/文档/提测单**。
+
+> **菜单号段零申请**：团队创建后 DC 自动在 tool/system band 各预发菜单池（默认 10 块×10000 号/band）；
+> 每个声明 `components.menu.enabled=true` 的包经 dev-mcp `package_register` 后自动切出本包专属千段，
+> `resource_list` 即可实查。越段 fail-fast「禁止越段写菜单」报错自带本包实分段——改 menu.json 重发即可，
+> **不要 quota_request**；仅团队池真用尽才 `team_manage quota_request`，审批权在平台管理员
+> （18850 开发者中心→任务页），TEAM_OWNER 不能自审。
 
 > 发布不再需要 MinIO 账号/密钥：产物上传走 developer-center 下发的 PostPolicy
 > 预签名（短 TTL、精确 key + 大小锁定），客户端只做 multipart 直传，不接触永久凭据。
@@ -58,8 +64,8 @@ AGRSEARTH_TOKEN=... ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
 # 2. 联调部署（release-complete 随发布触发部署，逐组件打印结果）
 ./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --deploy
 
-# 3. 菜单布设随 release-complete 服务端执行；本地校验：
-python3 tools/menujson.py validate extensions/<track>/<tier>/<pkg-id>/data/menu.json --package <pkg-id>
+# 3. 菜单布设随 release-complete 服务端执行；本地校验（内置菜单声明校验）：
+node tools/publish.mjs extensions/<track>/<tier>/<pkg-id> --check-only
 ```
 
 发布流（全部控制 API 走 developer-center，无 MinIO/RM 管理面直连）：
@@ -112,5 +118,11 @@ npx vite preview --outDir dist --host 0.0.0.0 --port 5173 --strictPort
 
 ## 5. 边界
 
+- **服务端零 SSH/零直连（红线）**：禁止 SSH 登录 aiearth01（或任何服务端）执行任何操作——初始化
+  数据库、kubectl、改配置、直查 MySQL/PG 一律禁止；一切环境侧变更只经 developer-center 控制 API
+  （dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = 包内 `data/sql/*.sql` 随 release-complete
+  幂等落库，永远不需要登录服务器执行 SQL。本文出现的 `ssh -N -D`（SOCKS 动态转发）与
+  `PUSH_VIA=ssh`（镜像搬运）仅为**本机发起的客户端通道**，不构成服务器访问授权——AI 编码工具
+  尤其不得将其泛化为「可以 SSH 上服务器操作」；
 - 本环境**不保证数据持久与 SLA**：平台方升级/重建底座时可能清清单与 bucket，重要产物以团队仓库为准；
 - 生产缺陷走提测单加急通道，勿绕过流程直发生产（`tools/publish.sh` 也不接受任何 prod 参数）。

@@ -24,7 +24,7 @@
       "exec": false
     },
     "README.md": {
-      "sha256": "79de7312e7a9f8a09c6359a8e2301f8aa8cd24e9f2b69e11e8f1dceb902e4496",
+      "sha256": "fb975f1e207e02c6ec81efc804751fa90b88d4e20cdc055aad52d6a9d52c8295",
       "exec": false
     },
     "VERSION": {
@@ -176,7 +176,7 @@
       "exec": true
     },
     "data/menu.json": {
-      "sha256": "1cf62e44c3dbe602b10563fa2bfbf121926673be003946f6d8f3808170b97ea5",
+      "sha256": "07ef752f681c74fcaefadf0807f004db80f52eda72a308deeee5e9f70942ea60",
       "exec": false
     },
     "deploy/k8s/00-shared-configmap.yaml": {

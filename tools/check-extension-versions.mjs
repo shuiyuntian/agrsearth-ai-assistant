@@ -4,11 +4,13 @@
 //          tools/check-extension-versions.sh / .cmd 为薄 shim
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-07
-// 版本：2.0.0
+// 版本：2.0.1
 // 修改记录：
+//   - 2.0.1 (2026-11-08) menujson.py 退役：失败详情文案改指 validateMenuDocument
+//     （tools/publish.mjs），golden 夹具同步再基线化
 //   - 2.0.0 (2026-11-07) Node 单实现替代 bash 校验（同 publish.mjs 2.0.0 模式）：不再依赖
 //     bash/jq/python3；menu.json 校验改复用 publish.mjs 的 validateMenuDocument（JS 单实现，
-//     规则与 menujson.py validate 等价，由 tests/fixtures/check-versions-golden 夹具背书）；
+//     规则与已退役 menujson.py validate 等价，由 tests/fixtures/check-versions-golden 夹具背书）；
 //     输出表格按字节宽补 padding（bash printf %-Ns 语义，CJK 按 UTF-8 字节计）；
 //     CLI 支持 --root <dir>（测试注入夹具根，默认脚本相对仓根）
 //   - 1.0.0 (2026-10-06) 初始创建（模板仓 v2.0.0 工具链）——见 git 历史中 bash 版文件头
@@ -163,7 +165,7 @@ export function checkPackage(pkgDir, pkgName) {
     const menuDoc = readJsonLenient(menuFile);
     if (!menuDoc || validateMenuDocument(menuDoc, pkgId).length > 0) {
       menuOk = "✘";
-      addDetail("data/menu.json 未通过 tools/menujson.py validate");
+      addDetail("data/menu.json 未通过 validateMenuDocument 校验（tools/publish.mjs）");
       failed = true;
     }
   }

@@ -20,7 +20,7 @@
   icon-kit / layer-factory / ts-config），**只读勿改**
 - `skeletons/` — tool / system / admin-ui 三套骨架，建包一律走脚手架，不手抄
 - `tools/` — create-extension.mjs（建包）/ publish.mjs（发布）/ check-extension-versions.mjs（版本校验）
-  均为 Node 唯一实现（.sh/.cmd 为薄 shim，免 bash/jq/python）、menujson.py、dev-mcp/
+  均为 Node 唯一实现（.sh/.cmd 为薄 shim，免 bash/jq/python）、dev-mcp/
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
 - `test-env/` — 共享开发调试环境（aiearth01）地址表与账号申请说明
@@ -122,7 +122,7 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 ## 与平台仓的同步约定
 
 本仓是模板内容的**唯一事实源**（fork 模型，2026-10-22 起）：`packages/`（@agrsearth 供给物）、
-`backend|container/svc-placeholder/`、`tools/menujson.py`、`tools/dev-mcp/`、`maven-repo/`
+`backend|container/svc-placeholder/`、`tools/dev-mcp/`、`maven-repo/`
 由平台方经 `scripts/build/sync-template.sh` 单向同步下发（溯源见 `.upstream`），
 **不要在本仓改这些目录**——向平台方提 issue，源头修改后重新同步。
 `skeletons/`、`docs/`、`test-env/`、本文件等模板内容直接在本仓维护（平台管理员）。

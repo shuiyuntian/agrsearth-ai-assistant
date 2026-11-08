@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+- menujson.py 全退役（2026-11-08，create-extension.mjs 2.0.1 + check-extension-versions.mjs 2.0.1）：
+  `tools/menujson.py` 自仓内删除（平台仓 sync-template 停止下发并清理本地残留；平台仓原件归档
+  `archives/menujson-legacy-20261108/`）——validate 能力自 2.0.0 起已由 publish.mjs
+  `validateMenuDocument`（JS 单实现）取代，from-db/from-sql 为一次性迁移通道（26 份菜单 SQL
+  已于 2026-10-04 迁完归档），无存续需求。check-extension-versions 失败详情文案与脚手架生成
+  README 的校验提示改指 validateMenuDocument / 发布期自动校验；scaffold-golden 6 夹具与
+  check-versions-golden menu-invalid 用例按新行为再基线化（有意变更）。AGENTS.md 同步约定
+  与 tools/ 速览同步除名。
 - dev-mcp 1.6.2（平台仓同步下发）：`package_scaffold` 双模式直调 node create-extension.mjs
   （不经 bash），Windows 端经 MCP 建包免 Git Bash；平台仓模式 `withAdminUi` 显式报错。
   agent-doctor 1.2.2 同步撤掉 Windows Git Bash 提示（platformWarnings 恒空、bash 探针移除），

@@ -4,8 +4,10 @@
 //          extensions/<track>/<tier>/<id>/；tools/create-extension.sh / .cmd 为薄 shim
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-07
-// 版本：2.0.0
+// 版本：2.0.1
 // 修改记录：
+//   - 2.0.1 (2026-11-08) menujson.py 退役连带：生成 README 的 menu.json 校验提示改指
+//     tools/publish.sh 发布期自动校验（validateMenuDocument）
 //   - 2.0.0 (2026-11-07) Node 单实现替代 bash 脚手架（同 publish.mjs 2.0.0 模式）：不再依赖
 //     bash/jq/python3/sed/tr；jq 的 manifest 改写由 JSON.parse+stringify 等价（2 空格缩进、
 //     保序、原生 UTF-8、尾换行，已实测字节一致）；pom 改造与公开示例控制器改写内联为 JS；
@@ -430,7 +432,7 @@ ${track} 轨能力包（track: ${track}，tier: ${tier}${deliveryText}）。
 ${hasAdminUi ? "- admin-ui/          管理面远程页（cd admin-ui && npm run build）" : ""}
 ${hasBackend ? "- backend/<svc>/     后端微服务（mvn package；com.ruoyi 构件由仓根 maven-repo/ 供给）\n- container/<svc>/   镜像构建（Dockerfile+build.sh+VERSION 组件版本轴）" : ""}
 ${track === "system" ? "- deploy/k8s/        k8s-bundle（publish 打包一键安装）" : ""}
-- data/menu.json     管理面菜单声明样例（号段向平台方申请后替换；tools/menujson.py validate 本地校验）
+- data/menu.json     管理面菜单声明样例（号段向平台方申请后替换；tools/publish.sh 发布时自动校验）
 
 ## 开发 → 发布
 

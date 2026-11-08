@@ -28,7 +28,6 @@
 | `packages/` | `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk / icon-kit / layer-factory / ts-config，平台仓 `packages/` 同步下发，**勿改**），规则见 `packages/README.md` | 平台同步 |
 | `tools/create-extension.mjs` | 本地脚手架（Node 唯一实现，.sh/.cmd 为薄 shim）：`./tools/create-extension.sh <id> --track tool\|system --tier platform\|business [--with-backend] [--with-admin-ui]`，生成到 `extensions/<track>/<tier>/<id>/` | 本仓自有 |
 | `tools/publish.mjs` | Node 发布唯一实现（**仅测试底座**）：构建 → DC release-prepare → MinIO PostPolicy 直传 → release-complete；`tools/publish.sh`/`publish.cmd` 仅为跨平台薄 shim；含目录闸口、HMR、SOCKS5，prod 一律拒绝 | 本仓自有 |
-| `tools/menujson.py` | menu.json 生成/转换/校验工具（平台仓 `scripts/build/menujson.py` 同步副本） | 平台同步 |
 | `tools/check-extension-versions.mjs` | 包版本与文档一致性校验（Node 唯一实现，.sh/.cmd 为薄 shim，extensions/ 发现制） | 本仓自有 |
 | `tools/md-to-html.py` | 公共文档工具（README/CHANGELOG/DESIGN/REPORT 一键转 HTML 评审件） | 本仓自有 |
 | `tools/dev-mcp/` | 插件开发辅助 MCP server（平台仓 `mcps/agrsearth-dev/` 同步产物，**勿直接改**） | 平台同步 |
@@ -78,6 +77,8 @@ export AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080
 - **归属分界**：「平台同步」列的目录由平台仓 `scripts/build/sync-template.sh` 单向覆盖下发，
   **不要手工改**（改动会在下次同步丢失）；「本仓自有」目录是模板内容，其唯一事实源就是本仓，
   改进直接在本仓提交（平台管理员维护）。
+- **版本与兼容**：平台仓和模板仓各自遵循 SemVer，联合发版不要求版本号相同；本版 `2.2.0` 与平台仓
+  `2.0.0` 联合验收，平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
 - fork 出去的团队仓：模板升级走 git upstream 合并，只收「本仓自有 + 平台同步」两类 diff，
   你自己的 `extensions/<你的包>/` 不受影响。
 - 泄漏闸口：本仓为公开仓，`.githooks/pre-push` 内置内网地址/凭据扫描

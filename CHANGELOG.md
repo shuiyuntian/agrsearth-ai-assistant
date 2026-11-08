@@ -2,7 +2,9 @@
 
 > 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
-## [Unreleased]
+## [2.2.0] - 2026-11-09
+
+本版与平台仓 `2.0.0` 联合验收；两仓版本号独立演进，平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
 
 - 球端面板效果、留白与随包样式（2026-11-08）：L10 明确告警、轨迹、风场/烟雾/水流等业务动效可用，
   性能不足时优先调参而非一律禁用；AGENTS.md 明确 CesiumJS vendor skills 的 Performance Tips /

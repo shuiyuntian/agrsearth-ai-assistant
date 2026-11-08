@@ -33,6 +33,8 @@
 - `manifest.json`      能力包清单（components 显式声明段 + entries，发布时 url 自动回填）
 - `VERSION`            包版本唯一事实源
 - `frontend/`          球端 Capability 工程（可构建骨架，依赖 @agrsearth/* workspace 包）
+- `frontend/src/panel.css`  包级随包样式（构建产出 tool.css，发布时自动回填 entries.css.url）；
+  标准内容区留白由 `contentPadding: 'default'` 提供，关键布局不只依赖宿主 Tailwind
 - `frontend/src/utils/cesium.ts`  Cesium 取用工具（window.Cesium；**禁止裸 import 'cesium'**——
   宿主 import map 无 cesium 键，ESM 产物裸引用会运行时加载失败）
 - `data/menu.json`     管理面菜单声明样例（adminUi + menu.enabled=true 时启用；号段须平台方分配，publish 时 menu-provision 幂等落地）

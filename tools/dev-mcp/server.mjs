@@ -17,8 +17,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.6.2
+// 版本：1.7.0
 // 修改记录：
+//   - 1.7.0 (2026-11-08) hmr_get_guide 检测随包 style.css 并补 --dev-css-url 指引
 //   - 1.6.2 (2026-11-07) package_scaffold 双模式改直调 Node 脚手架（tools/ 或 scripts/
 //     create-extension.mjs，process.execPath），不再经 bash——配合两仓脚手架 Node 化
 //     （薄 shim 模式），Windows 端建包免 Git Bash；平台仓模式下 withAdminUi 显式报错
@@ -463,7 +464,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.6.2",
+  version: "1.7.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -1074,7 +1075,7 @@ server.registerTool("task_retry", {
 // ===== 18. hmr_get_guide：HMR 联调指引 =====
 
 server.registerTool("hmr_get_guide", {
-  description: "HMR 热更新调试回路指引：watch 构建 + vite preview 伺服 dist + --dev-url 指向实际 ESM 产物，含恢复与排障命令。",
+  description: "HMR 热更新调试回路指引：watch 构建 + vite preview 伺服 dist + --dev-url 指向实际 ESM 产物；有随包 CSS 时补 --dev-css-url，含恢复与排障命令。",
   inputSchema: {
     pkgDir: pkgDirField,
     port: z.number().int().min(1024).max(65535).default(5173).describe("本机 vite preview 静态服务端口，默认 5173"),
@@ -1083,12 +1084,26 @@ server.registerTool("hmr_get_guide", {
   assertPkgDir(pkgDir);
   let pkgId = path.basename(pkgDir);
   let esmFile = "tool.es.js";
+  let cssFile = "";
   try {
     const manifest = JSON.parse(await fs.readFile(path.join(ROOT, pkgDir, "manifest.json"), "utf8"));
     if (manifest.id) pkgId = manifest.id;
     const currentUrl = manifest.entries?.esm?.url;
     if (currentUrl) esmFile = path.basename(new URL(currentUrl).pathname) || esmFile;
+    const currentCssUrl = manifest.entries?.css?.url;
+    if (currentCssUrl) cssFile = path.basename(new URL(currentCssUrl).pathname);
   } catch { /* manifest 缺失时沿用骨架默认产物名 */ }
+  if (!cssFile) {
+    try {
+      const names = (await fs.readdir(path.join(ROOT, pkgDir, "frontend", "dist")))
+        .filter((name) => name.endsWith(".css"))
+        .sort();
+      cssFile = names.find((name) => name === "tool.css")
+        ?? names.find((name) => name === "style.css")
+        ?? names[0]
+        ?? "";
+    } catch { /* 无随包 CSS 时只切换 ESM */ }
+  }
   const publishCmd = MODE === "template"
     ? `./tools/publish.sh ${pkgDir}`
     : `./scripts/publish-extension.sh ${pkgDir} --env test`;
@@ -1101,6 +1116,7 @@ server.registerTool("hmr_get_guide", {
 联调栈（scripts/deploy/ext-dev-up.sh）+ 球端 dev /esm-libs 中间件，详见
 docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节。`);
   }
+  const cssArg = cssFile ? ` --dev-css-url http://<本机IP>:${port}/${cssFile}` : "";
   return ok(`HMR 调试回路（包：${pkgId}）
 
 ① 终端 A：持续构建（骨架 dev = vite build --watch，不接 --port/--host）：
@@ -1109,19 +1125,21 @@ docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md 开发调试章节�
 ② 终端 B：用 vite preview 伺服最新 dist：
    cd ${pkgDir}/frontend && npx vite preview --outDir dist --host 0.0.0.0 --port ${port} --strictPort
 
-③ 把共享调试环境上该包的 manifest 指向本机实际 ESM 产物：
-   ${publishCmd} --dev-url http://<本机IP>:${port}/${esmFile}
+③ 把共享调试环境上该包的 manifest 指向本机实际产物：
+   ${publishCmd} --dev-url http://<本机IP>:${port}/${esmFile}${cssArg}
 
-   说明：--dev-url 会改写 MinIO 上该包当前版本 manifest.json 的 entries.esm.url
-   为本机产物地址并重传；宿主（球端 18880）再拉 manifest 即加载本机 HMR 产物。
+   说明：--dev-url 改写 entries.esm.url；有随包 CSS 时 --dev-css-url 同步改写
+   entries.css.url。宿主（球端 18880）再拉 manifest 即加载本机 HMR 产物。
 
 ④ 调完恢复线上形态（必须做，否则共享环境一直指向你的机器）：
    ${publishCmd} --dev-url --reset
 
+   reset 会同时恢复 ESM 与已有的 CSS 正式入口。
+
 排障清单：
 - 宿主没加载本机产物 → 强刷球端页面（manifest 有缓存）；确认本机IP在公司网可达
 - preview 跨域报错 → vite 配置需走 @agrsearth/vite-config（已内置 cors/headers）
-- 球端样式丢失 → 宿主 Tailwind 产物需含本包工具类（平台侧闸口，向平台方反馈）
+- 球端样式丢失 → 优先确认随包 style.css 已发布且 entries.css.url 可达；关键布局不要只依赖宿主 Tailwind
 - 忘记 reset → 其他团队看到 404 加载失败；收工前务必执行 ④`);
 });
 

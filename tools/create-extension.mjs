@@ -4,8 +4,9 @@
 //          extensions/<track>/<tier>/<id>/；tools/create-extension.sh / .cmd 为薄 shim
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-07
-// 版本：2.0.1
+// 版本：2.1.0
 // 修改记录：
+//   - 2.1.0 (2026-11-08) 随包 CSS 骨架纳入包级占位符替换
 //   - 2.0.1 (2026-11-08) menujson.py 退役连带：生成 README 的 menu.json 校验提示改指
 //     tools/publish.sh 发布期自动校验（validateMenuDocument）
 //   - 2.0.0 (2026-11-07) Node 单实现替代 bash 脚手架（同 publish.mjs 2.0.0 模式）：不再依赖
@@ -35,8 +36,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 const VALID_ID = /^[a-z0-9-]+$/;
-// 包树内统一占位符替换的文件类型过滤（与原 bash replace_tokens 的 find -name 集合一致）
-const TOKEN_FILE = /\.(json|ts|md|yaml|yml|sh)$/;
+// 包树内统一占位符替换的文件类型过滤（含随包 CSS 的包级类名）
+const TOKEN_FILE = /\.(json|ts|md|yaml|yml|sh|css)$/;
 
 export class ScaffoldError extends Error {
   constructor(message, options) {

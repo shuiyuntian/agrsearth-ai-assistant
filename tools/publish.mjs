@@ -3,8 +3,9 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.3.0
+// 版本：2.4.0
 // 修改记录：
+//   - 2.4.0 (2026-11-08) 新增 --dev-css-url，与 --dev-url 同步改写/复位 CSS 入口
 //   - 2.3.0 (2026-11-07) networkProfile 解耦：删除 100.64.* 个人拓扑硬编码与 lan/tailscale
 //                       词汇表白名单（合法性交由 RM 服务端白名单裁决，客户端仅形态校验+
 //                       透传）；自动推导只认私网段 → lan；非密拓扑项（DC_API_BASE /
@@ -131,7 +132,7 @@ function usage() {
   return `用法：
   node tools/publish.mjs <package-dir> [--skip-build] [--deploy]
   node tools/publish.mjs <package-dir> --check-only
-  node tools/publish.mjs <package-dir> --dev-url <url>
+  node tools/publish.mjs <package-dir> --dev-url <url> [--dev-css-url <url>]
   node tools/publish.mjs <package-dir> --dev-url --reset
 
 环境变量（非密拓扑项支持配置分层：进程环境变量 > 仓根 .env.local > ~/.config/agrsearth/config.json > 默认值）：
@@ -153,6 +154,7 @@ export function parseArgs(argv) {
     checkOnly: false,
     devMode: false,
     devUrl: "",
+    devCssUrl: "",
     devReset: false,
     help: false,
   };
@@ -162,11 +164,19 @@ export function parseArgs(argv) {
     else if (arg === "--deploy") result.deploy = true;
     else if (arg === "--check-only") result.checkOnly = true;
     else if (arg === "-h" || arg === "--help") result.help = true;
-    else if (arg === "--dev-url") {
-      result.devMode = true;
+    else if (arg === "--dev-url" || arg === "--dev-css-url") {
       const next = argv[i + 1];
-      if (next && next !== "--reset" && !next.startsWith("--")) {
-        result.devUrl = next;
+      if (arg === "--dev-url") {
+        result.devMode = true;
+        if (next && next !== "--reset" && !next.startsWith("--")) {
+          result.devUrl = next;
+          i += 1;
+        }
+      } else {
+        if (!next || next === "--reset" || next.startsWith("--")) {
+          fail("--dev-css-url 需要 URL 参数");
+        }
+        result.devCssUrl = next;
         i += 1;
       }
     } else if (arg === "--reset") {
@@ -179,10 +189,13 @@ export function parseArgs(argv) {
     else fail(`无法识别的参数：${arg}`);
   }
   if (!result.help && !result.pluginDir) fail(`请指定包目录（如 extensions/<track>/<tier>/<pkg-id>）\n${usage()}`);
+  if (result.devCssUrl && !result.devMode) fail("--dev-css-url 必须与 --dev-url 连用");
   if (result.devMode && !result.devReset && !result.devUrl) {
     fail("--dev-url 需要 URL 参数（--dev-url http://<ip>:<port>），或 --dev-url --reset 恢复正式产物");
   }
-  if (result.devReset && result.devUrl) fail("--dev-url --reset 不得同时携带 URL");
+  if (result.devReset && (result.devUrl || result.devCssUrl)) {
+    fail("--dev-url --reset 不得同时携带 URL 或 --dev-css-url");
+  }
   return result;
 }
 
@@ -923,11 +936,16 @@ async function devUrl(context, args, dispatcher, trace, logger) {
   logger.log(`dev-url 模式：${context.packageId}@${context.version}`);
   const body = args.devReset
     ? { version: context.version, reset: true }
-    : { version: context.version, esmUrl: args.devUrl, reset: false };
+    : {
+        version: context.version,
+        esmUrl: args.devUrl,
+        ...(args.devCssUrl ? { cssUrl: args.devCssUrl } : {}),
+        reset: false,
+      };
   const response = await apiCall(context, dispatcher, trace, "dev-url", "POST", `/packages/${context.packageId}/dev-url`, body);
   const data = response.data ?? {};
-  if (data.changed === false) logger.log(`  幂等短路：entries.esm.url 已是 ${data.esmUrl ?? "目标地址"}`);
-  else logger.log(`  改写完成：${data.previousUrl || "∅"} → ${data.esmUrl ?? ""}`);
+  if (data.changed === false) logger.log("  幂等短路：ESM/CSS 入口已是目标地址");
+  else logger.log(`  改写完成：${data.previousUrl || "∅"} → ${data.esmUrl ?? ""}${args.devCssUrl ? `；CSS → ${args.devCssUrl}` : ""}`);
   if (data.objectKey) logger.log(`  manifest 对象：${data.objectKey}`);
   if (!args.devReset) {
     const frontendDir = path.join(context.pluginDir, "frontend");

@@ -13,14 +13,17 @@
 
 ## R2 球端面板与地图联动
 
-1. 面板：`ctx.ui.createPanel({ mode:'native', ...computePanelRect() })`（几何约定见 L10，骨架已内置）；
-2. 实体：站点/标记一律 `ctx.entities.add(...)`；弹窗内聚插件内部；
-3. Cesium 对象（Cartesian3/Color/Rectangle…）：一律经骨架内置 `src/utils/cesium.ts` 的
+1. 面板：`ctx.ui.createPanel({ mode:'native', contentPadding:'default', ...computePanelRect() })`
+   （几何与内容区留白约定见 L10，骨架已内置；自管理留白时不传 contentPadding）；
+2. 样式：关键布局使用随包 CSS，Vue 组件优先 `<style scoped>`，非 SFC 使用包级根类；
+   随包 `style.css` 发布会自动回填 `entries.css.url`，不要只依赖宿主 Tailwind 工具类；
+3. 实体：站点/标记一律 `ctx.entities.add(...)`；弹窗内聚插件内部；
+4. Cesium 对象（Cartesian3/Color/Rectangle…）：一律经骨架内置 `src/utils/cesium.ts` 的
    `getCesium()` 取 **window.Cesium**——宿主 import map 无 cesium 键，
    **禁止裸 `import ... from 'cesium'`**（ESM 产物宿主运行时加载失败，且构建期缺类型）；
-4. 联动：面板↔地图走 `ctx.emit/on`；跨面板状态用模块级 reactive store；
-5. 后端请求：URL 集中在 `frontend/src/api/index.ts` 的 `API` 常量表，面板与业务模块只引用常量；
-6. 清理：`deactivate` 判挂起态 + 清实体，`destroy` removeEventListener + close 面板。
+5. 联动：面板↔地图走 `ctx.emit/on`；跨面板状态用模块级 reactive store；
+6. 后端请求：URL 集中在 `frontend/src/api/index.ts` 的 `API` 常量表，面板与业务模块只引用常量；
+7. 清理：`deactivate` 判挂起态 + 清实体，`destroy` removeEventListener + close 面板。
 
 **验收**：
 - [ ] 停用插件后现场整组不可见（无 viewer.entities 直加，评审 grep 源码确认）

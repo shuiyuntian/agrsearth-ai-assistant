@@ -12,7 +12,7 @@
   ],
   "capturedAt": "2026-11-07",
   "exitCode": 0,
-  "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-backend\n  extensions/tool/business/golden-tool-backend/CHANGELOG.md\n  extensions/tool/business/golden-tool-backend/README.md\n  extensions/tool/business/golden-tool-backend/VERSION\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/pom.xml\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/GoldenToolBackendServerApplication.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/controller/SampleController.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/Dockerfile\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/VERSION\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/build.sh\n  extensions/tool/business/golden-tool-backend/data/menu.json\n  extensions/tool/business/golden-tool-backend/deploy/k8s/10-golden-tool-backend-server.yaml\n  extensions/tool/business/golden-tool-backend/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-backend/frontend/package.json\n  extensions/tool/business/golden-tool-backend/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/types.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-backend/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-backend/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-backend\n==========================================\n",
+  "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-backend\n  extensions/tool/business/golden-tool-backend/CHANGELOG.md\n  extensions/tool/business/golden-tool-backend/README.md\n  extensions/tool/business/golden-tool-backend/VERSION\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/pom.xml\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/GoldenToolBackendServerApplication.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/controller/SampleController.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/Dockerfile\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/VERSION\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/build.sh\n  extensions/tool/business/golden-tool-backend/data/menu.json\n  extensions/tool/business/golden-tool-backend/deploy/k8s/10-golden-tool-backend-server.yaml\n  extensions/tool/business/golden-tool-backend/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-backend/frontend/package.json\n  extensions/tool/business/golden-tool-backend/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/panel.css\n  extensions/tool/business/golden-tool-backend/frontend/src/types.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-backend/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-backend/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-backend\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
       "sha256": "53d35cd17fd42fe7a18b7c70a200fdc8e286b6e61349c886df105a626cc03f63",
@@ -75,11 +75,15 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "5860b16af32e93037ec05b445f3692812c18dfac85a0f464d6296da07c009c1a",
+      "sha256": "7ec5c95907c01f1c1adbebc7a9e29963529caaa1418b118728c205398b3c2543",
       "exec": false
     },
     "frontend/src/manifest.ts": {
       "sha256": "3067c62a6b9fc2b6480e5c800956b69fd16afd67c8ee33391dab1cb3c7d3cd8c",
+      "exec": false
+    },
+    "frontend/src/panel.css": {
+      "sha256": "0eda4f13d785f3cadc7ca751333a2a0ec9fdb83ea99459f588b803d1258e05ce",
       "exec": false
     },
     "frontend/src/types.ts": {
@@ -99,7 +103,7 @@
       "exec": false
     },
     "frontend/vite.config.ts": {
-      "sha256": "79c349074a68fb868f1db73873a0d7cabcf0b4d5a3f6c2b84a9c6391dbebcfbe",
+      "sha256": "d09877e80d030ede94490561ac1d46b89104a9475b58df3d81c775e7d277cf7b",
       "exec": false
     },
     "manifest.json": {

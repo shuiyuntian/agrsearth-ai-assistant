@@ -5,8 +5,9 @@
 //   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.6.2
+// 版本：1.7.0
 // 修改记录：
+//   - (2026-11-08) 1.7.0 覆盖 HMR 随包 CSS 指引并同步 serverInfo.version
 //   - (2026-11-07) 1.6.2 覆盖 package_scaffold 直调 Node 脚手架（两模式 .mjs，不经 bash）
 //     与平台模式 withAdminUi 显式报错；serverInfo.version 断言随包版本升 1.6.2
 //   - (2026-11-07) 1.6.1 覆盖 listenLoopback 瞬态错误重试：EACCES 首败后重试成功、
@@ -126,10 +127,12 @@ test("Windows bash 支持环境变量覆盖且默认不依赖 WSL", () => {
   assert.equal(bashCommand("win32", { AGRSEARTH_BASH: "C:\\Git\\bin\\bash.exe" }), "C:\\Git\\bin\\bash.exe");
 });
 
-test("HMR 指南使用 watch + vite preview 并指向实际 ESM 文件", async () => {
+test("HMR 指南使用 watch + vite preview，并按需包含随包 CSS", async () => {
   const source = await fs.readFile(SERVER, "utf8");
   assert.ok(source.includes("npx vite preview --outDir dist --host 0.0.0.0 --port ${port} --strictPort"));
   assert.ok(source.includes("--dev-url http://<本机IP>:${port}/${esmFile}"));
+  assert.ok(source.includes("--dev-css-url http://<本机IP>:${port}/${cssFile}"));
+  assert.ok(source.includes("reset 会同时恢复 ESM 与已有的 CSS 正式入口"));
   assert.ok(!source.includes("npm run dev -- --port"));
 });
 
@@ -312,7 +315,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.6.2");
+    assert.equal(init.result?.serverInfo?.version, "1.7.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

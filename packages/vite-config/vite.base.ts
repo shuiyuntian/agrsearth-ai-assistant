@@ -2,8 +2,9 @@
  * 文件作用：vite.base 模块
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-07-13
- * 版本：1.1.0
+ * 版本：1.2.0
  * 修改记录：
+ *   - 1.2.0 (2026-11-08) 支持显式 cssFileName，避免球端与管理端随包 CSS 平铺重名
  *   - 1.1.0 (2026-10-04) 构建期共享依赖契约硬校验：配置定义即调 assertHostContract('gis-platform-ui')，
  *                       扩展声明的共享依赖区间不满足球端 host-contract.json 即构建失败（批4-P0）
  *   - 1.0.0 (2026-07-13) 初始创建
@@ -31,6 +32,8 @@ export interface ExtensionConfigOptions {
   name: string
   /** 构建输出目录 */
   outDir?: string
+  /** 随包 CSS 文件名；默认 style.css，与管理端共存时应改为 tool.css 等包内唯一值 */
+  cssFileName?: string
   /** 额外的 external 依赖 */
   extraExternals?: string[]
   /** 额外的 UMD globals 映射（与 extraExternals 配合，如 { 'opencc-js': 'OpenCC' }） */
@@ -44,7 +47,17 @@ export interface ExtensionConfigOptions {
 }
 
 export function defineExtensionConfig(options: ExtensionConfigOptions) {
-  const { entry, name, outDir = 'dist', extraExternals = [], extraGlobals = {}, alias = {}, exports, overrides = {} } = options
+  const {
+    entry,
+    name,
+    outDir = 'dist',
+    cssFileName = 'style.css',
+    extraExternals = [],
+    extraGlobals = {},
+    alias = {},
+    exports,
+    overrides = {}
+  } = options
 
   // 构建期硬校验（批4-P0）：扩展声明的共享依赖区间必须是球端宿主 host-contract.json 接受范围的子集
   assertHostContract('gis-platform-ui')
@@ -79,6 +92,9 @@ export function defineExtensionConfig(options: ExtensionConfigOptions) {
         ],
         output: {
           ...(exports ? { exports } : {}),
+          assetFileNames: (assetInfo) => assetInfo.name?.endsWith('.css')
+            ? cssFileName
+            : 'assets/[name]-[hash][extname]',
           globals: {
             vue: 'Vue',
             'vue-router': 'VueRouter',

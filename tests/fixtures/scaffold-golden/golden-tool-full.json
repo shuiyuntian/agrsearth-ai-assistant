@@ -18,7 +18,7 @@
   ],
   "capturedAt": "2026-11-07",
   "exitCode": 0,
-  "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-full\n  extensions/tool/business/golden-tool-full/CHANGELOG.md\n  extensions/tool/business/golden-tool-full/README.md\n  extensions/tool/business/golden-tool-full/VERSION\n  extensions/tool/business/golden-tool-full/admin-ui/README.md\n  extensions/tool/business/golden-tool-full/admin-ui/auto-imports.d.ts\n  extensions/tool/business/golden-tool-full/admin-ui/package.json\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/example.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/types/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/views/example/index.vue\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.json\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/admin-ui/vite.config.ts\n  extensions/tool/business/golden-tool-full/backend/golden-svc/pom.xml\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/GoldenSvcApplication.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/controller/SampleController.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-full/container/golden-svc/Dockerfile\n  extensions/tool/business/golden-tool-full/container/golden-svc/VERSION\n  extensions/tool/business/golden-tool-full/container/golden-svc/build.sh\n  extensions/tool/business/golden-tool-full/data/menu.json\n  extensions/tool/business/golden-tool-full/deploy/k8s/10-golden-svc.yaml\n  extensions/tool/business/golden-tool-full/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-full/frontend/package.json\n  extensions/tool/business/golden-tool-full/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-full/frontend/src/types.ts\n  extensions/tool/business/golden-tool-full/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-full/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-full\n==========================================\n",
+  "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-full\n  extensions/tool/business/golden-tool-full/CHANGELOG.md\n  extensions/tool/business/golden-tool-full/README.md\n  extensions/tool/business/golden-tool-full/VERSION\n  extensions/tool/business/golden-tool-full/admin-ui/README.md\n  extensions/tool/business/golden-tool-full/admin-ui/auto-imports.d.ts\n  extensions/tool/business/golden-tool-full/admin-ui/package.json\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/example.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/api/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/types/index.ts\n  extensions/tool/business/golden-tool-full/admin-ui/src/views/example/index.vue\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.json\n  extensions/tool/business/golden-tool-full/admin-ui/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/admin-ui/vite.config.ts\n  extensions/tool/business/golden-tool-full/backend/golden-svc/pom.xml\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/GoldenSvcApplication.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/java/com/ruoyi/goldensvc/controller/SampleController.java\n  extensions/tool/business/golden-tool-full/backend/golden-svc/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-full/container/golden-svc/Dockerfile\n  extensions/tool/business/golden-tool-full/container/golden-svc/VERSION\n  extensions/tool/business/golden-tool-full/container/golden-svc/build.sh\n  extensions/tool/business/golden-tool-full/data/menu.json\n  extensions/tool/business/golden-tool-full/deploy/k8s/10-golden-svc.yaml\n  extensions/tool/business/golden-tool-full/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-full/frontend/package.json\n  extensions/tool/business/golden-tool-full/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/index.ts\n  extensions/tool/business/golden-tool-full/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-full/frontend/src/panel.css\n  extensions/tool/business/golden-tool-full/frontend/src/types.ts\n  extensions/tool/business/golden-tool-full/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-full/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-full/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-full/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-full\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
       "sha256": "82c462318d07648b31afbac59ada1a2358bc96d548d1d8e6ea3e0be7152d718b",
@@ -125,11 +125,15 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "ec401a8bc023d214dfdd1d4a9b0e3a17483f9c32c335dac04f523c6a4525caa3",
+      "sha256": "872acf88ffd08c427db5a0dd4185a5d0ef7313fa3138c1c3663c406f47829f94",
       "exec": false
     },
     "frontend/src/manifest.ts": {
       "sha256": "fb3ccae47aa549b6b41b6978ae54972a1582bbd264dc5ce2eca45d2cb764184f",
+      "exec": false
+    },
+    "frontend/src/panel.css": {
+      "sha256": "18c0f8bba6660b40237eb22d71e9e6d187125b45a589c767bf545d8ffd613799",
       "exec": false
     },
     "frontend/src/types.ts": {
@@ -149,7 +153,7 @@
       "exec": false
     },
     "frontend/vite.config.ts": {
-      "sha256": "d8f939e6f606524ba3005220f8b91c464e55ab5169292c573675469dfc1eb835",
+      "sha256": "80d5f3b6bed3aef2783b28678e56d5d23769aa4c7e5e38801336ce65eaba69d0",
       "exec": false
     },
     "manifest.json": {

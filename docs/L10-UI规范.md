@@ -122,6 +122,11 @@ draggable: false, resizable: false, constrainToSafeArea: false
 多面板层叠避让：同屏多面板时左右分栏或主次叠放（次面板偏移 24px 并降低 z-index），
 禁止完全重叠；右下角悬浮入口类用 `anchor:'right-bottom'` + offset（AI 助手先例）。
 
+面板内容区默认左右留白 16px、上下留白 12px；新插件在 `createPanel` 显式传
+`contentPadding: 'default'`，由宿主统一提供。已有自管理留白面板保持缺省 `none`，不得重复叠加。
+分区之间用间距或分隔线组织，首行内容不得贴内容区左边或顶边。插件关键布局使用随包 CSS
+（Vue 优先 `<style scoped>`，其他内容使用包级根类），不只依赖宿主 Tailwind 是否收录对应工具类。
+
 ![正例占位：球端工具面板几何与主题](./images/globe-panel-good.svg)
 
 **正例文字描述**：深色面板（bg-gray-900/95）右侧贴齐工具条；标题栏 40px 固定高、图标+标题垂直居中；
@@ -147,7 +152,7 @@ draggable: false, resizable: false, constrainToSafeArea: false
 - Element Plus 组件深色覆盖：`class`/CSS 变量覆盖，或包一层 `el-config-provider` 设 dark；
 - 图表（echarts）配色：主色 #409eff、辅色 #67c23a/#e6a23c/#f56c6c/#909399，字号 ≥11px，深色底浅字；
 - 图标：工具栏图标用 manifest.icon（EP 图标名字符串），标题栏 headerIcon 传 EP 图标组件；
-- 动效节制：仅面板显隐/加载用过渡（≤200ms）；地图要素不做闪烁动画；不用抛物线/粒子炫技。
+- 动效服务业务表达：面板显隐/加载过渡宜 ≤200ms；地图要素不得使用无业务语义的高频闪烁或单纯装饰性特效。告警闪烁、轨迹流动，以及风场、烟雾、水流等粒子效果可按业务需要使用，避免遮挡核心信息；性能不足时优先调整密度、更新频率等参数，而非一律禁用效果。
 
 ### B.3 浮层/弹窗（Popup）
 
@@ -159,5 +164,5 @@ draggable: false, resizable: false, constrainToSafeArea: false
 
 - [ ] 管理页：四段式骨架齐全；表格对齐/tooltip/三态；按钮层级与权限显隐符合 A
 - [ ] 浮层：无 dialog 套 dialog；二次浮层用抽屉（55% 宽全高、不套 dialog 居中 CSS），抽屉内至多一层 dialog；分配/详情/多列表格走抽屉、轻表单确认走弹窗、复杂多步才独立路由页（A.3）
-- [ ] 球端面板：几何约定数值照抄；native 模式；深色 token 无白块；resize 跟随
-- [ ] 弹窗：尺寸与避让符合 B.3；动效克制
+- [ ] 球端面板：几何约定数值照抄；native 模式；深色 token 无白块；内容区留白符合 B.1；resize 跟随
+- [ ] 弹窗：尺寸与避让符合 B.3；动效符合业务语义

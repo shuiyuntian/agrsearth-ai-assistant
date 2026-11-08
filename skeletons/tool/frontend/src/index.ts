@@ -2,8 +2,9 @@
  * 文件作用：<pkg> 球端插件入口（CapabilityPackage 默认导出契约）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
- * 版本：1.0.0
+ * 版本：1.1.0
  * 修改记录：
+ *   - 1.1.0 (2026-11-08) 使用宿主标准内容区留白并引入包级随包 CSS
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
@@ -16,6 +17,7 @@
  */
 import { defineComponent, h } from 'vue'
 import { manifest } from './manifest'
+import './panel.css'
 import type { CapabilityPackage, CapabilityContext } from '@agrsearth/sdk-types'
 
 // 面板内容组件骨架：实现期替换为真实面板（可参考 docs/L5-开发Recipes.md）
@@ -23,7 +25,7 @@ const ExamplePanel = defineComponent({
   name: 'ExampleToolPanel',
   setup() {
     return () =>
-      h('div', { class: 'p-4 text-sm text-gray-300' }, [
+      h('div', { class: 'agrs-example-tool-panel text-sm text-gray-300' }, [
         h('p', `${manifest.name} v${manifest.version} 面板骨架`),
         h('p', { class: 'text-gray-500 mt-2' }, '在此实现面板内容；实体/图层/事件一律经 ctx.* 入口。')
       ])
@@ -61,6 +63,7 @@ const plugin: CapabilityPackage = {
       title: manifest.name,
       component: ExamplePanel,
       mode: 'native',
+      contentPadding: 'default',
       ...computePanelRect(),
       draggable: false,
       resizable: false,

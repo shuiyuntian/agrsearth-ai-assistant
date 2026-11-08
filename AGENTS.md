@@ -55,6 +55,9 @@ Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + 
 改 Skill 只改权威源，然后跑 `node tools/check-agent-parity.mjs --fix` 同步副本，禁止单端漂移。
 **版本倒挂警示**：cesiumjs 技能基线为 CesiumJS v1.144，高于当前宿主球端 cesium 1.141.0——
 技能可能推荐宿主不存在的新 API（如 `GeoJsonPrimitive`、`Scene.snap`），落地前以宿主实际版本为准。
+CesiumJS vendor skills 仅作 API 与场景参考；其中 Performance Tips / visual eval 不属于 AGRSEarth 默认配置或验收红线，
+不得作为默认降配依据。插件应使用宿主 Viewer，不照搬独立 Viewer 示例，不在无明确需求时修改共享场景的
+`requestRenderMode`、`resolutionScale`、`msaaSamples` 等全局渲染参数；性能降级须基于具体场景与实测。
 **`tools/dev-mcp/` 是导出产物，禁止直接改**——问题回报平台方，源头在平台仓 `mcps/agrsearth-dev/`。
 
 ## 契约红线（违反即验收打回；交付前必须 grep 自查）
@@ -109,6 +112,7 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 ./tools/publish.sh extensions/<track>/<tier>/<id>  # macOS/Ubuntu 发测试底座
 # Windows：tools\publish.cmd extensions/<track>/<tier>/<id>
 ./tools/publish.sh extensions/<track>/<tier>/<id> --dev-url http://<本机>:<端口>/tool.es.js  # HMR：watch + vite preview
+# 有随包 CSS 时追加：--dev-css-url http://<本机>:<端口>/tool.css；reset 同时恢复 JS/CSS
 ```
 
 ## 遇到问题 → 先去哪

@@ -28,7 +28,7 @@
 | 巡检 | `environment_status` | DC `GET /environment/status`：授权包级 Pod/镜像/实例健康、任务、PG/runtime 证据状态、菜单、产物 URL 与版本一致性；未授权 404，不读 Secret 明文，证据不足返回 `NOT_VERIFIED` | 无 |
 | 任务 | `task_get` | DC `GET /tasks`（分页，只读）/ `GET /tasks/{taskId}`（详情含 outbox 轨迹）；`type=PACKAGE_MIGRATION` 展示包转移迁移状态；`type=QUOTA_APPROVAL` 为配额申请审批任务（team_manage quota_request 创建） | 无 |
 | 任务 | `task_retry` | **写操作**：DC `POST /tasks/{taskId}/retry` 幂等重试（仅 PARTIAL/可恢复 ERROR 回池，只补 FAILED 步） | 有 |
-| 联调 | `hmr_get_guide` | 生成 --dev-url HMR 回路命令 + 排障清单 | 无 |
+| 联调 | `hmr_get_guide` | 生成 --dev-url HMR 回路命令；有随包 CSS 时补 --dev-css-url + 排障清单 | 无 |
 | 认证 | `auth_login_start` / `auth_login_wait` | 两步原生授权登录：start 立即返回 loginId + 授权链接并后台监听回跳，wait 换 token 落盘；避免 MCP 调用超时。loopback 端口瞬态错误（EACCES/EADDRINUSE/EADDRNOTAVAIL）自动重试 30 个随机端口，仍失败可直接重调 | 本地凭据 |
 | 认证 | `auth_login` | 兼容的一次性登录入口（内部等价 start + wait）；客户端工具超时较短时改用两步 | 本地凭据 |
 | 认证 | `auth_status` | 凭据来源 + DC `GET /me` 实测复核（不回显令牌） | 无 |

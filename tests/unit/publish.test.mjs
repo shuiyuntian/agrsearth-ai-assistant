@@ -2,8 +2,9 @@
 // 文件作用：Node 发布器协议、产物、失败中止与本地闸口回归测试
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：1.1.1
+// 版本：1.2.0
 // 修改记录：
+//   - 1.2.0 (2026-11-08) 覆盖随包 CSS 发布回填、双端重名共存与 dev-css-url/reset
 //   - 1.1.1 (2026-11-05) 断言 MinIO 403 返回 Code/Message 且仍中止发布
 //   - 1.1.0 (2026-11-05) 后端用例补 API 常量表与示例控制器，覆盖发布前 URL 契约闸口
 //   - 1.0.0 (2026-11-03) 初始创建
@@ -245,6 +246,8 @@ test("完整发布保持中文、协议顺序、manifest 回填与安全记录",
   const pkg = makePackage(t, { bundle: true });
   const platform = await startMockPlatform(t);
   const traceFile = path.join(pkg.dir, "trace.json");
+  fs.writeFileSync(path.join(pkg.dir, "frontend", "dist", "tool.css"), ".tool {}\n", "utf8");
+  fs.writeFileSync(path.join(pkg.dir, "admin-ui", "dist", "style.css"), ".admin {}\n", "utf8");
   await runPublish([pkg.relative, "--skip-build"], runOptions(platform, traceFile));
 
   const prepare = platform.requests.find((request) => request.path.endsWith("/release-prepare"));
@@ -254,11 +257,13 @@ test("完整发布保持中文、协议顺序、manifest 回填与安全记录",
   assert.equal(prepare.body.metadata.isDefault, 1);
   assert.ok(prepare.raw.toString("utf8").includes("天气预报测试"));
 
-  assert.deepEqual([...platform.uploads.keys()], ["tool.es.js", "tool.umd.js", "admin.es.js", "manifest.json", "k8s-bundle.tar.gz", "menu.json"]);
+  assert.deepEqual([...platform.uploads.keys()], ["tool.css", "tool.es.js", "tool.umd.js", "admin.es.js", "style.css", "manifest.json", "k8s-bundle.tar.gz", "menu.json"]);
   const publishedManifest = JSON.parse(platform.uploads.get("manifest.json").toString("utf8"));
   assert.match(publishedManifest.entries.esm.url, /\/artifacts\/tool\.es\.js$/);
   assert.match(publishedManifest.entries.umd.url, /\/artifacts\/tool\.umd\.js$/);
+  assert.match(publishedManifest.entries.css.url, /\/artifacts\/tool\.css$/);
   assert.match(publishedManifest.adminUi.url, /\/artifacts\/admin\.es\.js$/);
+  assert.match(publishedManifest.adminUi.cssUrl, /\/artifacts\/style\.css$/);
   const complete = platform.requests.find((request) => request.path.endsWith("/release-complete"));
   assert.equal(complete.body.menuJson.menus[0].menuName, "天气预报管理");
   assert.equal(complete.body.dependencies[0].minVersion, "1.0.0");
@@ -307,6 +312,26 @@ test("dev-url 设置与 reset 请求契约一致", async (t) => {
     { version: "0.1.0", reset: true },
   ]);
   assert.equal(platform.releaseComplete, 0);
+});
+
+test("dev-url 可同时改写 CSS，reset 时不携带 URL", async (t) => {
+  const pkg = makePackage(t);
+  const platform = await startMockPlatform(t);
+  await runPublish([
+    pkg.relative,
+    "--dev-url", "http://192.0.2.1:5173/tool.es.js",
+    "--dev-css-url", "http://192.0.2.1:5173/style.css",
+  ], runOptions(platform));
+  await runPublish([pkg.relative, "--dev-url", "--reset"], runOptions(platform));
+  assert.deepEqual(platform.devBodies, [
+    {
+      version: "0.1.0",
+      esmUrl: "http://192.0.2.1:5173/tool.es.js",
+      cssUrl: "http://192.0.2.1:5173/style.css",
+      reset: false,
+    },
+    { version: "0.1.0", reset: true },
+  ]);
 });
 
 test("suite 零产物发布并生成成员 pin 依赖", async (t) => {
@@ -394,4 +419,6 @@ test("本地闸口覆盖菜单、拓扑、网络画像和参数", () => {
   assert.throws(() => resolveNetworkProfile("http://example.com/api", "Bad_Value"), /形态非法/);
   assert.throws(() => parseArgs(["demo", "--prod"]), /不接受环境参数/);
   assert.throws(() => parseArgs(["demo", "--reset"]), /必须与 --dev-url 连用/);
+  assert.throws(() => parseArgs(["demo", "--dev-css-url", "http://192.0.2.1/style.css"]), /必须与 --dev-url 连用/);
+  assert.throws(() => parseArgs(["demo", "--dev-url", "--reset", "--dev-css-url", "http://192.0.2.1/style.css"]), /不得同时携带/);
 });

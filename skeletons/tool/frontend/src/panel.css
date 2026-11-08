@@ -1,0 +1,15 @@
+/**
+ * 文件作用：<pkg> 球端面板随包样式（包级类名隔离，关键布局不依赖宿主 Tailwind 扫描）
+ * 作者：JasonLee <shuiyuntian@foxmail.com>
+ * 创建日期：2026-11-08
+ * 版本：1.0.0
+ * 修改记录：
+ *   - 1.0.0 (2026-11-08) 初始创建
+ *
+ * 版权所有 (C) 2026 AGRSEarth 项目
+ */
+
+.agrs-example-tool-panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

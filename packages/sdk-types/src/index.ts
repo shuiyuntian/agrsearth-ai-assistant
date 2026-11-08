@@ -4,8 +4,9 @@
  * 扩展包通过相对路径引用，避免直接依赖 platform 内部目录。
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-07-13
- * 版本：1.0.0
+ * 版本：1.1.0
  * 修改记录：
+ *   - 1.1.0 (2026-11-08) FloatingPanelOpts 增加可选的内容区标准留白
  *   - 1.0.0 (2026-07-13) 初始创建
  *
  * 版权所有 (C) 2026 AGRSEarth 项目
@@ -116,6 +117,8 @@ export interface FloatingPanelOpts {
   style?: Record<string, string>
   /** 是否限制在安全区域（标题栏/工具栏/状态栏以内）。false 表示可在主窗体任意位置、任意大小 */
   constrainToSafeArea?: boolean
+  /** 内容区留白：default=上下 12px、左右 16px；缺省 none，由插件自行管理 */
+  contentPadding?: 'none' | 'default'
   /** 面板渲染模式：shadow 使用 Shadow DOM + 拖拽缩放容器；native 使用轻量固定定位面板 */
   mode?: 'shadow' | 'native'
   /** 关闭回调 */

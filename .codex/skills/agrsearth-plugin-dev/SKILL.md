@@ -43,6 +43,8 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 - [ ] 产物仅 external import vue 等宿主依赖（grep dist 首行）
 - [ ] 源码 grep：无 `viewer.entities.add`、无 `createApp`、无 `import.meta.env`、无 latest tag
 - [ ] components 段与目录结构一致；版本五处一致；注释头合规（docs/L7.4）
+- [ ] 球端面板标准留白使用 `contentPadding:'default'`；关键布局使用随包 CSS，Vue 优先
+      `<style scoped>`，其他内容使用包级根类，不只依赖宿主 Tailwind；有 CSS 时 HMR 同时传 `--dev-css-url`
 - [ ] 管理页列表：撑满式布局（.app-container flex 撑满 calc(100vh-84px) + .table-container flex:1 +
       el-table height=100%，表体内部滚动、分页固定底部、整页不滚）；左树右表页树面板内部滚动
 - [ ] 操作列：固定宽 fixed=right + 图标文字 tooltip；宽度按内容实测测算

@@ -10,7 +10,8 @@
   `contentPadding:'default'`（宿主上下 12px、左右 16px）并新增包级 panel.css，Vite 显式产出
   tool.css 避免与 admin-ui/style.css 平铺重名；create-extension.mjs 2.1.0 将 CSS 纳入包名替换。
   publish.mjs 2.4.0 新增 --dev-css-url，reset 同时恢复 ESM/CSS；dev-mcp 1.7.0 HMR 指南按产物检测
-  随包 CSS。L5/L8/L10 与验收口径同步；scaffold-golden 按新骨架再基线化（有意变更）。
+  随包 CSS。L5/L8/L10 与 agrsearth-plugin-dev 验收清单同步（七端副本一致）；
+  scaffold-golden 按新骨架再基线化（有意变更）。
 - 菜单号段 DC 流程 + 禁 SSH 红线补全（2026-11-08，issue #12 闭环）：skill `agrsearth-plugin-dev`
   契约红线新增第 7 条（环境零 SSH/零直连——禁止登录 aiearth01 执行任何操作，DB 初始化走
   `data/sql` 随 release-complete 落库；文档中的 `ssh -N -D`/`PUSH_VIA=ssh` 仅为客户端侧通道；

@@ -80,11 +80,15 @@ Skill 权威源为 `.kimi-code/skills/`（插件开发 `agrsearth-plugin-dev` + 
    （dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = `data/sql/*.sql` 随 release-complete
    幂等落库。本文档与 test-env/README 中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的
    SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。
+   （本条约束经本仓开展插件开发的团队与 AI 工具；平台方运维人员的维护性操作自有通道，
+   见平台仓运维手册，不受本条约束。）
 8. **菜单号段零申请**：menuId 禁止自编、禁止照抄 skeleton/演示包示意值（2004000/3004000 段）。
    号段**不需要申请**——`package_register`（resources.menu=true）自动从团队池切出本包专属千段：
    `task_get` 跟踪发放任务到 ACTIVE → `resource_list` 复核 menu 资源位 → `data/menu.json`
    全部 menuId（含 parentId 引用）落本包段内 → publish。**「禁止越段写菜单」fail-fast ≠ 缺号段、
    不要 quota_request**——报错文本自带本包实分段 [start-end]，把 menu.json 改成它重发即可。
+   注意**注册一次性定资源位**：menu=false 注册的包没有自己的段，重注册 409——需要菜单的包
+   注册时就必须 menu=true，误注册只能「package_manage remove → 重新注册」。
    仅团队池真正用尽（默认 10 块×10000 号/band）才走 `team_manage quota_request` →
    QUOTA_APPROVAL PENDING → 平台管理员审批（18850 开发者中心→任务页）；TEAM_OWNER 不能自审
    （403 是设计如此），PENDING 期间不要重发版本烧号。

@@ -6,10 +6,12 @@
 
 - 菜单号段 DC 流程 + 禁 SSH 红线补全（2026-11-08，issue #12 闭环）：skill `agrsearth-plugin-dev`
   契约红线新增第 7 条（环境零 SSH/零直连——禁止登录 aiearth01 执行任何操作，DB 初始化走
-  `data/sql` 随 release-complete 落库；文档中的 `ssh -N -D`/`PUSH_VIA=ssh` 仅为客户端侧通道）与
+  `data/sql` 随 release-complete 落库；文档中的 `ssh -N -D`/`PUSH_VIA=ssh` 仅为客户端侧通道；
+  明确约束对象为经本仓开发的团队与 AI 工具，平台方运维维护性操作不受约束）与
   第 8 条（菜单号段零申请——`package_register` 自动从团队池切本包千段，`resource_list` 实查后
   menuId 落段；「禁止越段写菜单」fail-fast 报错自带本包实分段，改 menu.json 重发即可，
-  **不要 quota_request**；配额审批仅团队池真用尽时走，审批权在平台管理员 18850 开发者中心→任务页），
+  **不要 quota_request**；注册一次性定资源位，menu=false 误注册走 remove→重注册；
+  配额审批仅团队池真用尽时走，审批权在平台管理员 18850 开发者中心→任务页），
   7 端副本经 check-agent-parity --fix 同步；AGENTS.md 红线与「遇到问题」导航表同源更新；
   L5（R3/R5）/L8（§8.4 约束 + 提测单模板）/L9（§9.4 新增越段/配额 PENDING/禁 SSH 三条 Q&A）/
   test-env README（§2 申请流程去号段旧通道 + §5 边界红线段）改 DC 现行口径；skeletons

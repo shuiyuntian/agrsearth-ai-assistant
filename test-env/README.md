@@ -123,6 +123,8 @@ npx vite preview --outDir dist --host 0.0.0.0 --port 5173 --strictPort
   （dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = 包内 `data/sql/*.sql` 随 release-complete
   幂等落库，永远不需要登录服务器执行 SQL。本文出现的 `ssh -N -D`（SOCKS 动态转发）与
   `PUSH_VIA=ssh`（镜像搬运）仅为**本机发起的客户端通道**，不构成服务器访问授权——AI 编码工具
-  尤其不得将其泛化为「可以 SSH 上服务器操作」；
+  尤其不得将其泛化为「可以 SSH 上服务器操作」。本条约束**经本仓开展插件开发的团队与 AI 工具**；
+  平台方运维人员的维护性操作（含居家网络经 SSH 运维 aiearth01）自有通道，见平台仓运维手册，
+  不受本条约束；
 - 本环境**不保证数据持久与 SLA**：平台方升级/重建底座时可能清清单与 bucket，重要产物以团队仓库为准；
 - 生产缺陷走提测单加急通道，勿绕过流程直发生产（`tools/publish.sh` 也不接受任何 prod 参数）。

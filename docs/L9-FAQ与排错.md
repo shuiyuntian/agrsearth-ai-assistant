@@ -75,6 +75,8 @@ A：**这不是缺号段，不要 quota_request**。号段在 `package_register`
 从团队池切好——报错文本自带本包实分段 [start-end]（或 dev-mcp `resource_list` 查 menu 资源位），
 把 `data/menu.json` 全部 menuId（含 parentId 引用）改成段内值、递增版本重发即可。典型根因：
 skeleton/演示包示意值（2004000/3004000 段）忘了替换，或照抄了别的包的段。
+特例：`resource_list` 查不到本包 menu 资源位 = 注册时 menu=false（注册一次性定资源位，重注册 409）——
+需要菜单的包必须注册时就 menu=true，误注册走「`package_manage` remove → 重新注册」，不要 quota_request。
 
 **Q：`team_manage quota_request` 之后任务一直 PENDING？**
 A：quota_request 仅用于团队菜单池真正用尽（默认 10 块×10000 号/band，约 100 个带菜单的包才触得到，

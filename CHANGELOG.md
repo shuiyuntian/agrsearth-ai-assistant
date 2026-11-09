@@ -4,60 +4,21 @@
 
 ## [2.2.0] - 2026-11-09
 
-本版与平台仓 `2.0.0` 联合验收；两仓版本号独立演进，平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
+主线：面板与随包样式全链联调；建包和版本校验工具 Node 化；发布拓扑配置解耦；菜单号段自助分配与协作红线补全。本期关联 issue #11/#12 已关闭。
 
-- 球端面板效果、留白与随包样式（2026-11-08）：L10 明确告警、轨迹、风场/烟雾/水流等业务动效可用，
-  性能不足时优先调参而非一律禁用；AGENTS.md 明确 CesiumJS vendor skills 的 Performance Tips /
-  visual eval 不是默认降配或验收红线，共享 Viewer 全局渲染参数不得无需求修改。tool 骨架改用
-  `contentPadding:'default'`（宿主上下 12px、左右 16px）并新增包级 panel.css，Vite 显式产出
-  tool.css 避免与 admin-ui/style.css 平铺重名；create-extension.mjs 2.1.0 将 CSS 纳入包名替换。
-  publish.mjs 2.4.0 新增 --dev-css-url，reset 同时恢复 ESM/CSS；dev-mcp 1.7.0 HMR 指南按产物检测
-  随包 CSS。L5/L8/L10 与 agrsearth-plugin-dev 验收清单同步（七端副本一致）；
-  scaffold-golden 按新骨架再基线化（有意变更）。
-- 菜单号段 DC 流程 + 禁 SSH 红线补全（2026-11-08，issue #12 闭环）：skill `agrsearth-plugin-dev`
-  契约红线新增第 7 条（环境零 SSH/零直连——禁止登录 aiearth01 执行任何操作，DB 初始化走
-  `data/sql` 随 release-complete 落库；文档中的 `ssh -N -D`/`PUSH_VIA=ssh` 仅为客户端侧通道；
-  明确约束对象为经本仓开发的团队与 AI 工具，平台方运维维护性操作不受约束）与
-  第 8 条（菜单号段零申请——`package_register` 自动从团队池切本包千段，`resource_list` 实查后
-  menuId 落段；「禁止越段写菜单」fail-fast 报错自带本包实分段，改 menu.json 重发即可，
-  **不要 quota_request**；注册一次性定资源位，menu=false 误注册走 remove→重注册；
-  配额审批仅团队池真用尽时走，审批权在平台管理员 18850 开发者中心→任务页），
-  7 端副本经 check-agent-parity --fix 同步；AGENTS.md 红线与「遇到问题」导航表同源更新；
-  L5（R3/R5）/L8（§8.4 约束 + 提测单模板）/L9（§9.4 新增越段/配额 PENDING/禁 SSH 三条 Q&A）/
-  test-env README（§2 申请流程去号段旧通道 + §5 边界红线段）改 DC 现行口径；skeletons
-  tool/system `data/menu.json` 与 wind-field-demo 注释、create-extension.mjs 生成 README
-  清除「号段向平台方申请」旧口径（演示包重申禁止提测）；menujson.py 退役残留死引用
-  （L2/L5/L9/test-env）改指 `publish.mjs --check-only` 内置校验；scaffold-golden 6 夹具
-  按新文案再基线化（有意变更）。根因记录：issue #12 的配额审批卡死并非配额不足——团队池默认
-  10 块×10000 号/band 正常团队用不完，系示意值越段 fail-fast + 旧文档口径诱导的误申请。
-- menujson.py 全退役（2026-11-08，create-extension.mjs 2.0.1 + check-extension-versions.mjs 2.0.1）：
-  `tools/menujson.py` 自仓内删除（平台仓 sync-template 停止下发并清理本地残留；平台仓原件归档
-  `archives/menujson-legacy-20261108/`）——validate 能力自 2.0.0 起已由 publish.mjs
-  `validateMenuDocument`（JS 单实现）取代，from-db/from-sql 为一次性迁移通道（26 份菜单 SQL
-  已于 2026-10-04 迁完归档），无存续需求。check-extension-versions 失败详情文案与脚手架生成
-  README 的校验提示改指 validateMenuDocument / 发布期自动校验；scaffold-golden 6 夹具与
-  check-versions-golden menu-invalid 用例按新行为再基线化（有意变更）。AGENTS.md 同步约定
-  与 tools/ 速览同步除名。
-- dev-mcp 1.6.2（平台仓同步下发）：`package_scaffold` 双模式直调 node create-extension.mjs
-  （不经 bash），Windows 端经 MCP 建包免 Git Bash；平台仓模式 `withAdminUi` 显式报错。
-  agent-doctor 1.2.2 同步撤掉 Windows Git Bash 提示（platformWarnings 恒空、bash 探针移除），
-  L9/AGENT_PARITY/AGENTS.md 文案对齐。
-- 建包与版本校验工具 Node 化（2026-11-07，create-extension.mjs 2.0.0 + check-extension-versions.mjs 2.0.0）：
-  同 publish.mjs 2.0.0 模式收尾——两工具改为 Node 唯一实现，`.sh`/`.cmd` 退化为薄 shim
-  （`check-extension-versions.cmd` 为新增），Windows 建包/校验不再依赖 Git Bash/jq/Python；
-  jq 的 manifest 改写经实测与 `JSON.stringify(v,null,2)+"\n"` 字节一致，pom 改造与公开示例
-  控制器改写内联为 JS；menu.json 校验复用 publish.mjs `validateMenuDocument`（规则与
-  menujson.py 等价，golden 夹具背书）；校验输出表格按 UTF-8 字节宽补 padding 复刻 bash
-  `printf %-Ns` 语义。回归设施：golden master 组合快照（scaffold 6 组参数组合 / check-versions
-  9 夹具用例，含捕获与重放脚本及 fixtures README），`npm run test:tools` 并入 `npm run check`。
-  有意差异：脚手架复制骨架时跳过 `node_modules/`（gitignored 本地环境污染，非契约行为；
-  新包依赖经仓根 `npm install` 重建）。agent-doctor 1.2.1 同步收窄 Windows bash 提示文案。
-- networkProfile 解耦（2026-11-07，publish.mjs 2.3.0 + dev-mcp 1.6.0）：删除 `100.64.*` 个人拓扑
-  硬编码与 `lan|tailscale` 词汇表客户端硬校验——词汇表 owner 归 RM 服务端（`rm.artifact-upload.endpoint.*`
-  白名单默认全拒 + 非法值明确 400，存量行为已覆盖兜底，服务端零改动）；客户端仅形态校验 +
-  不透明透传，自动推导收敛为「私网段网关 → lan，其余须显式指定」。非密拓扑项新增配置分层：
-  进程 env > 仓根 `.env.local` > 用户级 `~/.config/agrsearth/config.json` > 默认值（token 不进
-  配置层），publish.mjs 与 dev-mcp 双通道同口径，CLI 直跑与 MCP 驱动行为一致。
+- **面板效果与随包样式联调**：
+  - L10 与 AGENTS.md 明确告警、轨迹、风场/烟雾/水流等业务动效可用；性能不足时优先调参，CesiumJS vendor skills 的 Performance Tips / visual eval 不作为默认降配或验收红线，共享 Viewer 全局渲染参数不得无需求修改。
+  - tool 骨架采用 `contentPadding:'default'` 并新增包级 `panel.css`，Vite 显式产出 `tool.css`；create-extension.mjs 2.1.0 将 CSS 纳入包名替换，publish.mjs 2.4.0 新增 `--dev-css-url` 并在 reset 时同步恢复 ESM/CSS，dev-mcp 1.7.0 按实际产物检测随包 CSS。
+- **建包与版本校验工具 Node 化**：
+  - create-extension.mjs / check-extension-versions.mjs 2.0.0 成为唯一实现，`.sh`/`.cmd` 仅保留薄 shim；Windows 建包和校验不再依赖 Git Bash、jq 或 Python，新增 Windows 校验入口。
+  - menu.json 校验统一复用 publish.mjs 的 `validateMenuDocument`，`tools/menujson.py` 全退役；create-extension.mjs / check-extension-versions.mjs 2.0.1 同步清理旧提示。脚手架与版本校验建立 golden master 组合回归，并纳入 `npm run check`。
+- **发布配置与开发工具链**：
+  - publish.mjs 2.3.0 + dev-mcp 1.6.0 解除 `networkProfile` 词汇表与个人网络拓扑的客户端硬编码，合法值由服务端校验；非密配置统一支持进程 env、仓根 `.env.local`、用户级 config.json 与默认值分层，CLI/MCP 行为一致。
+  - dev-mcp 1.6.1 扩大 loopback 瞬态错误重试范围（issue #11）；1.6.2 的 `package_scaffold` 直调 Node 脚手架，agent-doctor 1.2.2 同步移除 Windows Git Bash 提示。
+- **菜单号段与协作边界（issue #12）**：
+  - 带菜单包经 `package_register` 自动分配本包号段，`resource_list` 实查后即可编写 menu.json；越段 fail-fast 时按报错分段修正，不误走配额申请，仅团队池真正耗尽时才进入配额审批。
+  - 明确环境零 SSH/零直连边界，数据库初始化统一由 `data/sql` 随 release-complete 落库；客户端侧 SOCKS 动态转发与镜像搬运通道保留。AGENTS.md、L5/L8/L9/L10、test-env 与七端 Skill 副本同步更新。
+- **平台兼容与版本元数据**：本版与平台仓 `2.0.0` 联合验收，两仓独立 SemVer，平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准；根 VERSION、package.json 与 package-lock.json 统一为 `2.2.0`，README 同步版本策略并清除 menujson.py 残留说明。
 
 ## [2.1.0] - 2026-11-07
 

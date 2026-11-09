@@ -2,8 +2,9 @@
  * 文件作用：<pkg> 球端插件入口（CapabilityPackage 默认导出契约）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
- * 版本：1.1.0
+ * 版本：1.2.0
  * 修改记录：
+ *   - 1.2.0 (2026-11-09) 增加平台图标库 AppIcon 最小示例
  *   - 1.1.0 (2026-11-08) 使用宿主标准内容区留白并引入包级随包 CSS
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
  *
@@ -16,6 +17,7 @@
  * - 面板定位遵循 docs/L10-UI规范.md 几何约定。
  */
 import { defineComponent, h } from 'vue'
+import { AppIcon } from '@agrsearth/icon-kit'
 import { manifest } from './manifest'
 import './panel.css'
 import type { CapabilityPackage, CapabilityContext } from '@agrsearth/sdk-types'
@@ -27,6 +29,10 @@ const ExamplePanel = defineComponent({
     return () =>
       h('div', { class: 'agrs-example-tool-panel text-sm text-gray-300' }, [
         h('p', `${manifest.name} v${manifest.version} 面板骨架`),
+        h('p', { class: 'mt-2 flex items-center gap-2' }, [
+          h(AppIcon, { name: 'calcite:layers', size: 18 }),
+          h('span', '平台图标库 AppIcon 示例')
+        ]),
         h('p', { class: 'text-gray-500 mt-2' }, '在此实现面板内容；实体/图层/事件一律经 ctx.* 入口。')
       ])
   }

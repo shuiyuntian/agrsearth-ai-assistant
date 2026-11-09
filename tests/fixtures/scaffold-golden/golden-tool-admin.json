@@ -83,7 +83,7 @@
       "exec": false
     },
     "frontend/package.json": {
-      "sha256": "9b0f3fcd2cc40ed83e2c4a820a74f1ab363f413adfc7297cf71468e9e5dd114e",
+      "sha256": "aabfb67dc2c7c11408bdbc06e9e6ea6e2eb0e6d4f6a9a81fbac9915f07333162",
       "exec": false
     },
     "frontend/src/api/index.ts": {
@@ -91,7 +91,7 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "e4e93001db38c54de9205001c0c658b3748b9c40dc890ac835dcfb07f4257117",
+      "sha256": "61f1d34efc65bbc786aa7766cccb989450e1580d006ffeb9366982d680d717e6",
       "exec": false
     },
     "frontend/src/manifest.ts": {

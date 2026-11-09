@@ -1,6 +1,6 @@
 {
   "name": "agrsearth-plugin-template",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "AGRSEarth 插件开发模板仓：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨骨架 + Node 跨平台发布器 + L1-L10 分层开发指南",
   "private": true,
   "workspaces": [

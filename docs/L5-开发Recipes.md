@@ -105,3 +105,36 @@
 - [ ] 版本五处一致（VERSION/manifest.json/frontend package.json/manifest.ts/container build.sh）
 - [ ] 注释头合规（L7），署名团队真实邮箱
 - [ ] 提测单要素齐全，平台方受理无补件
+
+
+## R8 使用平台图标
+
+1. 确认 dev-mcp 已登录（`auth_status`；未登录走 `auth_login_start` + `auth_login_wait`）；
+2. 调 `icon_search`，用业务中文名/英文名/关键词查找，例如 `{"keyword":"测量"}`；从结果中选 `iconRef`，不要猜名字；
+3. 需要核对样式时调 `icon_get`，传 `icon_search` 返回的资产 `name`；`includeSvg=true` 可看 SVG 原文，`includePalette=true` 可取平台色板；
+4. 写入代码：工具栏 `manifest.icon` 使用 `iconRef`；普通 Vue 内容用 `AppIcon`；需要临时着色/多图层效果时调 `icon_bake`（只返回 SVG，不保存）；
+5. 返回 `requiresInstance=true` 的自定义资产，由使用者在管理面 IconPicker 确认签发后使用 `iconlib:<instanceId>`，Coder 不调用写库接口。
+
+```ts
+// frontend/src/manifest.ts
+export const manifest = {
+  // 其余字段略
+  icon: 'calcite:measure'
+}
+```
+
+```vue
+<script setup lang="ts">
+import { AppIcon } from '@agrsearth/icon-kit'
+</script>
+
+<template>
+  <AppIcon name="calcite:measure" :size="20" />
+</template>
+```
+
+**验收**：
+- [ ] 图标名来自 `icon_search` 实查，未猜名；普通 Vue 内容使用 `AppIcon`
+- [ ] 需要颜色时优先使用平台色板；`icon_bake` 仅做无状态预览
+- [ ] 无图标上传/派生/删除/副本签发调用；自定义副本经用户 IconPicker 确认
+- [ ] 实际球端面板中图标可见，深色/浅色场景无方块或布局跳动

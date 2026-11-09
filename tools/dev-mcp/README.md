@@ -6,11 +6,14 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（25 个，v1.5.0 新增 instance_logs tailLines 与发布令牌子进程注入）
+## 工具清单（28 个，v1.8.0 新增图标库只读消费三工具）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
 | 契约文档 | `docs_read` | 模板仓模式读 docs/L1-L10；平台仓模式读 PLUGIN_DEVELOPMENT.md | 无 |
+| 图标库 | `icon_search` | DC `GET /icons`：按业务语义/分类/来源检索，返回可复制的 `iconRef` 与相对 `svgUrl`；分页至多 50 | 无 |
+| 图标库 | `icon_get` | DC 按资产名取详情/变体；`includeSvg=true` 附 SVG 原文，`includePalette=true` 附平台色板；自定义副本仍由 IconPicker 签发 | 无 |
+| 图标库 | `icon_bake` | DC `POST /icons/bake`：着色/多图层无状态预览，只返回 SVG，不保存、不签发副本，不需要 `reason` | 无（不落库） |
 | 脚手架 | `package_scaffold` | 直调 create-extension.mjs 建包（Node 唯一实现，不经 bash；track/tier/delivery/backend/admin-ui） | 本地，可逆 |
 | 预检 | `package_precheck` | 版本五处一致性 + menu.json + 前后端 URL 契约校验（平台仓模式走 publish --check-only 全闸口） | 无 |
 | 预检 | `package_contract_check` | 模板仓模式以 Node 执行 `tools/check-api-contract.mjs`：API 常量表 ↔ 公开 Spring Mapping 双向 diff；平台仓模式明确不适用 | 无 |
@@ -180,4 +183,4 @@ cd mcps/agrsearth-dev && npm test
 
 node:test 轻量测试（无新框架）：PKCE 纯函数（含 RFC 7636 测试向量）、完整登录/DC URL
 与 clientId 覆盖、自定义 loopback 端口段、令牌落盘 0600 回环、JSON-RPC `tools/list`
-冒烟（断言 25 工具齐全 + `package_contract_check` 真实调用 + `auth_login_start/wait` 本机完整回环 + 关键写工具声明 reason 字段 + `environment_status` 只读边界）。
+冒烟（断言 28 工具齐全 + `package_contract_check` 真实调用 + `auth_login_start/wait` 本机完整回环 + 关键写工具声明 reason 字段 + `environment_status` 只读边界 + 图标三工具经本地 mock DC 完成真实 MCP 调用且零写库工具）。

@@ -25,3 +25,17 @@ import type { CapabilityContext, CapabilityManifest } from '../../../../../packa
 ```
 
 后续可考虑将 `sdk-types` 发布为内部 npm 包 `@agrsearth/sdk-types`，但目前 monorepo 内相对路径最简单、最稳定。
+
+图标渲染统一使用 `AppIcon`，模板仓直接声明 workspace 依赖 `@agrsearth/icon-kit`：
+
+```vue
+<script setup lang="ts">
+import { AppIcon } from '@agrsearth/icon-kit'
+</script>
+
+<template>
+  <AppIcon name="calcite:measure" :size="20" />
+</template>
+```
+
+`name` 支持 EP 组件名、`calcite:<name>` 与 `iconlib:<instanceId>`；资产名通过 dev-mcp `icon_search` 实查，不要猜名。自定义副本由管理面 IconPicker 确认签发。

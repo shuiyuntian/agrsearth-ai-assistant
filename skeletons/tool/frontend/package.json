@@ -10,6 +10,7 @@
     "dev": "vite build --watch --mode development"
   },
   "dependencies": {
+    "@agrsearth/icon-kit": "*",
     "@element-plus/icons-vue": "^2.3.1",
     "element-plus": "^2.7.6"
   },

@@ -56,8 +56,13 @@ A：request 走宿主别名桥才有 token——检查是否误用自建 axios�
 直接相对路径（不要 `import.meta.env`）。
 
 **Q：图标按钮显示文字或方块？**
-A：图标用 Element Plus 图标名字符串（宿主解析）或包内 SVG；管理页全局组件
-（Pagination/RightToolbar 等）在宿主注册，拼写与宿主一致。
+A：先用 dev-mcp `icon_search` 确认真实资产名，再用返回的 `iconRef`；普通 Vue 内容用 `AppIcon`，不要手写 EP 名字。`AppIcon` 未命中/远程加载失败会回退 MoreFilled，浏览器 Network 检查相对 `/icon-library/api/v1/**` 请求；管理页全局组件（Pagination/RightToolbar 等）在宿主注册，拼写与宿主一致。
+
+**Q：Coder 调图标工具提示未登录或无权限？**
+A：先 `auth_login_start` → 浏览器完成统一身份登录 → `auth_login_wait`，再用 `auth_status` 复核。图标工具要求开发者中心只读权限；无权限时联系平台方，不要尝试直连数据库或调用图标库管理接口。
+
+**Q：`icon_search` 返回 `requiresInstance=true`？**
+A：这是自定义/派生资产，没有可直接写入代码的稳定 `iconRef`。让使用者在管理面 IconPicker 选择并确认签发，再把返回的 `iconlib:<instanceId>` 写入代码；不要调上传、派生或实例签发 API 代替用户确认。
 
 ## 9.4 发布相关
 

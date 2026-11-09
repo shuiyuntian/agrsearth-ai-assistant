@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // =============================================================================
 // 文件作用：AGRSEarth 插件开发 MCP server（stdio）——面向第三方插件开发团队的 AI 编码工具
-//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 25 工具：
+//   （Kimi Code / Codex / Claude Code / qoder 等），统一命名 28 工具：
 //   本地能力（docs_read/package_scaffold/package_precheck/package_contract_check/package_publish/hmr_get_guide）
+//   + 图标库只读消费（icon_search/icon_get/icon_bake）
 //   + 开发者中心 DC API 能力（package_list/package_register/package_manage/team_list/
 //   team_manage/task_get/task_retry/resource_list/resource_issue/resource_rotate/
 //   resource_revoke/instance_list/instance_logs：全部对接 DC 显式门面 controller）
@@ -17,8 +18,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.7.0
+// 版本：1.8.0
 // 修改记录：
+//   - 1.8.0 (2026-11-09) 新增 icon_search/icon_get/icon_bake（28 工具），经 DC 只读门面消费平台图标库
 //   - 1.7.0 (2026-11-08) hmr_get_guide 检测随包 style.css 并补 --dev-css-url 指引
 //   - 1.6.2 (2026-11-07) package_scaffold 双模式改直调 Node 脚手架（tools/ 或 scripts/
 //     create-extension.mjs，process.execPath），不再经 bash——配合两仓脚手架 Node 化
@@ -464,7 +466,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.7.0",
+  version: "1.8.0",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -673,6 +675,82 @@ server.registerTool("package_list", {
     if (track) qs.set("track", track);
     if (tier) qs.set("tier", tier);
     return dcResult(await dcFetch(`/packages?${qs}`), 200);
+  });
+});
+
+// ===== 图标库：只读检索/详情 + 无状态烘焙（全部经 DC 门面） =====
+
+server.registerTool("icon_search", {
+  description: "检索 AGRSEarth 平台图标库（DC GET /icons）：按业务中文名、英文名、关键词或分类查找，结果直接返回可复制的 iconRef 与 svgUrl。开发图标任务先调本工具，不要猜图标名或默认复制外部 SVG。需先 auth_login。",
+  inputSchema: {
+    keyword: z.string().max(128).optional().describe("业务语义关键词，如 测量、图层、导出"),
+    category: z.string().max(64).optional().describe("分类编码（可省略）"),
+    source: z.enum(["calcite", "element-plus", "upload", "derived", "builtin"]).optional().describe("图标来源；缺省全部"),
+    pageNum: z.number().int().min(1).default(1).describe("页码"),
+    pageSize: z.number().int().min(1).max(50).default(12).describe("每页条数（至多 50）"),
+  },
+}, async ({ keyword, category, source, pageNum, pageSize }) => {
+  return dcCall(async () => {
+    const qs = new URLSearchParams({ pageNum: String(pageNum), pageSize: String(pageSize) });
+    if (keyword) qs.set("keyword", keyword);
+    if (category) qs.set("category", category);
+    if (source) qs.set("source", source);
+    return dcResult(await dcFetch(`/icons?${qs}`), 200);
+  });
+});
+
+server.registerTool("icon_get", {
+  description: "按 icon_search 返回的资产名读取图标详情（DC GET /icons/by-name/{name}）：返回 iconRef、variants 和相对 svgUrl；includeSvg=true 时附带 SVG 原文，includePalette=true 时附带平台色板。自定义资产 requiresInstance=true 时须由用户在 IconPicker 确认签发副本。",
+  inputSchema: {
+    name: z.string().min(1).max(128).describe("icon_search 返回的资产名，如 calcite-measure / ep-edit"),
+    size: z.string().max(16).optional().describe("SVG 尺寸档位，如 16/24/32/vector"),
+    variant: z.string().max(32).optional().describe("风格变体，如 outline/filled"),
+    includeSvg: z.boolean().default(false).describe("是否附带 SVG 原文（默认 false，减少上下文）"),
+    includePalette: z.boolean().default(false).describe("是否附带平台风格色板"),
+  },
+}, async ({ name, size, variant, includeSvg, includePalette }) => {
+  return dcCall(async () => {
+    const encoded = encodeURIComponent(name);
+    const detail = rData(await dcFetch(`/icons/by-name/${encoded}`), "获取图标详情");
+    const result = { ...detail };
+    if (includeSvg) {
+      const qs = new URLSearchParams();
+      if (size) qs.set("size", size);
+      if (variant) qs.set("variant", variant);
+      const suffix = qs.size ? `?${qs}` : "";
+      result.svg = rData(await dcFetch(`/icons/by-name/${encoded}/svg${suffix}`), "获取图标 SVG");
+    }
+    if (includePalette) {
+      result.palette = rData(await dcFetch("/icons/palette"), "获取图标色板");
+    }
+    return ok(JSON.stringify(result, null, 2), 300);
+  });
+});
+
+server.registerTool("icon_bake", {
+  description: "无状态生成着色/多图层 SVG（DC POST /icons/bake）：只返回 SVG 文本，不保存资产、不签发 iconlib 副本、不需要写操作 reason。size 缺省 24；name 与 layers 至少提供一个。",
+  inputSchema: {
+    name: z.string().max(128).optional().describe("单图层资产名，如 calcite-layers"),
+    color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("单图层颜色，6 位 hex"),
+    size: z.number().int().min(1).max(512).optional().describe("输出 viewBox 边长，默认 24"),
+    layers: z.array(z.object({
+      name: z.string().min(1).max(128).describe("图层资产名"),
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().describe("图层颜色"),
+      x: z.number().optional().describe("X 偏移"),
+      y: z.number().optional().describe("Y 偏移"),
+      scale: z.number().positive().max(16).optional().describe("缩放倍率"),
+    })).max(8).optional().describe("多图层组合（至多 8 层）"),
+  },
+}, async ({ name, color, size, layers }) => {
+  if (!name && (!layers || layers.length === 0)) return fail("name 与 layers 至少提供一个");
+  return dcCall(async () => {
+    const body = {};
+    if (name) body.name = name;
+    if (color) body.color = color;
+    if (size) body.size = size;
+    if (layers) body.layers = layers;
+    const svg = rData(await dcFetch("/icons/bake", { method: "POST", body }), "图标无状态烘焙");
+    return ok(svg, 500);
   });
 });
 
@@ -1448,7 +1526,7 @@ export const TOOL_MANIFEST = [
   "package_register", "package_manage", "team_list", "team_manage", "resource_list",
   "resource_issue", "resource_rotate", "resource_revoke", "instance_list", "instance_logs",
   "environment_status", "task_get", "task_retry", "hmr_get_guide", "auth_login_start", "auth_login_wait",
-  "auth_login", "auth_status", "auth_logout",
+  "auth_login", "auth_status", "auth_logout", "icon_search", "icon_get", "icon_bake",
 ];
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === HERE;

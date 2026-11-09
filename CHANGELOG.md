@@ -2,6 +2,15 @@
 
 > 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
+## [2.3.0] - 2026-11-09
+
+主线：平台图标库向各类 Coder 开放统一只读消费入口，并把使用规范落到文档、Skill 与骨架。
+
+- **dev-mcp 1.8.0**：新增 `icon_search`、`icon_get`、`icon_bake`；经开发者中心门面鉴权，支持业务语义检索、变体/SVG/色板读取与无状态烘焙，不开放上传、派生、删除或副本签发。
+- **模板指南**：L5 新增 R8 图标 recipe，L10 明确 manifest/AppIcon/IconPicker 与三种引用形态，L9 补登录、加载失败和自定义副本排错；README 增加统一入口。
+- **七端 Skill**：`agrsearth-plugin-dev` 增加图标任务触发词与查库约束，权威源修改后同步全部 Coder 副本。
+- **可运行示例**：tool 骨架引入 `@agrsearth/icon-kit`，面板内置 `calcite:layers` 的 `AppIcon` 示例；平台图标资产名须来自实际检索，不得猜名。
+
 ## [2.2.0] - 2026-11-09
 
 主线：面板与随包样式全链联调；建包和版本校验工具 Node 化；发布拓扑配置解耦；菜单号段自助分配与协作红线补全。本期关联 issue #11/#12 已关闭。

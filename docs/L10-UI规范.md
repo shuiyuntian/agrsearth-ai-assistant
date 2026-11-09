@@ -151,7 +151,7 @@ draggable: false, resizable: false, constrainToSafeArea: false
 
 - Element Plus 组件深色覆盖：`class`/CSS 变量覆盖，或包一层 `el-config-provider` 设 dark；
 - 图表（echarts）配色：主色 #409eff、辅色 #67c23a/#e6a23c/#f56c6c/#909399，字号 ≥11px，深色底浅字；
-- 图标：工具栏图标用 manifest.icon（EP 图标名字符串），标题栏 headerIcon 传 EP 图标组件；
+- 图标：优先经 dev-mcp `icon_search` 从平台图标库选，不猜名字、不默认复制外部 SVG；工具栏 `manifest.icon` 支持 EP 图标名、`calcite:<name>`、`iconlib:<instanceId>`；标题栏 `headerIcon` 传 EP 图标组件；普通 Vue 内容用 `@agrsearth/icon-kit` 的 `AppIcon` 统一渲染；自定义/固定样式副本由用户在管理面 IconPicker 确认签发；
 - 动效服务业务表达：面板显隐/加载过渡宜 ≤200ms；地图要素不得使用无业务语义的高频闪烁或单纯装饰性特效。告警闪烁、轨迹流动，以及风场、烟雾、水流等粒子效果可按业务需要使用，避免遮挡核心信息；性能不足时优先调整密度、更新频率等参数，而非一律禁用效果。
 
 ### B.3 浮层/弹窗（Popup）

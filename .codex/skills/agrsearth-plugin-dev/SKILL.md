@@ -1,6 +1,6 @@
 ---
 name: agrsearth-plugin-dev
-description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, menu.json 菜单声明, k8s deploy, publish 发布, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists. 新建/改造/发布插件、构建失败与 publish 校验失败排查时使用。
+description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, menu.json 菜单声明, 图标/icon-kit/icon-library/AppIcon, k8s deploy, publish 发布, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists. 新建/改造/发布插件、选择或使用图标、构建失败与 publish 校验失败排查时使用。
 ---
 
 # AGRSEarth Plugin Development（航遥业务中台插件开发）
@@ -35,6 +35,14 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 | R5 | 菜单声明（data/menu.json，menu-provision 幂等落地） | `*/data/menu.json` |
 | R6 | 多组件 + deploy/k8s（白名单四类、拓扑 dependsOn） | `skeletons/system/deploy/k8s` |
 | R7 | 发布与回滚（RELEASE_CHECKLIST + 提测单材料） | `RELEASE_CHECKLIST.md`、docs/L8 |
+| R8 | 使用平台图标（icon_search → icon_get → AppIcon/manifest.icon） | `skeletons/tool/frontend`、docs/L5-R8 |
+
+## 图标任务
+
+- 先用 dev-mcp `icon_search` 查平台图标库并采用返回的 `iconRef`，不要猜图标名或默认复制外部 SVG；需要详情/预览用 `icon_get`，需要着色/多图层临时效果用 `icon_bake`。
+- `manifest.icon` 支持 EP 组件名、`calcite:<name>`、`iconlib:<instanceId>`；普通 Vue 内容用 `@agrsearth/icon-kit` 的 `AppIcon`。
+- `icon_bake` 无状态，不落库；Coder 禁止调用图标上传、派生、删除、副本签发接口。`requiresInstance=true` 时交给使用者在管理面 IconPicker 确认。
+- 完成后按 docs/L5-R8 验收，并在真实球端面板检查图标显示。
 
 ## 每步验收（通用 checklist）
 

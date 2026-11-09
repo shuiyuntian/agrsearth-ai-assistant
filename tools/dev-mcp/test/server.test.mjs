@@ -2,11 +2,13 @@
 // 文件作用：agrsearth-dev MCP 轻量测试（node:test，无新框架）——
 //   ① PKCE/端口段等纯函数单测（含 RFC 7636 官方测试向量）；② 令牌落盘/读取/清理
 //   （0600 权限）回环测试；③ JSON-RPC tools/list 冒烟：子进程起 server.mjs，
-//   initialize + tools/list 握手，断言 25 个统一命名工具全部注册；④ 登录/DC 配置覆盖。
+//   initialize + tools/list 握手，断言 28 个统一命名工具全部注册；④ 登录/DC 配置覆盖；
+//   ⑤ 图标库三工具经本地 mock DC 完成真实 MCP 调用。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.7.0
+// 版本：1.8.0
 // 修改记录：
+//   - (2026-11-09) 1.8.0 新增图标检索/详情/无状态烘焙工具及 mock DC 回环
 //   - (2026-11-08) 1.7.0 覆盖 HMR 随包 CSS 指引并同步 serverInfo.version
 //   - (2026-11-07) 1.6.2 覆盖 package_scaffold 直调 Node 脚手架（两模式 .mjs，不经 bash）
 //     与平台模式 withAdminUi 显式报错；serverInfo.version 断言随包版本升 1.6.2
@@ -276,7 +278,7 @@ test("令牌保存/读取/清理回环（文件权限 0600）", async () => {
 
 // ---------- ③ JSON-RPC tools/list 冒烟 ----------
 
-test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30000 }, async () => {
+test("JSON-RPC tools/list：28 个统一命名工具全部注册", { timeout: 30000 }, async () => {
   const child = spawn(process.execPath, [SERVER], {
     env: { ...process.env, AGRSEARTH_TOKEN_FILE: process.env.AGRSEARTH_TOKEN_FILE },
     stdio: ["pipe", "pipe", "pipe"],
@@ -315,7 +317,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.7.0");
+    assert.equal(init.result?.serverInfo?.version, "1.8.0");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});
@@ -325,11 +327,19 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
     const expected = [...TOOL_MANIFEST].sort();
     assert.deepEqual(names, expected,
       `工具清单不符：缺 ${expected.filter((n) => !names.includes(n))} / 多 ${names.filter((n) => !expected.includes(n))}`);
-    assert.equal(tools.length, 25, "必须恰好 25 个工具");
+    assert.equal(tools.length, 28, "必须恰好 28 个工具");
     for (const t of tools) {
       assert.ok(t.description && t.description.length > 10, `${t.name} 缺描述`);
       assert.ok(t.inputSchema && t.inputSchema.type === "object", `${t.name} 缺 inputSchema`);
     }
+    const iconSearch = tools.find((t) => t.name === "icon_search");
+    const iconGet = tools.find((t) => t.name === "icon_get");
+    const iconBake = tools.find((t) => t.name === "icon_bake");
+    assert.ok(iconSearch.description.includes("不要猜图标名"), "icon_search 须引导先查库");
+    assert.equal(iconSearch.inputSchema.properties.pageSize.maximum, 50);
+    assert.ok(iconGet.inputSchema.required?.includes("name"), "icon_get 必填资产名");
+    assert.ok(!iconBake.inputSchema.properties.reason, "无状态烘焙不是持久化写操作");
+    assert.ok(!names.some((n) => /^icon_(upload|derive|delete|issue)/.test(n)), "不得开放图标资产写库工具");
     const contract = tools.find((t) => t.name === "package_contract_check");
     assert.ok(contract, "必须注册 package_contract_check");
     assert.ok(contract.description.includes("双向 diff"), "契约工具须声明前后端双向 diff");
@@ -423,7 +433,7 @@ test("JSON-RPC tools/list：25 个统一命名工具全部注册", { timeout: 30
     assert.ok(!ilog.description.includes("服务端固定"), "instance_logs 描述不得再含「服务端固定」旧口径");
     // 全工具描述不应再有【未实现】占位
     for (const t of tools) {
-      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 25 工具已落地）`);
+      assert.ok(!t.description.includes("【未实现】"), `${t.name} 描述不应含【未实现】（全部 28 工具已落地）`);
     }
     // package_publish 描述应体现 DC 发布门面四步、不再 MinIO 直传/RM 登记
     assert.ok(pub.description.includes("release-prepare"), "package_publish 描述应含 release-prepare");
@@ -832,4 +842,91 @@ test("package_publish 先 resolveToken 并仅向 publish.mjs 子进程注入 AGR
   assert.ok(audited.length > 0, "写操作必须留有审计记录");
   assert.ok(!audited.includes(ENV_CHANNEL_TOKEN), "审计文件不得出现环境变量通道令牌");
   assert.ok(!audited.includes(FILE_CHANNEL_TOKEN), "审计文件不得出现落盘通道令牌");
+});
+
+
+test("icon_search/icon_get/icon_bake 经本地 mock DC 完成真实 MCP 调用", { timeout: 30000 }, async (t) => {
+  const requests = [];
+  const mock = http.createServer((req, res) => {
+    let body = "";
+    req.on("data", (chunk) => { body += chunk; });
+    req.on("end", () => {
+      requests.push({ method: req.method, url: req.url, authorization: req.headers.authorization, body });
+      const json = (data) => res.writeHead(200, { "Content-Type": "application/json" })
+        .end(JSON.stringify({ code: 200, data }));
+      if (req.method === "GET" && req.url.startsWith("/icons?")) {
+        return json({ total: 1, rows: [{ name: "calcite-measure", nameZh: "测量", source: "calcite", iconRef: "calcite:measure" }] });
+      }
+      if (req.method === "GET" && req.url === "/icons/by-name/calcite-measure") {
+        return json({ name: "calcite-measure", iconRef: "calcite:measure", variants: [{ size: "24", variant: "outline" }] });
+      }
+      if (req.method === "GET" && req.url.startsWith("/icons/by-name/calcite-measure/svg")) {
+        return json("<svg><path/></svg>");
+      }
+      if (req.method === "GET" && req.url === "/icons/palette") {
+        return json([{ key: "primary", hex: "#409EFF", usage: "主色" }]);
+      }
+      if (req.method === "POST" && req.url === "/icons/bake") {
+        return json("<svg fill=\"#409EFF\"/>");
+      }
+      res.writeHead(404, { "Content-Type": "application/json" }).end(JSON.stringify({ code: 404, msg: "not found" }));
+    });
+  });
+  await new Promise((resolve) => mock.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${mock.address().port}`;
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "agrsearth-dev-icons-")));
+  const serverDir = path.join(root, "tools", "dev-mcp");
+  await fs.mkdir(serverDir, { recursive: true });
+  await fs.copyFile(SERVER, path.join(serverDir, "server.mjs"));
+  await fs.symlink(path.join(HERE, "..", "node_modules"), path.join(serverDir, "node_modules"), "junction");
+  t.after(async () => {
+    await new Promise((resolve) => mock.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+
+  const client = new Client({ name: "node:test-icons", version: "1.0.0" });
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: [path.join(serverDir, "server.mjs")],
+    cwd: root,
+    env: {
+      ...process.env,
+      AGRSEARTH_DC_API_BASE: origin,
+      AGRSEARTH_TOKEN: "fake-test-token",
+      AGRSEARTH_TOKEN_FILE: path.join(root, "token.json"),
+    },
+    stderr: "pipe",
+  });
+  await client.connect(transport);
+  try {
+    const searched = await client.callTool({ name: "icon_search", arguments: { keyword: "测量" } });
+    assert.notEqual(searched.isError, true, searched.content?.[0]?.text);
+    assert.match(searched.content?.[0]?.text ?? "", /calcite:measure/);
+    assert.equal(requests[0].authorization, "Bearer fake-test-token");
+
+    const detail = await client.callTool({
+      name: "icon_get",
+      arguments: { name: "calcite-measure", size: "24", includeSvg: true, includePalette: true },
+    });
+    assert.notEqual(detail.isError, true, detail.content?.[0]?.text);
+    const detailBody = JSON.parse(detail.content?.[0]?.text ?? "{}");
+    assert.equal(detailBody.iconRef, "calcite:measure");
+    assert.equal(detailBody.svg, "<svg><path/></svg>");
+    assert.equal(detailBody.palette[0].hex, "#409EFF");
+
+    const baked = await client.callTool({
+      name: "icon_bake",
+      arguments: { name: "calcite-measure", color: "#409EFF", size: 24 },
+    });
+    assert.notEqual(baked.isError, true, baked.content?.[0]?.text);
+    assert.equal(baked.content?.[0]?.text, "<svg fill=\"#409EFF\"/>");
+    assert.equal(JSON.parse(requests.at(-1).body).name, "calcite-measure");
+
+    const count = requests.length;
+    const rejected = await client.callTool({ name: "icon_bake", arguments: {} });
+    assert.equal(rejected.isError, true);
+    assert.equal(requests.length, count, "缺少 name/layers 时不得发起 DC 请求");
+  } finally {
+    await client.close();
+  }
 });

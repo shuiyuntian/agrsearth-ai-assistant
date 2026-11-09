@@ -72,13 +72,15 @@ export AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080
 
 详细流程见 `docs/L3-QuickStart-30分钟跑通.md`；测试底座发布见 `test-env/README.md` + `docs/L8-提测与发布.md`。
 
+图标统一使用平台图标库：Coder 经 dev-mcp `icon_search` → `icon_get`（可选 `icon_bake` 无状态预览）获取真实 `iconRef`，球端普通 Vue 内容使用 `@agrsearth/icon-kit` 的 `AppIcon`。完整步骤与写库边界见 `docs/L5-开发Recipes.md` R8。
+
 ## 同步约定
 
 - **归属分界**：「平台同步」列的目录由平台仓 `scripts/build/sync-template.sh` 单向覆盖下发，
   **不要手工改**（改动会在下次同步丢失）；「本仓自有」目录是模板内容，其唯一事实源就是本仓，
   改进直接在本仓提交（平台管理员维护）。
-- **版本与兼容**：平台仓和模板仓各自遵循 SemVer，联合发版不要求版本号相同；本版 `2.2.0` 与平台仓
-  `2.0.0` 联合验收，平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
+- **版本与兼容**：平台仓和模板仓各自遵循 SemVer，联合发版不要求版本号相同；本版为 `2.3.0`，
+  平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
 - fork 出去的团队仓：模板升级走 git upstream 合并，只收「本仓自有 + 平台同步」两类 diff，
   你自己的 `extensions/<你的包>/` 不受影响。
 - 泄漏闸口：本仓为公开仓，`.githooks/pre-push` 内置内网地址/凭据扫描

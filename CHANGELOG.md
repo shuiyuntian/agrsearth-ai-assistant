@@ -7,6 +7,7 @@
 主线：平台图标库向各类 Coder 开放统一只读消费入口，并把使用规范落到文档、Skill 与骨架。
 
 - **dev-mcp 1.8.0**：新增 `icon_search`、`icon_get`、`icon_bake`；经开发者中心门面鉴权，支持业务语义检索、变体/SVG/色板读取与无状态烘焙，不开放上传、派生、删除或副本签发。
+- **平台侧配套**：icon-library 0.2.1 新增 `@InnerAuth` 内部只读消费接口；developer-center 包 0.4.2/组件 0.5.1 新增 `/api/v1/icons` 窄门面，复用开发者只读权限并返回可复制的 `iconRef`。
 - **模板指南**：L5 新增 R8 图标 recipe，L10 明确 manifest/AppIcon/IconPicker 与三种引用形态，L9 补登录、加载失败和自定义副本排错；README 增加统一入口。
 - **七端 Skill**：`agrsearth-plugin-dev` 增加图标任务触发词与查库约束，权威源修改后同步全部 Coder 副本。
 - **可运行示例**：tool 骨架引入 `@agrsearth/icon-kit`，面板内置 `calcite:layers` 的 `AppIcon` 示例；平台图标资产名须来自实际检索，不得猜名。

@@ -1,8 +1,9 @@
 # 文件作用：wind-field-demo-server 微服务引导配置（扩展包后端骨架模板）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-04
-# 版本：1.0.1
+# 版本：1.0.2
 # 修改记录：
+#   - 1.0.2 (2026-11-10) 注释明确应用内与网关外部健康路径分层
 #   - 1.0.0 (2026-10-04) 初始创建
 #   - 1.0.1 (2026-10-06) nacos 默认地址改指插件测试底座（10.82.11.51:18810，可环境变量覆盖）
 #
@@ -34,6 +35,7 @@ spring:
       - optional:nacos:application-${spring.profiles.active}.${spring.config.file-extension}
       - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.config.file-extension}
 
-# actuator 默认仅暴露 /actuator/health——正是 manifest.backendServices[].healthEndpoint 的约定端点；
+# 应用内与 Pod 直连健康端点为 /actuator/health；
+# manifest.backendServices[].healthEndpoint 另记录网关外部 /<svc>/actuator/health。
 # 需要更多端点时放到 nacos 的 ${spring.application.name}-<profile>.yml 里开
 # management.endpoints.web.exposure.include，不要写进本文件

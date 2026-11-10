@@ -2,8 +2,9 @@
 #          publish 打包为 k8s-bundle 一键安装；基线取自 wind-field 实测清单）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-07
-# 版本：1.1.0
+# 版本：1.1.1
 # 修改记录：
+#   - 1.1.1 (2026-11-10) Pod 直连 readiness 改为 /actuator/health，与网关外部路径分层
 #   - 1.1.0 (2026-11-03) 增加 DC PostgreSQL Secret 四键注入（Secret 名保留部署占位符）
 #   - 1.0.0 (2026-10-07) 初始创建（tool 轨后端部署样例补齐；imagePullPolicy Always +
 #     limits.memory 1536Mi 为 Spring Boot 4 实测基线，512Mi 会 OOMKilled）
@@ -79,8 +80,8 @@ spec:
                 name: example-server-config
           readinessProbe:
             httpGet:
-              # 健康端点约定 = manifest.backendServices[].healthEndpoint
-              path: /example-server/actuator/health
+              # Pod 直连应用内端点；manifest.backendServices[].healthEndpoint 是网关外部路径
+              path: /actuator/health
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 15

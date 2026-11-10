@@ -103,6 +103,6 @@ node tools/publish.mjs extensions/tool/business/my-tool --check-only
 | `AGENTS.md` / `CLAUDE.md` | 跨工具 AI 编码契约 | 模板仓 |
 | `.kimi-code/skills/` | 插件开发与 CesiumJS Skill 权威源；七端副本由 parity 工具同步 | 插件 Skill 归模板仓；CesiumJS Skill 由平台同步 |
 
-平台同步内容由平台仓 `scripts/build/sync-template.sh` 单向覆盖；发现问题应回报平台方并修改源头。模板仓与平台仓独立 SemVer，联合验收不要求版本号相同；当前模板版本为 `2.4.0`，精确供给物提交以 `.upstream` 为准。
+平台同步内容由平台仓 `scripts/build/sync-template.sh` 单向覆盖；发现问题应回报平台方并修改源头。模板仓与平台仓独立 SemVer，联合验收不要求版本号相同；当前模板版本为 `2.4.1`，精确供给物提交以 `.upstream` 为准。
 
 本仓为公开仓。启用 `git config core.hooksPath .githooks` 后，pre-push 会扫描内网地址与凭据；平台同步脚本也执行泄漏闸口。任何 token、密码、密钥和本机私有配置都不得提交。

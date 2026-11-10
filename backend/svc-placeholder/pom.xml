@@ -56,7 +56,7 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
 
-        <!-- Actuator 健康端点（manifest healthEndpoint 约定 /<svc>/actuator/health） -->
+        <!-- Actuator 应用内健康端点 /actuator/health；manifest 另记录网关外部 /<svc>/actuator/health -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>

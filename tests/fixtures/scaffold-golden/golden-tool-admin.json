@@ -75,7 +75,7 @@
       "exec": false
     },
     "deploy/k8s/10-example-server.yaml": {
-      "sha256": "278a22a245e95236476254f77fa1bfc95df4275d0c1cc6237220e40b6fae1a04",
+      "sha256": "dbe256ffc9a0e6035279c35dc0285076bcf1edba45de224c633a7695fcfb45c5",
       "exec": false
     },
     "deploy/k8s/README.md": {

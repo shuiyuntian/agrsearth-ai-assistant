@@ -77,7 +77,7 @@
       "exec": false
     },
     "backend/golden-svc/pom.xml": {
-      "sha256": "73f4cf81ee8d20f1d975561b3b126f4b5052b99e29ea9749d29f2636d511179e",
+      "sha256": "b45310404e475d7e3998a68ea67f29a2297cfce57af46bec8a74e96925fc4a65",
       "exec": false
     },
     "backend/golden-svc/src/main/java/com/ruoyi/goldensvc/GoldenSvcApplication.java": {
@@ -89,7 +89,7 @@
       "exec": false
     },
     "backend/golden-svc/src/main/resources/bootstrap.yml": {
-      "sha256": "f59409a7b3162939e83d064d5bcfcc4d3bc75b4818af695a7829bbd2c1fed6c3",
+      "sha256": "3f27f9dc241d7f7157f3f1d805f6c88233e0efb825707207be9135db5a24e1ce",
       "exec": false
     },
     "container/golden-svc/Dockerfile": {
@@ -109,7 +109,7 @@
       "exec": false
     },
     "deploy/k8s/10-golden-svc.yaml": {
-      "sha256": "f097fff8e18bcfb80ffb170aad2ab86c5ab440507d5d1fd049cf138e88e0fc51",
+      "sha256": "54eef8f0c082d5eb4e67e52c67115b0f03ac263309bad1d6f05ef6896232e371",
       "exec": false
     },
     "deploy/k8s/README.md": {

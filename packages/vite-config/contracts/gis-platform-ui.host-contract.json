@@ -3,16 +3,17 @@
     "文件作用": "球端宿主 gis-platform-ui 向扩展（能力包 tool.*.js）提供的共享运行时依赖契约：声明宿主实际提供的共享依赖及版本、扩展声明区间必须落入的接受范围、提供通道（import map / window 全局）。构建期由 packages/vite-config/host-contract.js 硬校验，违例即构建失败。",
     "作者": "JasonLee <shuiyuntian@foxmail.com>",
     "创建日期": "2026-10-04",
-    "版本": "1.0.1",
+    "版本": "1.0.2",
     "修改记录": [
+      "1.0.2 (2026-11-10) Vue 统一升级 3.5.42，覆盖服务端渲染安全公告；同步移除未使用的 @ai-sdk/mcp",
       "1.0.0 (2026-10-04) 初始创建（批4-P0 共享依赖 host-contract 契约；echarts 代际分裂治理：球端 6.1.0 / 管理面 5.6.0）",
       "1.0.1 (2026-10-18) echarts 代际分裂收口：管理面 ruoyi-admin 升 6.1.0，双宿主统一 6.x"
     ],
     "版权所有": "(C) 2026 AGRSEarth 项目"
   },
   "host": "gis-platform-ui",
-  "contractVersion": "1.0.1",
-  "updatedAt": "2026-10-18",
+  "contractVersion": "1.0.2",
+  "updatedAt": "2026-11-10",
   "notes": [
     "本文件是球端宿主-扩展共享运行时的唯一事实源；新增/升降共享依赖必须先改本文件，再同步 index.html import map、src/main.ts window 暴露与 vite.config.ts copyEsmLibsPlugin。",
     "version 为宿主 node_modules 实际安装版本；accepts 为扩展 package.json（dependencies/devDependencies/peerDependencies）声明区间必须落入的范围（子集校验）。",
@@ -23,7 +24,7 @@
   ],
   "shared": {
     "vue": {
-      "version": "3.5.35",
+      "version": "3.5.42",
       "accepts": ">=3.4.0 <4.0.0",
       "via": ["importmap:/esm-libs/vue.mjs", "window:Vue"]
     },

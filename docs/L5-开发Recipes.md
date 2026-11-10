@@ -59,7 +59,7 @@
 
 **验收**：
 - [ ] `components.backend[]` 与 `backendServices[].serviceId` 完全一致
-- [ ] 本地 `mvn package` 通过；`mvn spring-boot:run` 起服务注册成功，`curl localhost:<port>/<svc>/actuator/health` 可达
+- [ ] 本地 `mvn package` 通过；`mvn spring-boot:run` 起服务注册成功，应用内 `curl localhost:<port>/actuator/health` 可达；经网关另验 `/<svc>/actuator/health`
 - [ ] deployment 有 TZ、有 resources requests/limits、探针就绪
 - [ ] 第三方密钥零入库（依赖清单注明注入需求）
 

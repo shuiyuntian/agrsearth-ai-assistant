@@ -1,6 +1,6 @@
 {
   "name": "agrsearth-plugin-template",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "AGRSEarth 插件开发模板仓：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨骨架 + Node 跨平台发布器 + L0-L10 分层开发指南",
   "private": true,
   "workspaces": [
@@ -16,7 +16,7 @@
     "check:agents": "node tools/check-agent-parity.mjs && node --test tests/unit/agent-parity.test.mjs",
     "check": "npm run check:agents && npm run check:api-contract && npm run test:tools && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "test:publish": "node --test tests/unit/publish.test.mjs tests/unit/publish-golden.test.mjs",
-    "test:tools": "node --test tests/unit/scaffold.test.mjs tests/unit/scaffold-golden.test.mjs tests/unit/check-versions.test.mjs tests/unit/check-versions-golden.test.mjs",
+    "test:tools": "node --test tests/unit/scaffold.test.mjs tests/unit/scaffold-golden.test.mjs tests/unit/check-versions.test.mjs tests/unit/check-versions-golden.test.mjs tests/unit/health-endpoint-contract.test.mjs",
     "docs:html": "mkdir -p docs/html && for f in docs/L*.md; do python3 tools/md-to-html.py \"$f\" \"docs/html/$(basename \"$f\" .md).html\"; done"
   },
   "dependencies": {

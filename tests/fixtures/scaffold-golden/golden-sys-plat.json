@@ -76,7 +76,7 @@
       "exec": false
     },
     "backend/golden-alpha/pom.xml": {
-      "sha256": "6baed3a2d420e3c49a8a1b30aad3a23e37bb87e5fc0e7f95d89eca5758673af2",
+      "sha256": "cf47193353b61919632371b7cd4ec0e2f2606dbbaa6567bd151057ff79064a9e",
       "exec": false
     },
     "backend/golden-alpha/src/main/java/com/ruoyi/goldenalpha/GoldenAlphaApplication.java": {
@@ -88,11 +88,11 @@
       "exec": false
     },
     "backend/golden-alpha/src/main/resources/bootstrap.yml": {
-      "sha256": "9384511c8113c545f15d0a7a551fec8c5202c7d26918ae647385575858d7b4e6",
+      "sha256": "30c4a18eb30e23ecb72447e0ecaee42e785a7616a5ac6bb5212060e022643b80",
       "exec": false
     },
     "backend/golden-beta/pom.xml": {
-      "sha256": "8dea6c4abdf18ee8e103c03f43200c0e5e54ae924fe08fa753014999b26041f9",
+      "sha256": "56006c3186c98b46d67297bba5ef6e817a8da92bcb0576c6630f8310f4f09cfd",
       "exec": false
     },
     "backend/golden-beta/src/main/java/com/ruoyi/goldenbeta/GoldenBetaApplication.java": {
@@ -104,11 +104,11 @@
       "exec": false
     },
     "backend/golden-beta/src/main/resources/bootstrap.yml": {
-      "sha256": "37c6c650364973281470f8eed9e72fefbec06781974712332f97469f75a1ceef",
+      "sha256": "28ee1825c628dc4397e5abf2405207366b975dfcfc0e710398a2eb98b44dfb57",
       "exec": false
     },
     "backend/golden-gamma/pom.xml": {
-      "sha256": "859d365000e250ade5e780bc89b29ac646a0867d96e2dbd46f9450229c6fbb57",
+      "sha256": "449ff17c7a44a90771609201e1f1654ff1b3501e5f1e38b3af492e5277408c22",
       "exec": false
     },
     "backend/golden-gamma/src/main/java/com/ruoyi/goldengamma/GoldenGammaApplication.java": {
@@ -120,7 +120,7 @@
       "exec": false
     },
     "backend/golden-gamma/src/main/resources/bootstrap.yml": {
-      "sha256": "8aa6be1afb18105d3beca97d7912d8be41281fae5e929b918992d7ff5911a9d4",
+      "sha256": "f88d9220c57d2a8240c8c1962905031bda96b0cf3e0d30ddf5ca35b45db416b7",
       "exec": false
     },
     "container/golden-alpha/Dockerfile": {
@@ -184,7 +184,7 @@
       "exec": false
     },
     "deploy/k8s/10-golden-sys-plat-server.yaml": {
-      "sha256": "cf6a941ef059609729994909b3f64f44efba95e0cced19ea63c9c8f9b5c12efb",
+      "sha256": "672f8690c060a02a007e146de83fedf19d2a1f23d76e0206ee99b4cc3c5c3891",
       "exec": false
     },
     "deploy/k8s/20-golden-sys-plat-worker.yaml": {

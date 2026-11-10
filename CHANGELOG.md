@@ -2,6 +2,14 @@
 
 > 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
+## [2.4.1] - 2026-11-10
+
+主线：修复后端骨架健康路径契约，收敛安全依赖并建立持续质量闸口。
+
+- **健康路径契约**：应用内与 Pod 直连统一 `/actuator/health`，manifest 保留网关外部 `/<svc>/actuator/health`；tool/system 骨架及生成物契约测试覆盖，真实 Spring Boot 健康检查通过。
+- **安全依赖**：dev-mcp 升级 Zod 4.6.7 与 MCP SDK/Express 传递依赖，模板根与 dev-mcp 审计均为 0；同步双宿主 Vue 3.5.42 契约。
+- **质量保障**：新增健康路径契约测试、golden 再基线化与 GitHub Actions Quality 工作流，覆盖 `npm run check`、发布协议、dev-mcp、七端一致性和双审计。
+
 ## [2.4.0] - 2026-11-10
 
 主线：建立 AI 辅助开发主入口，全面清理模板指南与当前源码的漂移，并明确本地 Nacos 联调、人工审批和部署边界。

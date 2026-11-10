@@ -70,7 +70,7 @@
       "exec": false
     },
     "backend/golden-sys-biz-server/pom.xml": {
-      "sha256": "ed7dc67fd45ba54600e0d52354d7f36d57c967b9d209348beaa58acf2539e367",
+      "sha256": "9320a111f40783efe396982ed9eb62cde72618821e7d780ab7fef51de979b5aa",
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/GoldenSysBizServerApplication.java": {
@@ -82,11 +82,11 @@
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/resources/bootstrap.yml": {
-      "sha256": "ccb1f13b47e5b3f0191c9d9e3d4afd6aa5cddf18eb62cfc8221cd09db1428c2a",
+      "sha256": "24c113be9acbced22e45e81874e62df2221926de0ced995be70b46cf5e53b401",
       "exec": false
     },
     "backend/golden-sys-biz-worker/pom.xml": {
-      "sha256": "b7aad9dd1f052130df4e65f3cb0235955f24367f3f5a7059a072bb6a7e341df8",
+      "sha256": "70c7c2567b6c934b3dbfb4b014197ef666fa3d0e3bdb870495eb9b1c15f7cec3",
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/GoldenSysBizWorkerApplication.java": {
@@ -98,7 +98,7 @@
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml": {
-      "sha256": "6c1b7104dd3c982015775111f16c7896110f2794836843f44eaf2101effec816",
+      "sha256": "de8d115060ccff73a46fc9d0db950bc55acaf2a31379faeea5b810a2ad97ed6f",
       "exec": false
     },
     "container/golden-sys-biz-server/Dockerfile": {
@@ -134,7 +134,7 @@
       "exec": false
     },
     "deploy/k8s/10-golden-sys-biz-server.yaml": {
-      "sha256": "11ab6d8ad01337f79eec5fee92dc1ac45d8a10d6cb8ab81f8981498125940648",
+      "sha256": "4a1c4490dda031f01df415662b543289b9d5cfb84e9868e0ec94b927feb0a663",
       "exec": false
     },
     "deploy/k8s/20-golden-sys-biz-worker.yaml": {

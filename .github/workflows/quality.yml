@@ -1,0 +1,46 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tools/dev-mcp/package-lock.json
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Check contracts, tools, agents and builds
+        run: npm run check
+
+      - name: Test publish protocol and golden requests
+        run: npm run test:publish
+
+      - name: Install dev-mcp dependencies
+        run: npm --prefix tools/dev-mcp ci
+
+      - name: Test dev-mcp
+        run: npm --prefix tools/dev-mcp test
+
+      - name: Audit workspace
+        run: npm audit
+
+      - name: Audit dev-mcp
+        run: npm --prefix tools/dev-mcp audit

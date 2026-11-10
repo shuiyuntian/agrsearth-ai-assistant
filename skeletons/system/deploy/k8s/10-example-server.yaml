@@ -1,8 +1,9 @@
 # 文件作用：example-server k8s 工作负载样例（Deployment + Service，publish 打包为 k8s-bundle 一键安装）
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-09-14
-# 版本：1.1.0
+# 版本：1.1.1
 # 修改记录：
+#   - 1.1.1 (2026-11-10) Pod 直连 readiness 改为 /actuator/health，与网关外部路径分层
 #   - 1.1.0 (2026-11-03) 增加 DC PostgreSQL Secret 四键注入（Secret 名保留部署占位符）
 #   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
 #   - 1.0.1 (2026-10-05) 镜像命名补 tier 段；域内衔接注释改包级共享 ConfigMap/Secret
@@ -63,7 +64,8 @@ spec:
           #       name: example-system-shared
           readinessProbe:
             httpGet:
-              path: /example-server/actuator/health
+              # Pod 直连应用内端点；manifest 中的 /<svc>/actuator/health 仅用于网关外部
+              path: /actuator/health
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10

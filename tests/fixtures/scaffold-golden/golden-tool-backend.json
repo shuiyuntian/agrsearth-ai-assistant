@@ -27,7 +27,7 @@
       "exec": false
     },
     "backend/golden-tool-backend-server/pom.xml": {
-      "sha256": "e42ac9f6e2997e14860a699810ce58a44a92057e3b56db316bca34ed5242eccf",
+      "sha256": "88c24256e469a01ba11c3a1232b00b8bf32f59ec18f166e3e0bc1a8fad5ee0fa",
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/GoldenToolBackendServerApplication.java": {
@@ -39,7 +39,7 @@
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/resources/bootstrap.yml": {
-      "sha256": "61358ccdf258f7d6d82782be43ba6f5c0f835961bc89b9fda7f8f6d980bcbd71",
+      "sha256": "0cdc9661f9a69ca8bfcb7cce46daed2ece1dbc1fbb3a2cfaaaee3cb59f440c2a",
       "exec": false
     },
     "container/golden-tool-backend-server/Dockerfile": {
@@ -59,7 +59,7 @@
       "exec": false
     },
     "deploy/k8s/10-golden-tool-backend-server.yaml": {
-      "sha256": "9d887e1cf11f82a0bfa1ec1d24dd4293c63a8313dcf28196c4deffaf7e0eb3e9",
+      "sha256": "a4f34852d3f5ce9674d27169ccd1fbc8844f76ba139ad31a512b750633b40d3f",
       "exec": false
     },
     "deploy/k8s/README.md": {

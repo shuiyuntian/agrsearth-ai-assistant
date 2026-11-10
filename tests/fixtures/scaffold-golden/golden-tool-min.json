@@ -30,7 +30,7 @@
       "exec": false
     },
     "deploy/k8s/10-example-server.yaml": {
-      "sha256": "ece48d3cc117d6a8848a138d935e28bd1b8f8c2b8ab4dcce61ea47ae5ce59fc2",
+      "sha256": "c2c842c8716b9bf7dce1cf039c471502bb83ece1a28e997b377f106eb909308c",
       "exec": false
     },
     "deploy/k8s/README.md": {

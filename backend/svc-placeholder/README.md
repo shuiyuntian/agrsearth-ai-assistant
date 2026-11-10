@@ -44,8 +44,8 @@ vendored 仓 `file://${project.basedir}/../../../../../../maven-repo`（相对�
    特殊路径/过滤器需求才需在提测单单独声明。
 4. **本地验证**：`mvn clean package -DskipTests`（vendored maven-repo + Maven 中央仓即可，见
    仓根 README「maven-repo」节）→ `mvn spring-boot:run`，访问
-   `http://localhost:<port>/info` 与 `/<svc>/actuator/health`（nacos 默认指向测试底座，地址表见
-   `test-env/README.md`）。
+   `http://localhost:<port>/info` 与 `/actuator/health`（应用内与 Pod 直连均不带服务前缀；
+   网关外部才使用 `/<svc>/actuator/health`，nacos 默认指向测试底座，地址表见 `test-env/README.md`）。
 5. **业务依赖**：数据库/MyBatis 等按需往 `pom.xml` 加（com.ruoyi 构件仅限 maven-repo 已
    vendored 的范围，缺件找平台方补发或更新模板仓）。
 

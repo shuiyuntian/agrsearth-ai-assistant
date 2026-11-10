@@ -27,14 +27,14 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci
 
+      - name: Install dev-mcp dependencies
+        run: npm --prefix tools/dev-mcp ci
+
       - name: Check contracts, tools, agents and builds
         run: npm run check
 
       - name: Test publish protocol and golden requests
         run: npm run test:publish
-
-      - name: Install dev-mcp dependencies
-        run: npm --prefix tools/dev-mcp ci
 
       - name: Test dev-mcp
         run: npm --prefix tools/dev-mcp test

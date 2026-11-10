@@ -86,13 +86,15 @@ CesiumJS vendor skills 仅作 API 与场景参考；其中 Performance Tips / vi
 6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自
    `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落
    `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前双向对账。
-7. **环境零 SSH/零直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行任何操作——初始化
-   数据库、kubectl、改配置、直查 MySQL/PG 一律禁止；一切环境侧变更只经 DC 控制 API
-   （dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = `data/sql/*.sql` 随 release-complete
-   幂等落库。本文档与 test-env/README 中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的
-   SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。
-   （本条约束经本仓开展插件开发的团队与 AI 工具；平台方运维人员的维护性操作自有通道，
-   见平台仓运维手册，不受本条约束。）
+7. **环境零 SSH/零运维直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行 kubectl、改配置、
+   直查 MySQL 或以管理员/runtime 凭据直连 PG；一切环境侧变更只经 DC 控制 API（dev-mcp 工具 /
+   `tools/publish.mjs`）。开发者需要查看或调试 PG 时，仅可经 `resource_issue` 申请本人短 TTL
+   `pg-dev`/`pg-admin` 账号，并按返回的外部 `jdbcUrl`、库名和授权 schema 访问；不得分享凭据或越权
+   访问其他包。数据库初始化与正式迁移仍只能由 `data/sql/*.sql` 随 release-complete 幂等落库，
+   临时连接不得替代发布链。本文档与 test-env/README 中出现的 SSH 仅限两个客户端侧通道用途：
+   网络隔离时的 SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以
+   登录服务器执行命令。（本条约束经本仓开展插件开发的团队与 AI 工具；平台方运维人员的维护性
+   操作自有通道，见平台仓运维手册，不受本条约束。）
 8. **菜单号段零申请**：menuId 禁止自编、禁止照抄 skeleton/演示包示意值（2004000/3004000 段）。
    号段**不需要申请**——`package_register`（resources.menu=true）自动从团队池切出本包专属千段：
    `task_get` 跟踪发放任务到 ACTIVE → `resource_list` 复核 menu 资源位 → `data/menu.json`

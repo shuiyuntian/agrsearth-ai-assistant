@@ -6,8 +6,9 @@
 //   ⑤ 图标库三工具经本地 mock DC 完成真实 MCP 调用。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.8.1
+// 版本：1.8.2
 // 修改记录：
+//   - (2026-11-10) 1.8.2 覆盖 PG 账号返回字段及轮换/吊销指引
 //   - (2026-11-10) 1.8.1 serverInfo 版本随 docs_read 指南范围修正同步
 //   - (2026-11-09) 1.8.0 新增图标检索/详情/无状态烘焙工具及 mock DC 回环
 //   - (2026-11-08) 1.7.0 覆盖 HMR 随包 CSS 指引并同步 serverInfo.version
@@ -318,7 +319,7 @@ test("JSON-RPC tools/list：28 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.8.1");
+    assert.equal(init.result?.serverInfo?.version, "1.8.2");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});
@@ -380,6 +381,11 @@ test("JSON-RPC tools/list：28 个统一命名工具全部注册", { timeout: 30
     assert.equal(ri.inputSchema.properties.scope?.default, "pg-dev", "resource_issue scope 默认 pg-dev");
     assert.deepEqual(ri.inputSchema.properties.scope?.enum, ["pg-dev", "pg-admin"], "resource_issue scope 枚举须含 pg-dev/pg-admin");
     assert.ok(ri.inputSchema.properties.teamId, "resource_issue 须声明 teamId 参数（pg-admin 锚点）");
+    for (const field of ["roleName", "database", "schema", "jdbcUrl", "password", "expireTime", "newlyIssued"]) {
+      assert.ok(ri.description.includes(field), `resource_issue 描述须说明返回字段 ${field}`);
+    }
+    assert.ok(ri.description.includes("resource_rotate"), "resource_issue 须指引忘记密码或续期时轮换");
+    assert.ok(ri.description.includes("resource_revoke"), "resource_issue 须指引结束调试后吊销");
     const tr = tools.find((t) => t.name === "task_retry");
     assert.ok(tr.inputSchema.required?.includes("taskId"), "task_retry 必填 taskId");
     // P3 生命周期/团队管理账号：package_manage 增 archive/transfer；team_manage 增 quota_request

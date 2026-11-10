@@ -4,11 +4,14 @@
 
 ## [2.4.1] - 2026-11-10
 
-主线：修复后端骨架健康路径契约，收敛安全依赖并建立持续质量闸口。
+主线：补齐插件 PostgreSQL 开发机访问指南，并合入后端健康路径、安全依赖与持续质量闸口修复。
 
 - **健康路径契约**：应用内与 Pod 直连统一 `/actuator/health`，manifest 保留网关外部 `/<svc>/actuator/health`；tool/system 骨架及生成物契约测试覆盖，真实 Spring Boot 健康检查通过。
 - **安全依赖**：dev-mcp 升级 Zod 4.6.7 与 MCP SDK/Express 传递依赖，模板根与 dev-mcp 审计均为 0；同步双宿主 Vue 3.5.42 契约。
 - **质量保障**：新增健康路径契约测试、golden 再基线化与 GitHub Actions Quality 工作流，覆盖 `npm run check`、发布协议、dev-mcp、七端一致性和双审计。
+- **开发机访问 Recipe**：L5 新增 R5.1，覆盖 `resource_issue` 签发、外部 JDBC 地址与返回字段、psql/GUI 连接、`<schema>, public` 搜索路径、短 TTL、轮换和吊销；PostGIS/TimescaleDB 由 DC 数据布设链自动提供。
+- **协作边界**：AGENTS.md 与权威 Skill 将“零直连”收束为“零 SSH/零运维直连”，明确允许本人临时 `pg-dev`/`pg-admin` 账号在授权范围内调试，正式迁移仍走 `data/sql` 发布链。
+- **dev-mcp 1.8.2**：明确 PG 账号返回字段、一次性密码及 `resource_rotate`/`resource_revoke` 使用时机；由平台仓单向同步，七端 Skill 副本经 parity 工具对齐。
 
 ## [2.4.0] - 2026-11-10
 

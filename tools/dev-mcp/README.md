@@ -6,7 +6,7 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（28 个，v1.8.1 起模板仓指南范围为 L0-L10）
+## 工具清单（28 个，v1.8.2 起明确 PG 开发机连接参数与账号生命周期）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
@@ -24,8 +24,8 @@
 | 团队 | `team_list` | DC `GET /teams`、`/teams/{id}/members` 分页查询 | 无 |
 | 团队 | `team_manage` | `create` / `add-member` / `update-role` / `remove-member`（写，需 reason）；`search-users` 平台用户窄检索；`quota_request` 配额申请（POST /teams/{teamId}/quota-requests，items 1-8 项 `{quota:MENU_POOL\|PACKAGE\|PG, band?, additional:1-100}`，创建 QUOTA_APPROVAL 任务待审）；`quota_approve`/`quota_reject` 平台管理员审批（POST /tasks/{taskId}/quota-approve / quota-reject{reason}；21 工具定型不增 task_manage，审批承载于本工具） | 读+写 |
 | 资源 | `resource_list` | DC `GET /packages/{packageId}/resources`：包资源位列表；scope 为客户端过滤（`pg-admin` 会被明确拒绝——团队级账号无列表示端点） | 无 |
-| 资源 | `resource_issue` | **写操作**：签发本人 PG 账号（幂等，新签发一次性返回密码）。`scope=pg-dev` → `/packages/{id}/resources/pg-dev/issue`（锚点 packageId）；`scope=pg-admin` → `/teams/{teamId}/resources/pg-admin/issue`（锚点 teamId，TEAM_OWNER/MAINTAINER） | 有 |
-| 资源 | `resource_rotate` / `resource_revoke` | **写操作**：`scope=pg-dev` → `/packages/{id}/resources/pg-dev/{rotate\|revoke}`；`scope=pg-admin` → `/teams/{teamId}/resources/pg-admin/{rotate\|revoke}`（吊销回收 owner group 成员身份） | 有 |
+| 资源 | `resource_issue` | **写操作**：签发本人 PG 账号。`pg-dev` 返回 `roleName/database/schema/jdbcUrl/password/expireTime/newlyIssued`，开发机用 `jdbcUrl + roleName + password` 连接；密码仅新签发返回一次，已有有效账号只回元数据 | 有 |
+| 资源 | `resource_rotate` / `resource_revoke` | **写操作**：忘记密码或续期用 `rotate`（一次性返回新密码），结束调试用 `revoke`；分别走 `/packages/{id}/resources/pg-dev/{rotate\|revoke}` 或 `/teams/{teamId}/resources/pg-admin/{rotate\|revoke}` | 有 |
 | 实例 | `instance_list` | DC `GET /instances`：包级实例列表（packageId 必填=授权锚点，status 可选；读授权未过一律 404，不暴露存在性） | 无 |
 | 实例 | `instance_logs` | DC `GET /instances/{id}/logs?tailLines=N`（服务端 LogMasker 逐行脱敏，只掩值不掩键；`tailLines` 1-2000 默认 500，由服务端控制尾部行数，MCP 不再对 JSON 二次截断）｜`tasks=true` 走 `GET /instances/{id}/tasks`（per-instance 运维任务，与发放任务不同源；`tailLines` 忽略） | 无 |
 | 巡检 | `environment_status` | DC `GET /environment/status`：授权包级 Pod/镜像/实例健康、任务、PG/runtime 证据状态、菜单、产物 URL 与版本一致性；未授权 404，不读 Secret 明文，证据不足返回 `NOT_VERIFIED` | 无 |

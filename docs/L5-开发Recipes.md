@@ -76,6 +76,36 @@
 - [ ] SQL 幂等可重跑；`components.data=true` 与 data/ 实际内容一致；`menu.enabled=true` 时 `data/menu.json` 齐备且过校验
 - [ ] 文件头注明用途与发布执行方式；发布回执和真实业务表/接口验证一致
 
+### R5.1 开发机查看与调试数据库
+
+1. 先调 `auth_status` 确认本人开发者身份。资源签发属于写操作，说明包、环境和用途并取得本次批准后，调用：
+
+   ```text
+   resource_issue(packageId="<包 ID>", scope="pg-dev", reason="开发机查看本包数据库")
+   ```
+
+   团队 OWNER/MAINTAINER 确需团队级查看时使用 `scope="pg-admin"` 并传 `teamId`；普通插件开发不得用管理员或 runtime 凭据替代。
+2. 保存响应中的 `roleName/database/schema/jdbcUrl/password/expireTime`。`password` 只在新签发或轮换时一次性返回，不入仓、不写日志；`jdbcUrl` 形如 `jdbc:postgresql://<host>:<port>/<database>`，由 DC 返回开发机可访问的外部地址。
+3. psql 按 JDBC 地址拆解 host/port，并从响应取库名和账号：
+
+   ```bash
+   PGPASSWORD='<一次性 password>' psql -h '<host>' -p '<port>' -U '<roleName>' -d '<database>'
+   ```
+
+   DBeaver/DataGrip 使用同一组 host、port、database、username、password。连接后将本包 schema 与 PostGIS 公共 schema 加入搜索路径：
+
+   ```sql
+   SET search_path TO <schema>, public;
+   ```
+
+4. 默认有效期为 8 小时，可按需传 `ttlSeconds=300-86400`。重复 `issue` 命中有效账号时 `newlyIssued=false`，不会再次返回密码；忘记密码或需要续期时经批准调用 `resource_rotate`，结束调试时调用 `resource_revoke`。
+5. PostGIS 与 TimescaleDB 由 DC 数据布设链自动幂等提供；普通开发角色不得自行安装其他扩展。直连仅用于授权范围内的查看和调试，正式建表/迁移仍写入 `data/sql/*.sql` 随发布执行。
+
+**验收**：
+- [ ] 使用本人临时账号从开发机连接成功，只能访问获授权的团队/包范围；响应地址为外部可连地址
+- [ ] 重复 issue 不泄露密码，rotate 后旧密码失效，revoke 后账号不可登录；凭据未进入 Git、日志或截图
+- [ ] 空间类型/函数与 TimescaleDB 可按需使用；正式表结构和数据迁移仍由发布回执及真实业务接口验证
+
 ## R6 多组件 + deploy/k8s（系统轨）
 
 1. `deploy/k8s/` 每组件一组 yaml（参考 `skeletons/system/deploy/k8s/` 样例）；

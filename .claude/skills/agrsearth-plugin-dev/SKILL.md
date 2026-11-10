@@ -1,6 +1,6 @@
 ---
 name: agrsearth-plugin-dev
-description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, menu.json 菜单声明, 图标/icon-kit/icon-library/AppIcon, k8s deploy, publish 发布, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists. 新建/改造/发布插件、选择或使用图标、构建失败与 publish 校验失败排查时使用。
+description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/system capability packages) — skeleton scaffolding, CapabilityContext contracts, admin-ui remote pages, backend services, menu.json 菜单声明, 图标/icon-kit/icon-library/AppIcon, k8s deploy, publish 发布, PG 开发机访问, and 提测 (submit-for-test) preparation. Enforces plugin contract red lines (default-export instance, ctx.entities only, host deps external) and per-recipe acceptance checklists. 新建/改造/发布插件、查看插件数据库、选择或使用图标、构建失败与 publish 校验失败排查时使用。
 ---
 
 # AGRSEarth Plugin Development（航遥业务中台插件开发）
@@ -10,6 +10,7 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 ## 触发条件
 
 - 新建/改造能力包（manifest.json、frontend Capability、admin-ui、backend、deploy/k8s、data SQL）
+- 开发机查看或调试当前插件数据库（临时 pg-dev/pg-admin 账号，见 R5.1）
 - 插件构建失败、远程加载失败、publish 校验失败排查
 - 提测前自检与材料准备
 
@@ -32,7 +33,7 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 4. **管理页红线（ADR-007）**：不自建 `createApp`；不用 `import.meta.env`（用 `@agrsearth/admin-sdk` 的 `getBaseApi()`）；不 import 宿主内部组件/store。
 5. **显式声明零推断**：manifest `track`/`tier` 必填（tool|system / platform|business；`delivery` 仅 tool·business 象限用，旧 `class` 字段已全退役勿再填）；`components` 段（frontend/backend[]/adminUi/menu{enabled,menuPath}/data）与包内实际结构一致；禁止 latest 镜像 tag；时区 `TZ=Asia/Shanghai` 一票否决。
 6. **前后端 URL 契约单源化**：球端/管理页调用本包后端的 URL 一律集中在各自 `src/api/index.ts` 的 `API` 常量表（`SVC` 前缀 + 见名知意的键），业务代码禁止散落 `/<serviceId>/...` 字面量；URL 必须与公开后端 Spring Mapping 全路径一致，发布前执行双向对账。
-7. **环境零 SSH/零直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行任何操作——初始化数据库、kubectl、改配置、直查 MySQL/PG 一律禁止；一切环境侧变更只经 DC 控制 API（dev-mcp 工具 / `tools/publish.mjs`）。数据库初始化 = `data/sql/*.sql` 随 release-complete 幂等落库。文档中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的 SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。（本条约束经本仓开展插件开发的团队与 AI 工具；平台方运维人员的维护性操作自有通道，见平台仓运维手册，不受本条约束。）
+7. **环境零 SSH/零运维直连**：禁止 SSH 登录 aiearth01（或任何服务端）执行 kubectl、改配置、直查 MySQL 或以管理员/runtime 凭据直连 PG；一切环境侧变更只经 DC 控制 API（dev-mcp 工具 / `tools/publish.mjs`）。开发者查看或调试 PG 时，仅可经 `resource_issue` 申请本人短 TTL `pg-dev`/`pg-admin` 账号，按返回的外部 `jdbcUrl`、库名和授权 schema 访问，不得分享凭据或越权访问其他包。数据库初始化与正式迁移仍只能由 `data/sql/*.sql` 随 release-complete 幂等落库，临时连接不得替代发布链。文档中出现的 SSH 仅限两个客户端侧通道用途：网络隔离时的 SOCKS 动态转发、自构镜像 `PUSH_VIA=ssh` 搬运——均为本机发起的连接，不代表可以登录服务器执行命令。（本条约束经本仓开展插件开发的团队与 AI 工具；平台方运维人员的维护性操作自有通道，见平台仓运维手册，不受本条约束。）
 8. **菜单号段零申请**：menuId 禁止自编、禁止照抄 skeleton/演示包示意值（2004000/3004000 段）。号段**不需要申请**——`package_register`（resources.menu=true）自动从团队池切出本包专属千段：`task_get` 跟踪发放任务到 ACTIVE（回执含 `band:start-end`）→ `resource_list` 复核 menu 资源位 → `data/menu.json` 全部 menuId（含 parentId 引用）落本包段内 → publish。**「禁止越段写菜单」fail-fast ≠ 缺号段、不要 quota_request**——报错文本自带本包实分段 [start-end]，把 menu.json 改成它重发即可。注意**注册一次性定资源位**：menu=false 注册的包没有自己的段，重注册会 409 唯一归属冲突——需要菜单的包注册时就必须 menu=true，误注册只能「package_manage remove → 重新注册」。仅团队池真正用尽（默认 10 块×10000 号/band，约 100 个带菜单的包才触得到）才走 `team_manage quota_request`（quota=MENU_POOL, band=tool|system）→ QUOTA_APPROVAL PENDING → **平台管理员审批**（18850 开发者中心→任务页，或平台方 dev-mcp `quota_approve`）；TEAM_OWNER 不能自审（403 是设计如此），PENDING 期间不要重发版本烧号。
 
 ## 任务 Recipe 索引（每条带验收 checklist，详见 docs/L5-开发Recipes.md）
@@ -43,7 +44,7 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 | R2 | 球端面板与地图联动（createPanel native + ctx.entities + emit/on） | `skeletons/tool/frontend` |
 | R3 | 加管理页（admin-ui + remote: 菜单 + v-hasPermi） | `skeletons/admin-ui` + `*/data/menu.json` |
 | R4 | 加后端服务（本地验证 + Nacos 联调 + 人工确认后部署） | `backend/svc-placeholder`、`container/svc-placeholder` |
-| R5 | 数据初始化与菜单声明（data/sql + data/menu.json） | `*/data/` |
+| R5 | 数据初始化、菜单声明与开发机数据库访问（data/sql + resource_issue） | `*/data/` |
 | R6 | 多组件 + deploy/k8s（白名单四类、拓扑 dependsOn） | `skeletons/system/deploy/k8s` |
 | R7 | 发布与回滚（RELEASE_CHECKLIST + 提测单材料） | `RELEASE_CHECKLIST.md`、docs/L8 |
 | R8 | 使用平台图标（icon_search → icon_get → AppIcon/manifest.icon） | `skeletons/tool/frontend`、docs/L5-R8 |

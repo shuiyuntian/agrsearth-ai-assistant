@@ -18,8 +18,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.8.1
+// 版本：1.8.2
 // 修改记录：
+//   - 1.8.2 (2026-11-10) resource_* 明确连接参数、一次性密码及轮换/吊销操作
 //   - 1.8.1 (2026-11-10) docs_read 模板仓指南范围由 L1-L10 扩为 L0-L10（新增 AI 辅助开发入口）
 //   - 1.8.0 (2026-11-09) 新增 icon_search/icon_get/icon_bake（28 工具），经 DC 只读门面消费平台图标库
 //   - 1.7.0 (2026-11-08) hmr_get_guide 检测随包 style.css 并补 --dev-css-url 指引
@@ -467,7 +468,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.8.1",
+  version: "1.8.2",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -998,7 +999,7 @@ server.registerTool("resource_list", {
 });
 
 server.registerTool("resource_issue", {
-  description: `【写操作】签发本人 PG 账号（幂等——已有有效账号只返回元数据 newlyIssued=false；新签发一次性返回密码，仅此一次请立即保存，本工具不落盘、审计不记响应）。scope=pg-dev → DC POST /packages/{packageId}/resources/pg-dev/issue（${PG_DEV_NOTS}）；scope=pg-admin → DC POST /teams/{teamId}/resources/pg-admin/issue（${PG_ADMIN_NOTS}）。ttlSeconds 300-86400（服务端再钳制，缺省用平台配置）。${PG_COMMON_NOTS}。`,
+  description: `【写操作】签发本人 PG 账号。pg-dev 返回 roleName/database/schema/jdbcUrl/password/expireTime/newlyIssued；开发机使用 jdbcUrl + roleName + password 连接，并按 schema 切换搜索路径。新签发的 password 仅此一次返回，本工具不落盘、审计不记响应；已有有效账号时 newlyIssued=false 且不回密码，忘记密码或续期调用 resource_rotate，结束调试调用 resource_revoke。scope=pg-dev → DC POST /packages/{packageId}/resources/pg-dev/issue（${PG_DEV_NOTS}）；scope=pg-admin → DC POST /teams/{teamId}/resources/pg-admin/issue（${PG_ADMIN_NOTS}）。ttlSeconds 300-86400（服务端再钳制，缺省用平台配置）。${PG_COMMON_NOTS}。`,
   inputSchema: {
     packageId: z.string().optional().describe("包 ID（scope=pg-dev 必填）"),
     teamId: z.number().int().positive().optional().describe("团队 ID（scope=pg-admin 必填，team_list 可查）"),

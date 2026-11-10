@@ -88,7 +88,7 @@
       "exec": false
     },
     "backend/golden-alpha/src/main/resources/bootstrap.yml": {
-      "sha256": "6a6ee6a47566d9bf955ac02a5a30159a312bc4a9b6f7df673bab99c6e3c9e245",
+      "sha256": "9384511c8113c545f15d0a7a551fec8c5202c7d26918ae647385575858d7b4e6",
       "exec": false
     },
     "backend/golden-beta/pom.xml": {
@@ -104,7 +104,7 @@
       "exec": false
     },
     "backend/golden-beta/src/main/resources/bootstrap.yml": {
-      "sha256": "653ac22809748d45909cb8a43ae7deb874521f9e67dbe74bbd592fdb5e5d5a76",
+      "sha256": "37c6c650364973281470f8eed9e72fefbec06781974712332f97469f75a1ceef",
       "exec": false
     },
     "backend/golden-gamma/pom.xml": {
@@ -120,7 +120,7 @@
       "exec": false
     },
     "backend/golden-gamma/src/main/resources/bootstrap.yml": {
-      "sha256": "bc8676a9619343628a569c593771c067c058d1a98ef79dffeaffc19b8786a38d",
+      "sha256": "8aa6be1afb18105d3beca97d7912d8be41281fae5e929b918992d7ff5911a9d4",
       "exec": false
     },
     "container/golden-alpha/Dockerfile": {

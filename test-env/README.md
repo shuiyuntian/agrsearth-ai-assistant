@@ -13,58 +13,50 @@
 | GIS 球平台 | http://10.82.11.51:18880 | 插件面板联调入口 |
 | 管理面 | http://10.82.11.51:18850 | 扩展管理/菜单对账 |
 | 网关 | http://10.82.11.51:18801 | 业务 API 统一入口 |
+| Nacos | 10.82.11.51:18810 | 本地后端按需注册与读取配置；共享环境，不是本地独占实例 |
 | 产物公共前缀 | http://10.82.11.51:18880/plugins | 产物经 nginx `/plugins/` 反代访问（URL 不含 bucket 名） |
-| developer-center 控制 API | http://10.82.11.51:18801/developer-center/api/v1 | 发布控制面唯一入口（release-prepare/upload-sessions/release-complete）；**禁止直连 resource-manager、禁止客户端自签 MinIO SigV4** |
+| developer-center 控制 API | http://10.82.11.51:18801/developer-center/api/v1 | 发布控制面唯一入口；禁止直连 resource-manager、禁止客户端自签 MinIO SigV4 |
 
-`tools/publish.mjs` 已按上表设置默认值；如需覆盖，用环境变量
-`DC_API_BASE`（认证与发布控制全走 developer-center）。
-公司网外访问（居家/出差）一律经 SSH 动态转发：本机与目标网段隔离时，使用
-`ssh -N -D 127.0.0.1:51080 aiearth01`，再设置
+`tools/publish.mjs` 已按上表设置默认值；如需覆盖，用 `DC_API_BASE`。公司网外访问可使用
+`ssh -N -D 127.0.0.1:51080 aiearth01` 建立本机动态转发，再设置
 `AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`；DC、MinIO 与冒烟请求均走该代理。
 
-## 2. 账号申请流程
+## 2. 账号与团队
 
-1. 联系平台管理员，提供：团队名、负责人、包 id 清单（**不需要申请菜单号段**——见下）；
-2. 平台管理员开通 **ext-developer 角色**并下发：
-   - 团队 token（`AGRSEARTH_TOKEN`，发布控制 API 统一认证；`RM_TOKEN` 过渡兼容映射，将被移除）；
-   - 球端/管理面测试入口的登录账号（SSO 开发者账号，ext-demo 或团队专属账号）。
-3. 凭据只进本机环境变量或本地 `.env`（gitignored），**禁止写进包代码/文档/提测单**。
+1. 联系平台管理员，提供团队名、负责人和包 ID 清单；菜单号段不需要单独申请。
+2. 开通 SSO 开发者账号、ext-developer 角色和团队归属。新包注册要求 TEAM_MAINTAINER 及以上；普通开发者可开发并发布已有权限的包。
+3. 交互开发使用 dev-mcp 原生登录，不需要平台方下发长期团队 token；CLI/CI 才按需配置 `AGRSEARTH_TOKEN`。
+4. 凭据只进本机安全存储或环境变量，禁止写进包代码、文档、对话或提测单。
 
-> **菜单号段零申请**：团队创建后 DC 自动在 tool/system band 各预发菜单池（默认 10 块×10000 号/band）；
-> 每个声明 `components.menu.enabled=true` 的包经 dev-mcp `package_register` 后自动切出本包专属千段，
-> `resource_list` 即可实查。越段 fail-fast「禁止越段写菜单」报错自带本包实分段——改 menu.json 重发即可，
-> **不要 quota_request**；仅团队池真用尽才 `team_manage quota_request`，审批权在平台管理员
-> （18850 开发者中心→任务页），TEAM_OWNER 不能自审。
+带菜单的包在首次 `package_register` 时声明 `menu=true`，DC 自动分配本包号段；`task_get` 到 ACTIVE 后用 `resource_list` 实查。越段 fail-fast 时按报错分段修正，不要误走 quota_request；仅团队池真用尽才进入配额审批。
 
-> 发布不再需要 MinIO 账号/密钥：产物上传走 developer-center 下发的 PostPolicy
-> 预签名（短 TTL、精确 key + 大小锁定），客户端只做 multipart 直传，不接触永久凭据。
+发布不需要 MinIO 账号/密钥：产物上传走 DC 下发的短期 PostPolicy 预签名。
 
-## 2.5 AI 辅助开发（dev-mcp，推荐）
+## 2.5 AI 辅助开发与本地联调
 
-本仓附带 `tools/dev-mcp/`——面向 AI 编码工具（Kimi Code / Codex / Claude Code / qoder）
-的插件开发辅助 MCP：契约文档取读、脚手架建包、发布预检、一键发布到本环境、实例/日志
-自助诊断、授权包级环境巡检（`environment_status`）、HMR 联调指引。巡检覆盖 Pod/实际镜像、
-实例与任务、PG/schema/runtime 证据、菜单号段、产物 URL 和版本一致性，不读取 Secret 明文。
-接入方式与各工具配置片段见仓根 `AGENTS.md`「AI 工具接入」节与 `tools/dev-mcp/README.md`；
-Kimi Code 打开本仓即自动加载（`.kimi-code/mcp.json`）。非默认开发测试服务器可在仓根
-`.env.local` 覆盖网关、DC API、原生登录 session/callback 完整 URL、clientId 和回跳端口段，
-无需修改 `server.mjs`，完整变量表与示例见 `tools/dev-mcp/README.md`「环境配置」。
+先按 [L0](../docs/L0-AI辅助开发.md) 完成 agent-doctor 和登录检查。dev-mcp 提供文档、脚手架、预检、发布、实例日志、环境巡检和 HMR 指引。非默认环境可在仓根 `.env.local` 或用户级配置覆盖非密连接参数，详见 `tools/dev-mcp/README.md`。
 
-家庭网与办公网隔离时可临时使用 SSH 动态转发：`ssh -N -D 127.0.0.1:51080 aiearth01`，
-再设置 `AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080`。DC 与登录请求均走隧道，
-登录浏览器使用独立 Chrome 配置，不改系统代理；测试结束关闭 SSH 进程即释放。
+后端遵循 **本地直接验证 → 需要时接共享 Nacos → 人工确认 → 批准后部署**：
+
+- 本地 `mvn spring-boot:run` 默认连接上表 Nacos；注册不会自动创建网关路由。
+- DC 仅在 `deploy=true` 时注册动态路由；已有路由按服务发现负载均衡，不保证请求只到本机。
+- 首次全新服务没有路由时，先本地验证，人工确认并批准首次受控部署后再做后续全链迭代。
+- 全链联调要求本机与平台双向可达；结束及时停止并注销本地实例。
+- 详细操作与 publish/deploy 副作用见 [L8 §8.6](../docs/L8-提测与发布.md)。
+
+访问国际资源的 Clash 代理与访问本环境的 SOCKS 隧道是不同通道，不要混用；见 L2/L9。
 
 ## 3. 发布通道（publish.mjs + 双 shim）
 ```bash
-# 1. macOS / Ubuntu 自助发布（仅测试底座；AGRSEARTH_TOKEN 必填）
-AGRSEARTH_TOKEN=... ./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
+# 1. macOS / Ubuntu 自助发布（CLI 需 AGRSEARTH_TOKEN；AI 可复用 dev-mcp 登录态）
+./tools/publish.sh extensions/<track>/<tier>/<pkg-id>
 
 # Windows CMD / PowerShell：tools\publish.cmd extensions/<track>/<tier>/<pkg-id>
 
-# 2. 联调部署（release-complete 随发布触发部署，逐组件打印结果）
+# 2. 部署工作负载：必须经本地/联调证据人工确认后另行批准
 ./tools/publish.sh extensions/<track>/<tier>/<pkg-id> --deploy
 
-# 3. 菜单布设随 release-complete 服务端执行；本地校验（内置菜单声明校验）：
+# 3. 零网络本地预检（含菜单与版本校验）：
 node tools/publish.mjs extensions/<track>/<tier>/<pkg-id> --check-only
 ```
 

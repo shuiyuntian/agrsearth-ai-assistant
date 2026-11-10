@@ -14,15 +14,14 @@ A：确认 `import type { CapabilityManifest } from '@agrsearth/sdk-types'` 为 
 A：九成是宿主依赖被打进产物。查 `vite.config.ts` 是否经 `@agrsearth/vite-config` 引入 external；
 若引入了 ui-utils（opencc-js），记得把 `opencc-js` 加入 extraExternals（骨架默认不含）。
 
-**Q：球端与管理页的 CSS 产物都叫 `style.css`，发布时互相覆盖？**
-A：Vite 5 的默认 CSS 文件名是 `style.css`。在各端 `vite.config.ts` 的
-`rollupOptions.output.assetFileNames` 中按端改成包内唯一文件名（如 `tool.css` / `admin.css`），
-不要依赖平铺上传时的后传覆盖先传。
+**Q：球端与管理页的 CSS 为什么必须用不同文件名？**
+A：发布产物按键平铺，同名会冲突。当前球端骨架通过 `cssFileName: 'tool.css'` 产出 `tool.css`，
+管理页骨架使用默认 `style.css`；自定义构建时也必须保持包内唯一，不要依赖后传覆盖先传。
 
 ## 9.2 球端运行期
 
 **Q：工具栏没有我的插件图标？**
-A：① 平台方是否已 publish test 到测试底座；② 清单接口是否返回你的包（浏览器 Network 查
+A：① 团队是否已通过 DC 发布到共享开发调试环境；② 清单接口是否返回你的包（浏览器 Network 查
 `/resource-manager/api/v1/package/list?target=…`）；③ `entries.url` 是否可达；
 ④ 远程加载 console 报错。本地资源中心连不上属预期（首屏底图仍在）。
 
@@ -45,8 +44,8 @@ A：标题栏与内容区是两个 Vue app，props/provide 不通——用模块
 ## 9.3 管理面
 
 **Q：菜单不可见？**
-A：① `data/menu.json` 是否已随 publish 经 menu-provision 布设（publish 日志看 inserted/updated/unchanged
-计数；手工补布设走 resource-manager `POST /<pkg>/menu-provision`，幂等可重发）；② 角色是否授权该菜单
+A：① `data/menu.json` 是否已随 publish 经 menu-provision 布设（看发布回执 inserted/updated/unchanged；
+失败时按 DC 错误修复并递增版本重发，不直连 resource-manager 手工补布）；② 角色是否授权该菜单
 （roleIds 只增不删，补绑走 18850 角色管理，平台方操作）；
 ③ component 是否 `remote:<pkg>/<viewPath>` 且与 adminViews 键一致；
 ④ 组件 name 与菜单路由 name 一致（keep-alive 匹配）。
@@ -135,10 +134,10 @@ A：标准路由应为 `Path=/<svcId>/**` + `StripPrefix=1` + `lb://<svcId>`，�
 不能再把动态 dataId 按同名 `routes` 列表 import 到静态配置（否则静态路由会被覆盖）。恢复既有包时只修动态配置，
 不要重烧插件版本号，也不要改静态路由表。仍 404 再查服务发现与控制器前缀。
 
-**Q：本地起的服务注册上了 Nacos，网关调接口却超时？**
-A：单向可达——本机 → 底座 Nacos 通，但底座网关/Pod → 本机被防火墙/网段挡住（两态联调的
-双向可达前提，见 L8 §8.6）。放行本机端口并确认双边同网段（或经 SSH 隧道）；仅自己调
-代码可维持现状，要给他人使用必须 `publish --deploy` 回验证态。
+**Q：本地服务注册上了 Nacos，网关却没有路由或请求不一定到本机？**
+A：Nacos 注册不会创建路由；DC 仅在 `deploy=true` 时写动态路由。已有路由也按服务发现负载均衡，
+本机和平台实例同时在线时请求可能到任一端。确定性调试请直接调用本机端口。需要网关全链时，确认路由已存在、
+平台到本机 IP/端口可达，并在结束后停止注销本机实例；详见 L8 §8.6。
 
 ## 9.6 开发机环境（Windows 实战落账 2026-10-24）
 
@@ -193,3 +192,15 @@ docker save + SSH 到 aiearth01 后 load/push，不在 Docker Desktop VM 内解�
 **Q：拉取 arm64 基础镜像元数据经 hubproxy 失败？**
 A：aiearth01 为 x86_64，骨架已默认 `PLATFORMS=linux/amd64`；不要为该环境强制多平台构建。
 SSH 搬运模式的 `--load` 也只接受单平台。
+
+
+## 9.7 国际资源访问与代理
+
+**Q：npm/Maven/Docker 或文档下载在国际站点超时、连接重置、TLS 失败？**
+A：先保存原始错误，确认 URL、版本、凭据、DNS 和服务端状态；只对确认的国际网络访问问题启用代理排查。
+只读检查本机已有 `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY`、代理进程和实际监听地址。开发团队默认使用 Clash，
+发现既有 Clash 时优先复用当前配置，不假定固定端口，不擅自启停 Clash 或修改系统代理。
+
+代理仅用于当前命令或构建进程，内网和环回地址保持直连。可用工具自带代理参数或标准环境变量做最小化重试验证；
+不要把代理地址、凭据写入仓库。需要持久配置时由用户确认。该通道与访问开发底座的 `AGRSEARTH_SOCKS_PROXY`
+SSH 动态转发不同，不要混用。代理不可用或重试仍失败时，报告原始错误、已检查项和最小复现结果，不盲目连续重试。

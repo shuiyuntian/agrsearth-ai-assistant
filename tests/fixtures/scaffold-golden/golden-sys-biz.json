@@ -82,7 +82,7 @@
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/resources/bootstrap.yml": {
-      "sha256": "828afa856e132172d739d818bf456473002cff94693172d590dfafc653768ff0",
+      "sha256": "ccb1f13b47e5b3f0191c9d9e3d4afd6aa5cddf18eb62cfc8221cd09db1428c2a",
       "exec": false
     },
     "backend/golden-sys-biz-worker/pom.xml": {
@@ -98,7 +98,7 @@
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml": {
-      "sha256": "13fd6dfc7ee54e8f7f10ec546cf6b2948870561fc5fc90203c6b16e3c7de04a3",
+      "sha256": "6c1b7104dd3c982015775111f16c7896110f2794836843f44eaf2101effec816",
       "exec": false
     },
     "container/golden-sys-biz-server/Dockerfile": {

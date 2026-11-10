@@ -6,11 +6,11 @@
 > 与 `agrsearth-ops`（业主运维）是两个 server：本 server 默认触达 aiearth01 共享开发
 > 调试环境；其他环境须显式配置，远程一律走 **DC（developer-center）API**。
 
-## 工具清单（28 个，v1.8.0 新增图标库只读消费三工具）
+## 工具清单（28 个，v1.8.1 起模板仓指南范围为 L0-L10）
 
 | 分组 | 工具 | 说明 | 副作用 |
 |---|---|---|---|
-| 契约文档 | `docs_read` | 模板仓模式读 docs/L1-L10；平台仓模式读 PLUGIN_DEVELOPMENT.md | 无 |
+| 契约文档 | `docs_read` | 模板仓模式读 docs/L0-L10；平台仓模式读 PLUGIN_DEVELOPMENT.md | 无 |
 | 图标库 | `icon_search` | DC `GET /icons`：按业务语义/分类/来源检索，返回可复制的 `iconRef` 与相对 `svgUrl`；分页至多 50 | 无 |
 | 图标库 | `icon_get` | DC 按资产名取详情/变体；`includeSvg=true` 附 SVG 原文，`includePalette=true` 附平台色板；自定义副本仍由 IconPicker 签发 | 无 |
 | 图标库 | `icon_bake` | DC `POST /icons/bake`：着色/多图层无状态预览，只返回 SVG，不保存、不签发副本，不需要 `reason` | 无（不落库） |

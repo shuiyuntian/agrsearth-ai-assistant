@@ -39,7 +39,7 @@
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/resources/bootstrap.yml": {
-      "sha256": "e7a6e623704a7a0f8219e61d45905b3dd33190eacb627e7b625cd4e3f6f81dac",
+      "sha256": "61358ccdf258f7d6d82782be43ba6f5c0f835961bc89b9fda7f8f6d980bcbd71",
       "exec": false
     },
     "container/golden-tool-backend-server/Dockerfile": {

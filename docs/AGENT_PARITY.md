@@ -31,7 +31,7 @@
 - **docs/ 与 LICENSE 只留权威源**：`.kimi-code/skills/docs/`（DOMAINS.md 等参考件）与
   `cesiumjs-skills.LICENSE` 不做 7 端副本——Skill 内引用为仓根相对路径，从任一端加载均可解析。
 
-## 2. MCP 接入
+## 3. MCP 接入
 
 先执行 `cd tools/dev-mcp && npm install`（`agent-doctor` 会把缺依赖判为 FAIL 并给出该修复命令），然后在模板仓根选择客户端：
 
@@ -54,7 +54,7 @@
 嵌套为子目录打开会导致 MCP server 启动失败。Windows 建包入口为 `tools\create-extension.cmd`
 （Node 薄 shim，无需 Git Bash；dev-mcp 1.6.2 起 `package_scaffold` 也直调 node，Windows 全链零 bash 依赖）。
 
-## 3. 接入自检
+## 4. 接入自检
 
 ```bash
 # 检查全部客户端；缺配置或未同步 Skill 会列出具体原因
@@ -74,24 +74,27 @@ node tools/agent-doctor.mjs --client qoder --json
 ```
 
 doctor 只读，不修改用户配置。优先检查仓内项目级配置；缺失时才尝试客户端 `mcp list`，Codex 还会
-回查 `CODEX_HOME/config.toml`。任一客户端缺 MCP、Skill 漂移或 dev-mcp 依赖未安装都会返回非零退出码；
-Windows 上额外探测 bash 工具链（仅 dev-mcp `package_scaffold` 通道需要；提示级，不进退出码）。
+回查 `CODEX_HOME/config.toml`。任一客户端缺 MCP、Skill 漂移或 dev-mcp 依赖未安装都会返回非零退出码。
+当前 dev-mcp 本地通道已全量 Node 化，Windows 不再额外要求 Git Bash。
 
-## 4. 统一任务验收矩阵
+## 5. 统一任务验收矩阵
 
 | 任务 | 统一操作/判定 | 副作用 |
 |---|---|---|
-| 读取规则 | agent 能说明目录约定、六条红线和验收入口 | 无 |
+| 读取规则 | agent 能说明目录约定、八条红线、默认工作流和验收入口 | 无 |
+| 需求与方案 | 新包先澄清业务与验收，给出分类/槽位/范围；用户确认后才实施 | 无 |
 | 创建插件 | 使用 `package_scaffold` 或 `create-extension.sh`，产物落在 `extensions/<track>/<tier>/<id>/` | 本地可逆 |
 | 构建预检 | `npm run check`、`package_precheck`、URL 契约对账全部通过 | 无 |
 | 原生登录 | `auth_login_start` 返回完整链接和 loginId；`auth_login_wait` 落盘；`auth_status` 复核身份 | 本地凭据 |
+| 本地/共享联调 | 后端先本机验证；接共享 Nacos 时说明路由、负载均衡、双向可达与注销责任 | 共享注册需告知 |
+| 注册 | 经批准调用 `package_register`，`task_get` 到 ACTIVE 后才视为完成 | **有，需审批** |
 | 实例诊断 | `instance_list` / `instance_logs` 可访问已授权实例，中文正常，`tailLines` 生效 | 无 |
-| 发布 | 经 `package_publish` 走 DC 标准链，不要求手工复制 token | **有，需审批** |
-| 业务验收 | 管理页、球端、权限、读写链路符合 `RELEASE_CHECKLIST.md` | 按环境授权 |
+| 发布与部署 | 经批准调用 `package_publish`；后端 deploy=true 须在本地证据人工确认后另行批准 | **有，需审批** |
+| 业务验收 | 管理面、球端、权限、读写链路符合 `RELEASE_CHECKLIST.md`，并报告未验证项 | 按环境授权 |
 
 同一任务允许使用客户端各自的原生命令或 Skill 触发方式，但不允许绕过共享 MCP/脚本而使用一套私有实现。
 
-## 5. 提交前闸口
+## 6. 提交前闸口
 
 ```bash
 node tools/check-agent-parity.mjs

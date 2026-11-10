@@ -6,8 +6,8 @@
 ## R1 新建插件（选轨与骨架）
 
 1. 按体量判轨（L1.3）：≤1 个自建后端微服务 → 工具轨（`skeletons/tool`）；多服务/子系统级 → 系统轨（`skeletons/system`）。
-2. 脚手架生成 `./tools/create-extension.sh <pkg-id> --track <track> --tier <tier>`（落位 `extensions/<track>/<tier>/<pkg-id>/`），按骨架 README「改名清单」替换占位符。
-3. 包目录加入仓根 `package.json` 的 `workspaces` 后 `npm install`。
+2. AI 优先调用 dev-mcp `package_scaffold`；CLI 备用 `./tools/create-extension.sh <pkg-id> --track <track> --tier <tier>`。脚手架自动落位 `extensions/<track>/<tier>/<pkg-id>/` 并替换包名、版本、全局名等占位符。
+3. 根 `package.json` 的 workspace glob 已覆盖 `extensions/*/*/*/{frontend,admin-ui}`；建包后在仓根执行 `npm install`，不要手改 workspaces 或新建分包 lockfile。
 
 **验收**：`npm run check` 通过；manifest `track`/`tier`（+按需 `delivery`）与轨一致；`components` 段与实际结构一致。
 
@@ -16,7 +16,7 @@
 1. 面板：`ctx.ui.createPanel({ mode:'native', contentPadding:'default', ...computePanelRect() })`
    （几何与内容区留白约定见 L10，骨架已内置；自管理留白时不传 contentPadding）；
 2. 样式：关键布局使用随包 CSS，Vue 组件优先 `<style scoped>`，非 SFC 使用包级根类；
-   随包 `style.css` 发布会自动回填 `entries.css.url`，不要只依赖宿主 Tailwind 工具类；
+   当前球端骨架产出 `tool.css`，发布会自动回填 `entries.css.url`；不要只依赖宿主 Tailwind 工具类；
 3. 实体：站点/标记一律 `ctx.entities.add(...)`；弹窗内聚插件内部；
 4. Cesium 对象（Cartesian3/Color/Rectangle…）：一律经骨架内置 `src/utils/cesium.ts` 的
    `getCesium()` 取 **window.Cesium**——宿主 import map 无 cesium 键，
@@ -53,9 +53,9 @@
 2. 应用名 = `backendServices[].serviceId`；声明 `apiPrefix/healthEndpoint/minVersion`；
 3. 镜像构建目录 `container/<svc>/`（Dockerfile + build.sh，OCI Label 规范平台方把关）；
 4. 时区：容器与 deployment 显式 `TZ=Asia/Shanghai`；
-5. **本地联调回路**：骨架 `bootstrap.yml` 的 Nacos 默认直指 aiearth01 开发支撑环境且配置 import 为
-   `optional:`，`mvn spring-boot:run` 起服务即注册进底座 Nacos、网关按 `apiPrefix` 路由回本机——
-   调代码/接口/前后端联调本地跑，验镜像与 k8s 形态才 `publish --deploy` 推底座（两态分工详见 L8 §8.6）。
+5. **本地优先、人工确认后部署**：先 `mvn spring-boot:run` 做本地接口验证；需要全链时再接共享 Nacos。
+   Nacos 注册不会自动创建网关路由，已有路由也不会只转发到本机；首次服务需经批准后完成一次受控部署建立基线。
+   `deploy=true` 会改变平台工作负载，必须在本地/联调证据经人工确认后使用。完整边界见 L8 §8.6。
 
 **验收**：
 - [ ] `components.backend[]` 与 `backendServices[].serviceId` 完全一致
@@ -65,19 +65,16 @@
 
 ## R5 数据初始化
 
-1. `data/` 放建表/种子 SQL 与菜单声明 `menu.json`（菜单登记 SQL 通道已废止，存量归档
-   `archives/menu-sql-legacy-20261004/`，批4 起由 menu-provision 幂等落地），SQL 文件头注明用途与执行方式；
-2. 发布时 `data/sql/*.sql` 以 UTF-8 原文进入 `dataSql[].content`，摘要取原始文件字节；publish 预检会提前校验文件名、非空、大小与摘要一致性；
-3. 含中文 SQL 一律**文件方式执行**（`kubectl exec -i ... mysql --default-character-set=utf8mb4 < x.sql`），禁止多层嵌套内联 `-e` 传中文；
-4. 菜单号段零申请：`package_register` 自动从本团队 band 池切千段包级号段并写台账 `menu.segment.<pkg>`
-   （两段制：core/tool/system 百万段为 **菜单 band 分类**，包级千段；dev-mcp `resource_list` 可实查本包段）。
-   menuId 必须落本包段内，越段服务端 fail-fast「禁止越段写菜单」——**这不是缺号段、不要 quota_request**，
-   报错文本自带本包实分段，改 menu.json 重发即可；仅团队池真用尽（默认 10 块×10000 号/band）才
-   `team_manage quota_request`，审批权在平台管理员（18850 开发者中心→任务页），TEAM_OWNER 不能自审。
+1. `data/` 放建表/种子 SQL 与菜单声明 `menu.json`。SQL 文件头注明用途和“随 release-complete 幂等落库”，不写服务器直连执行命令；
+2. 发布时 `data/sql/*.sql` 以 UTF-8 原文进入 `dataSql[].content`，摘要取原始文件字节；publish 预检提前校验文件名、非空、大小与摘要一致性；
+3. 团队不通过 SSH/kubectl/数据库直连执行 SQL。含中文也保持文件原文，由 DC 发布链应用并核对 `applied/skipped` 回执；历史 SQL 不得原地改写冒充新迁移；
+4. 菜单号段零申请：`package_register` 自动从本团队 band 池切千段包级号段并写台账 `menu.segment.<pkg>`，
+   `task_get` 跟踪到 ACTIVE 后用 `resource_list` 实查。menuId 必须落本包段内，越段 fail-fast 时按报错分段修正，
+   不要误走 quota_request；仅团队池真用尽才走配额审批。
 
 **验收**：
 - [ ] SQL 幂等可重跑；`components.data=true` 与 data/ 实际内容一致；`menu.enabled=true` 时 `data/menu.json` 齐备且过校验
-- [ ] 文件头含执行命令样例
+- [ ] 文件头注明用途与发布执行方式；发布回执和真实业务表/接口验证一致
 
 ## R6 多组件 + deploy/k8s（系统轨）
 
@@ -94,7 +91,7 @@
 
 ## R7 发布与回滚（团队侧材料）
 
-> 发布权在平台方（L8）；团队侧负责把材料备齐。
+> 团队经 DC 自助发布到共享开发调试环境，并在本地/联调证据经人工确认后批准后端部署；生产发布由平台管理员执行。团队提测时负责把材料备齐（L8）。
 
 1. 按 `RELEASE_CHECKLIST.md` 完成自检；
 2. 四必备文档齐备，最新版 CHANGELOG 段写明本版变更；

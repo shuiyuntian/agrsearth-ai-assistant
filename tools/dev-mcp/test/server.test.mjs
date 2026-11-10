@@ -6,8 +6,9 @@
 //   ⑤ 图标库三工具经本地 mock DC 完成真实 MCP 调用。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-24
-// 版本：1.8.0
+// 版本：1.8.1
 // 修改记录：
+//   - (2026-11-10) 1.8.1 serverInfo 版本随 docs_read 指南范围修正同步
 //   - (2026-11-09) 1.8.0 新增图标检索/详情/无状态烘焙工具及 mock DC 回环
 //   - (2026-11-08) 1.7.0 覆盖 HMR 随包 CSS 指引并同步 serverInfo.version
 //   - (2026-11-07) 1.6.2 覆盖 package_scaffold 直调 Node 脚手架（两模式 .mjs，不经 bash）
@@ -317,7 +318,7 @@ test("JSON-RPC tools/list：28 个统一命名工具全部注册", { timeout: 30
       clientInfo: { name: "node:test", version: "1.0.0" },
     });
     assert.equal(init.result?.serverInfo?.name, "agrsearth-dev", "server 名应为 agrsearth-dev");
-    assert.equal(init.result?.serverInfo?.version, "1.8.0");
+    assert.equal(init.result?.serverInfo?.version, "1.8.1");
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
     const list = await call(2, "tools/list", {});

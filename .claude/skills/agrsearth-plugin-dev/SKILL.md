@@ -5,13 +5,24 @@ description: Use when developing AGRSEarth 航遥业务中台 plugins (tool/syst
 
 # AGRSEarth Plugin Development（航遥业务中台插件开发）
 
-Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (tool/system/admin-ui skeletons) + `docs/L1-L10` (layered guides; authoritative detail lives in the platform repo `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`).
+Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (tool/system/admin-ui skeletons) + `docs/L0-L10` (layered guides; authoritative detail lives in the platform repo `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`).
 
 ## 触发条件
 
 - 新建/改造能力包（manifest.json、frontend Capability、admin-ui、backend、deploy/k8s、data SQL）
 - 插件构建失败、远程加载失败、publish 校验失败排查
 - 提测前自检与材料准备
+
+## 默认工作流（按任务裁剪，不机械空跑）
+
+1. **识别与取证**：纯问答不建包；小修沿用现有模式。新包/多文件/多组件任务先读 `docs/L0-AI辅助开发.md`、相关 Recipe 与最小必要源码。涉及 MCP/远程调用时先跑 `agent-doctor` 与 `auth_status`；失败先修复接入，不伪造远程状态。
+2. **需求与方案**：澄清业务目标、用户、界面、数据来源、地图交互、权限、非目标和验收标准。给出 track/tier/delivery、槽位取舍、修改范围、检查命令与写操作清单；用户确认后再建包或实施。
+3. **本地实现**：优先 `package_scaffold`；复用骨架和现有脚本，不手抄整套骨架。更新四必备与 CHANGELOG，运行构建、URL 对账、版本校验和 `package_precheck`，按真实输出修复。
+4. **本地/共享联调**：后端先 `mvn spring-boot:run` 做本机接口测试；需要全链时可接 aiearth01 共享 Nacos，前端配合 HMR。启动前说明共享注册副作用，结束后停止并确认注销。Nacos 注册不自动创建网关路由，已有路由也按服务发现负载均衡，不保证固定到本机；确定性调试直接打本机端口。首次无路由服务不得宣称“注册即可网关联调”，按 L8 §8.6 建立受控基线。
+5. **人工关卡**：注册、发布、资源签发逐次说明对象、环境、参数与影响，取得本次明确批准。`package_register` 后必须 `task_get` 到 ACTIVE。后端只有在本地/联调证据经人工确认后，才可请求批准 `package_publish deploy=true`；`deploy=false` 不部署工作负载，但菜单/SQL 等发布副作用仍需说明。生产始终由平台管理员执行。
+6. **验收与交付**：真实验证球端、管理面、权限和读写链；无浏览器能力时给人工步骤并标待验。最终报告需求覆盖、修改文件、命令及结果、远程任务/版本、证据、未验证项与风险；不得把构建或发布冒烟冒充业务完成。
+
+文档与源码冲突时先核查实际实现并报告，不任选一条执行；机器闸口优先于口头承诺。用户协作示例见 L0，本地 Nacos 与部署边界见 L8 §8.6。
 
 ## 契约红线（违反即验收打回，先 grep 再交付）
 
@@ -28,11 +39,11 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 
 | Recipe | 任务 | 骨架/样例 |
 |---|---|---|
-| R1 | 新建插件（选轨 + 复制骨架 + 改名清单） | `skeletons/tool`、`skeletons/system` |
+| R1 | 新建插件（选轨 + 脚手架实例化 + 自动落位） | `skeletons/tool`、`skeletons/system` |
 | R2 | 球端面板与地图联动（createPanel native + ctx.entities + emit/on） | `skeletons/tool/frontend` |
 | R3 | 加管理页（admin-ui + remote: 菜单 + v-hasPermi） | `skeletons/admin-ui` + `*/data/menu.json` |
-| R4 | 加后端服务（backendServices + container/ + TZ） | `backend/svc-placeholder`、`container/svc-placeholder`（create-extension.sh --backend 实例化） |
-| R5 | 菜单声明（data/menu.json，menu-provision 幂等落地） | `*/data/menu.json` |
+| R4 | 加后端服务（本地验证 + Nacos 联调 + 人工确认后部署） | `backend/svc-placeholder`、`container/svc-placeholder` |
+| R5 | 数据初始化与菜单声明（data/sql + data/menu.json） | `*/data/` |
 | R6 | 多组件 + deploy/k8s（白名单四类、拓扑 dependsOn） | `skeletons/system/deploy/k8s` |
 | R7 | 发布与回滚（RELEASE_CHECKLIST + 提测单材料） | `RELEASE_CHECKLIST.md`、docs/L8 |
 | R8 | 使用平台图标（icon_search → icon_get → AppIcon/manifest.icon） | `skeletons/tool/frontend`、docs/L5-R8 |
@@ -67,6 +78,15 @@ Template repo: `packages/` (@agrsearth/* workspace packages) + `skeletons/` (too
 - [ ] **权限对账全绿**（平台方在发布链路执行，本仓无需跑脚本）：代码注解值必须命中本包菜单 perms
       （或平台侧豁免白名单），红灯阻塞发布；黄灯（悬空按钮）限期整改或报平台方入白名单分类登记
 - [ ] 提测单要素齐：代码 + 版本 + CHANGELOG + 自测证据 + 依赖清单（docs/L8.2）
+
+## 国际资源访问与 Clash 排错
+
+仅在国际站点、包仓库或镜像源出现超时、连接重置、TLS/下载失败时进入本流程；先排除 URL、凭据、DNS、版本和服务端故障，不把所有网络错误都归因于地区网络。
+
+1. 只读检查本机已有 `HTTP_PROXY`/`HTTPS_PROXY`/`NO_PROXY`、代理进程与实际监听地址。开发团队默认使用 Clash；发现既有 Clash 时优先复用其当前配置，不硬编码端口，不假定所有开发机都运行它。
+2. 不擅自启动/停止 Clash，不修改系统代理或 Clash 配置，不把代理地址/凭据写入仓库；需要持久配置时由用户确认。
+3. 代理只作用于当前命令或构建进程。内网与环回地址保持直连，避免 DC、SSO、Nacos 等内网流量误入代理；这与访问开发底座的 `AGRSEARTH_SOCKS_PROXY` SSH 隧道分开，不混用。
+4. 优先复用工具已有参数或标准代理环境变量，以最小化下载/构建重试验证。报告实际使用的非密代理地址、原始错误与复测结果；代理不可用则给用户检查项，不连续盲目重试。
 
 ## data/sql 内容完整性与布实验收
 

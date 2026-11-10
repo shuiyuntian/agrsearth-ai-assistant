@@ -9,7 +9,7 @@
 
 航遥业务中台（AGRSEarth）的**插件（能力包）开发模板仓**。你在这里开发的每个包最终会被发布到
 共享开发调试环境（aiearth01，公司网）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
-`docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L1-L10` 是分层指南，
+`docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L0-L10` 是分层指南，
 冲突时以契约本体为准。
 
 ## 目录速览
@@ -24,7 +24,7 @@
 - `backend/svc-placeholder/`、`container/svc-placeholder/` — 后端服务与镜像骨架（脚手架实例化）
 - `maven-repo/` — vendored com.ruoyi 依赖闭包（file:// 仓，后端构建免平台仓）
 - `test-env/` — 共享开发调试环境（aiearth01）地址表与账号申请说明
-- `docs/L1-L10` — 分层开发指南；`RELEASE_CHECKLIST.md` — 提测前自检清单
+- `docs/L0-L10` — 分层开发指南；`RELEASE_CHECKLIST.md` — 提测前自检清单
 
 ## AI 工具接入（dev-mcp，推荐）
 
@@ -59,6 +59,14 @@ CesiumJS vendor skills 仅作 API 与场景参考；其中 Performance Tips / vi
 不得作为默认降配依据。插件应使用宿主 Viewer，不照搬独立 Viewer 示例，不在无明确需求时修改共享场景的
 `requestRenderMode`、`resolutionScale`、`msaaSamples` 等全局渲染参数；性能降级须基于具体场景与实测。
 **`tools/dev-mcp/` 是导出产物，禁止直接改**——问题回报平台方，源头在平台仓 `mcps/agrsearth-dev/`。
+
+## 默认任务流与审批
+
+1. 纯问答只读；小修按既有模式处理。新包、多文件或多组件任务先澄清业务目标，给出分类、槽位、修改范围和验收标准，用户确认后实施。
+2. 涉及 MCP/远程调用时先检查 doctor 与 `auth_status`。建包用 `package_scaffold`，本地完成后执行构建、URL 对账和 `package_precheck`，以真实输出判定。
+3. 后端先本地直接验证；需要全链时可连接共享 Nacos，但注册不自动创建网关路由，已有路由也不保证只到本机。结束联调及时停止注销本地实例。
+4. 注册、发布、资源签发等写操作逐次取得用户明确批准。后端 `deploy=true` 必须在本地/联调证据经人工确认后另行批准；不得默认部署或触发生产。
+5. 完成时报告变更、命令结果、远程状态和未验证项；构建或发布冒烟通过不等于业务验收通过。详细流程与代理排错见权威 Skill 和 `docs/L0-AI辅助开发.md`。
 
 ## 契约红线（违反即验收打回；交付前必须 grep 自查）
 

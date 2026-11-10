@@ -16,7 +16,7 @@
 构建（在实例化后的包内执行）：
 
 ```bash
-cd packages/<pkg>/container/<svc>     # 平台仓：extensions/<track>/<tier>/<pkg>/container/<svc>
+cd extensions/<track>/<tier>/<pkg>/container/<svc>
 ./build.sh                    # 编译 backend/<svc> 并构建推送
 SKIP_COMPILE=1 ./build.sh     # 跳过编译（用既有 target/*.jar，先清旧 jar 防多匹配）
 ```

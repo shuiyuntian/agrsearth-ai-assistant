@@ -89,7 +89,7 @@
       "exec": false
     },
     "backend/golden-svc/src/main/resources/bootstrap.yml": {
-      "sha256": "cda62a1f071c79d76bfdfc05ebf556867b1827144583defb322e7025cadb5fb2",
+      "sha256": "f59409a7b3162939e83d064d5bcfcc4d3bc75b4818af695a7829bbd2c1fed6c3",
       "exec": false
     },
     "container/golden-svc/Dockerfile": {

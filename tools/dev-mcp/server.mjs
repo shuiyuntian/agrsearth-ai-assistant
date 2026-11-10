@@ -18,8 +18,9 @@
 //   写操作强制 reason 事由并审计留痕；审计日志只记参数与结果码，不记任何响应体/令牌。
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-10-22
-// 版本：1.8.0
+// 版本：1.8.1
 // 修改记录：
+//   - 1.8.1 (2026-11-10) docs_read 模板仓指南范围由 L1-L10 扩为 L0-L10（新增 AI 辅助开发入口）
 //   - 1.8.0 (2026-11-09) 新增 icon_search/icon_get/icon_bake（28 工具），经 DC 只读门面消费平台图标库
 //   - 1.7.0 (2026-11-08) hmr_get_guide 检测随包 style.css 并补 --dev-css-url 指引
 //   - 1.6.2 (2026-11-07) package_scaffold 双模式改直调 Node 脚手架（tools/ 或 scripts/
@@ -466,7 +467,7 @@ async function audit(entry) {
 
 const server = new McpServer({
   name: "agrsearth-dev",
-  version: "1.8.0",
+  version: "1.8.1",
 });
 
 const rawRegisterTool = server.registerTool.bind(server);
@@ -522,7 +523,7 @@ async function dcCall(fn) {
 
 server.registerTool("docs_read", {
   description: MODE === "template"
-    ? "插件开发文档取读：无参数返回 docs/L1-L10 分层指南目录 + 各篇一级标题；带 topic 返回全部指南中匹配章节的正文（提测/契约/规范问题先查这里）。"
+    ? "插件开发文档取读：无参数返回 docs/L0-L10 分层指南目录 + 各篇一级标题；带 topic 返回全部指南中匹配章节的正文（AI 辅助开发/提测/契约/规范问题先查这里）。"
     : "插件开发契约取读（平台仓模式）：无参数返回 PLUGIN_DEVELOPMENT.md 目录；带 topic 返回匹配章节正文。",
   inputSchema: {
     topic: z.string().optional().describe("章节关键词（匹配标题，如 'menu'、'发布'、'track'、'现场分组'）；缺省返回文档地图"),

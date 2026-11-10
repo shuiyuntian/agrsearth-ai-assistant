@@ -1,88 +1,108 @@
 # AGRSEarth Plugin Template（航遥业务中台插件开发模板仓）
 
-> 插件多团队并行开发支撑体系（专项 5）之 C2/C3 交付物。
 > 本仓是**纯模板**（fork 模型）：各团队经 GitHub「Use this template」生成自己的仓库，
-> 在 `extensions/<track>/<tier>/<pkg>/` 自管自开发；测试通过后按提测单提交平台管理员，
-> 验收后由管理员纯拷贝移植进平台仓同名路径，生产发布由平台管理员执行。
-> 平台供给物（`packages/` 等）由平台仓经 `scripts/build/sync-template.sh` 单向同步下发。
-> 套件版本见 `VERSION`，变更见 `CHANGELOG.md`。
+> 在 `extensions/<track>/<tier>/<pkg>/` 自管自开发。测试环境由团队经 developer-center 自助发布；
+> 提测后由平台管理员移植验收并执行生产发布。
+>
+> 套件版本见 `VERSION`，变更见 `CHANGELOG.md`。平台供给物的精确来源见 `.upstream`。
 
-## 工作模型（fork 模型六步）
+## AI 辅助开发快速开始（推荐）
 
-1. 用本模板生成你的仓库（GitHub「Use this template」；不要直接向本仓提交插件包）
-2. `./tools/create-extension.sh <id> --track tool|system --tier platform|business ...`
-   建包到 `extensions/<track>/<tier>/<id>/`
-3. 开发自验：`npm install && npm run check`、`./tools/check-extension-versions.sh`
-4. `./tools/publish.sh extensions/<track>/<tier>/<id>` 发共享调试环境（aiearth01）实测
-5. 按 `extensions/README.md` 提测单模板提交平台管理员（PR 或压缩包）
-6. 模板升级：把本仓加为 upstream 后 `git merge` 拉取模板 diff——你的 `extensions/<你的包>/`
-   上游从不触碰，合并零冲突
+你不需要先读完所有文档，也不需要先手写脚手架命令。目标流程是：
 
-演示包：`extensions/tool/business/wind-field-demo/`（官方 Demo，可发开发支撑环境验证通路，**禁止提测**）。
+**接入 AI → 描述业务需求 → 审查方案 → 本地开发与预检 → 批准注册/发布 → 真实页面验收。**
 
-## 组成
+### 1. 准备与自检
 
-| 目录 | 内容 | 归属 |
-|:---|:---|:---|
-| `extensions/` | **你的扩展包工作区**（`extensions/<track>/<tier>/<id>/`，与平台仓布局同构）+ 提测规范（`extensions/README.md`）+ 官方演示包 | 你的团队 |
-| `packages/` | `@agrsearth/*` 平台供给包（sdk-types / vite-config / ui-utils / admin-sdk / icon-kit / layer-factory / ts-config，平台仓 `packages/` 同步下发，**勿改**），规则见 `packages/README.md` | 平台同步 |
-| `tools/create-extension.mjs` | 本地脚手架（Node 唯一实现，.sh/.cmd 为薄 shim）：`./tools/create-extension.sh <id> --track tool\|system --tier platform\|business [--with-backend] [--with-admin-ui]`，生成到 `extensions/<track>/<tier>/<id>/` | 本仓自有 |
-| `tools/publish.mjs` | Node 发布唯一实现（**仅测试底座**）：构建 → DC release-prepare → MinIO PostPolicy 直传 → release-complete；`tools/publish.sh`/`publish.cmd` 仅为跨平台薄 shim；含目录闸口、HMR、SOCKS5，prod 一律拒绝 | 本仓自有 |
-| `tools/check-extension-versions.mjs` | 包版本与文档一致性校验（Node 唯一实现，.sh/.cmd 为薄 shim，extensions/ 发现制） | 本仓自有 |
-| `tools/md-to-html.py` | 公共文档工具（README/CHANGELOG/DESIGN/REPORT 一键转 HTML 评审件） | 本仓自有 |
-| `tools/dev-mcp/` | 插件开发辅助 MCP server（平台仓 `mcps/agrsearth-dev/` 同步产物，**勿直接改**） | 平台同步 |
-| `maven-repo/` | vendored file:// Maven 仓：插件后端骨架实际依赖的 com.ruoyi 构件闭包（**com.ruoyi 不在 Maven 中央仓**）；后端 `mvn package` 免平台仓，清单与扩充方式见 `maven-repo/README.md` | 平台同步 |
-| `test-env/` | 共享开发调试环境（aiearth01）使用说明：地址表、ext-developer 账号申请、发布通道、`--dev-url` HMR 步骤，见 `test-env/README.md` | 本仓自有 |
-| `skeletons/tool/` | 工具轨最小骨架：manifest（含 components 显式声明段）+ VERSION + 四必备 + 可构建 frontend + data/menu.json 样例 + deploy/k8s 单后端部署样例（--with-backend 时随包生效） | 本仓自有 |
-| `skeletons/system/` | 系统轨最小骨架：manifest（backendServices 多组件声明）+ container/ 镜像目录 + deploy/k8s 白名单样例 + data/menu.json 样例（backend 源码不入骨架，由 `tools/create-extension.sh` 从 `backend/svc-placeholder/` 实例化） | 本仓自有 |
-| `skeletons/admin-ui/` | 通用管理面远程页骨架（ADR-007；两轨复用，复制为包内 `admin-ui/`） | 本仓自有 |
-| `backend/svc-placeholder/` | 后端微服务骨架模板：最小可运行 Spring Boot 模块（bootstrap.yml + 启动类 + /info 示例控制器；pom 由脚手架改造为 `maven-repo/` file 仓）；占位符表与实例化后必做见其 README | 平台同步 |
-| `container/svc-placeholder/` | 镜像构建骨架模板：eclipse-temurin:17-jre jar 模式 Dockerfile + build.sh（OCI Label 注入）+ VERSION 组件版本轴，镜像名 `gis-platform/<track>/<tier>/<pkg>/<svc>` | 平台同步 |
-| `docs/` | L1-L10 分层开发指南（给人看的；截图位为占位图，标注「批次2实拍替换」） | 本仓自有 |
-| `.kimi-code/skills/agrsearth-plugin-dev/` | AI Coding 技能（触发条件 + 契约红线 + recipe 索引 + 每步验收 checklist） | 本仓自有 |
-| `AGENTS.md` / `CLAUDE.md` | 跨工具 AI 编码契约（Codex/qoder/Claude Code 等打开本仓即读；红线与 skill 同源，改红线两处同步） | 本仓自有 |
+先按 [L2 接入准备](docs/L2-接入准备-SSO与开发环境.md) 准备 Node.js、Git 和开发者账号；只有带后端的包才需要 Java 17、Maven 和 Docker。
 
-## 快速开始
-
-> 开发机工具链前提（Node / Python / Java+Maven，含 Windows 注意事项）见
-> [`docs/L2-接入准备-SSO与开发环境.md`](docs/L2-接入准备-SSO与开发环境.md) §2.4。
+在仓根执行：
 
 ```bash
-npm install                                   # 安装全部 workspace 依赖（@agrsearth/* 本地包自动链接）
-npm run check                                 # 骨架自检：全部骨架 + 演示包可构建即通过
-./tools/create-extension.sh my-tool --track tool --tier business \
-    --name 我的工具 --with-backend --with-admin-ui   # 建第一个包（extensions/tool/business/my-tool/）
+npm install
+npm --prefix tools/dev-mcp install
+node tools/agent-doctor.mjs --client kimi   # 可替换 codex/claude/qoder/opencode/trae/codebuddy
+npm run check
 ```
 
-发布使用同一个 Node 实现，不依赖 Git Bash/jq/curl：
+再用 AI 工具**以模板仓根目录为工作区**打开本仓，并信任/批准项目级 MCP。不要只把本仓作为更大工作区的子目录打开；仓内 MCP 配置使用仓根相对路径。
+
+### 2. 把第一段需求发给 AI
+
+```text
+请先阅读本仓 AGENTS.md，使用 agrsearth-plugin-dev Skill 和 agrsearth-dev MCP。
+先检查 agent-doctor 与 auth_status，有问题先指导我修复。
+
+我要开发 [业务目标]，使用者是 [目标用户]，需要 [球端面板/管理页/后端/数据库]，
+数据来自 [数据来源]，验收标准是 [可见、可操作的结果]。
+
+请先追问缺失信息并给出分类、槽位、实现步骤和验收清单。
+本轮只做调研和方案；未经我明确确认，不要建包、注册、发布或修改远程环境。
+```
+
+还不知道完整需求时，可以说：**“我想做[业务目标]，请通过提问帮我补齐可实现、可验收的需求说明。”**
+
+完整需求模板、对话示例、审批边界和常用提示词见 **[L0 AI 辅助开发](docs/L0-AI辅助开发.md)**。
+
+### 3. 让 AI 登录并检查环境
+
+让 AI 调用 `auth_status`。未登录时走 `auth_login_start` → 浏览器完成统一身份登录 → `auth_login_wait`；登录后用 `team_list` 确认团队。
+
+交互开发不需要手工复制 token；`AGRSEARTH_TOKEN` 主要用于 CI 或命令行发布。网络隔离时的 SOCKS5 通道见 [开发支撑环境说明](test-env/README.md)。
+
+### 4. 按关卡推进
+
+- **方案关卡**：确认 track/tier/delivery、槽位和验收标准后再建包。
+- **本地关卡**：AI 完成编码、构建、URL 对账和发布预检，报告真实结果。
+- **注册关卡**：你批准后才调用 `package_register`；AI 必须用 `task_get` 跟踪到 ACTIVE。
+- **发布关卡**：你批准包、版本、环境和 deploy 选择后才调用 `package_publish`。
+- **验收关卡**：构建通过不等于业务通过；必须验证真实球端/管理面/后端行为，并列出未验证项。
+
+首个最小包的逐步实操见 [L3 Quick Start](docs/L3-QuickStart-30分钟跑通.md)。
+
+## 命令行备用路径
+
+不使用 MCP 时，可用同一套 Node 工具完成本地建包、检查和测试环境发布：
 
 ```bash
 # macOS / Ubuntu
+./tools/create-extension.sh my-tool --track tool --tier business --name 我的工具
+node tools/publish.mjs extensions/tool/business/my-tool --check-only
 ./tools/publish.sh extensions/tool/business/my-tool
 
 # Windows CMD / PowerShell
-# tools\publish.cmd extensions/tool/business/my-tool
-
-# 网络隔离时：先另开终端 ssh -N -D 127.0.0.1:51080 aiearth01
-export AGRSEARTH_SOCKS_PROXY=socks5h://127.0.0.1:51080
+# tools\create-extension.cmd my-tool --track tool --tier business --name 我的工具
+# node tools\publish.mjs extensions\tool\business\my-tool --check-only
+# tools\publish.cmd extensions\tool\business\my-tool
 ```
 
-自构后端镜像默认 `PLATFORMS=linux/amd64`，在 `container/<svc>/` 执行
-`PUSH_VIA=ssh PUSH_SSH_HOST=aiearth01 ./build.sh`，经 SSH 在 aiearth01 完成 load/push。
+首次发布前仍需完成登录、包注册和发放任务检查。详细流程见 [L3](docs/L3-QuickStart-30分钟跑通.md) 与 [L8 提测与发布](docs/L8-提测与发布.md)。
 
-详细流程见 `docs/L3-QuickStart-30分钟跑通.md`；测试底座发布见 `test-env/README.md` + `docs/L8-提测与发布.md`。
+## 工作模型
 
-图标统一使用平台图标库：Coder 经 dev-mcp `icon_search` → `icon_get`（可选 `icon_bake` 无状态预览）获取真实 `iconRef`，球端普通 Vue 内容使用 `@agrsearth/icon-kit` 的 `AppIcon`。完整步骤与写库边界见 `docs/L5-开发Recipes.md` R8。
+1. 用本模板生成团队仓库，不直接向模板仓提交业务插件。
+2. 在 `extensions/<track>/<tier>/<id>/` 开发；官方演示包 `wind-field-demo` 禁止提测。
+3. 本地执行 `npm run check`、版本校验和发布预检。
+4. 经 developer-center 自助发布到共享开发调试环境，完成真实业务验收。
+5. 按 [提测规范](extensions/README.md) 提交代码、版本、CHANGELOG、自测证据和依赖清单。
+6. 模板升级时将本仓加为 upstream 后合并模板 diff；上游通常不触碰团队包目录，但仍须逐次审查合并结果。
 
-## 同步约定
+## 仓库组成与维护边界
 
-- **归属分界**：「平台同步」列的目录由平台仓 `scripts/build/sync-template.sh` 单向覆盖下发，
-  **不要手工改**（改动会在下次同步丢失）；「本仓自有」目录是模板内容，其唯一事实源就是本仓，
-  改进直接在本仓提交（平台管理员维护）。
-- **版本与兼容**：平台仓和模板仓各自遵循 SemVer，联合发版不要求版本号相同；本版为 `2.3.0`，
-  平台供给物的精确源提交以 `.upstream` 的 `upstream-head` 为准。
-- fork 出去的团队仓：模板升级走 git upstream 合并，只收「本仓自有 + 平台同步」两类 diff，
-  你自己的 `extensions/<你的包>/` 不受影响。
-- 泄漏闸口：本仓为公开仓，`.githooks/pre-push` 内置内网地址/凭据扫描
-  （启用：`git config core.hooksPath .githooks`）；平台侧 sync-template.sh 同步时同样过闸。
-- 文档权威详版：平台仓 `docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/` 面向插件团队。
+| 目录/文件 | 内容 | 维护方 |
+|:---|:---|:---|
+| `extensions/` | 团队能力包工作区、提测规范、官方演示包 | 团队包由团队维护；演示包由模板仓维护 |
+| `packages/` | `@agrsearth/*` 共享包：sdk-types/vite-config/ui-utils/admin-sdk/icon-kit/layer-factory/ts-config | **平台同步，勿改** |
+| `skeletons/` | tool/system/admin-ui 骨架；建包走脚手架，不手抄 | 模板仓 |
+| `tools/` | create-extension、publish、check-extension-versions、agent-doctor 等 Node 工具 | 模板仓；`tools/dev-mcp/` 除外 |
+| `tools/dev-mcp/` | 28 个 AI 开发工具的 stdio MCP server | **平台同步，勿改** |
+| `backend/`、`container/` 的 `svc-placeholder/` | 后端与镜像骨架占位件 | **平台同步，勿改** |
+| `maven-repo/` | vendored com.ruoyi 依赖闭包，后端构建免平台仓 | **平台同步，勿改** |
+| `test-env/` | 共享开发调试环境地址、账号、发布与 HMR 说明 | 模板仓 |
+| `docs/` | L0 AI 辅助开发 + L1-L10 分层指南 | 模板仓 |
+| `AGENTS.md` / `CLAUDE.md` | 跨工具 AI 编码契约 | 模板仓 |
+| `.kimi-code/skills/` | 插件开发与 CesiumJS Skill 权威源；七端副本由 parity 工具同步 | 插件 Skill 归模板仓；CesiumJS Skill 由平台同步 |
+
+平台同步内容由平台仓 `scripts/build/sync-template.sh` 单向覆盖；发现问题应回报平台方并修改源头。模板仓与平台仓独立 SemVer，联合验收不要求版本号相同；当前模板版本为 `2.4.0`，精确供给物提交以 `.upstream` 为准。
+
+本仓为公开仓。启用 `git config core.hooksPath .githooks` 后，pre-push 会扫描内网地址与凭据；平台同步脚本也执行泄漏闸口。任何 token、密码、密钥和本机私有配置都不得提交。

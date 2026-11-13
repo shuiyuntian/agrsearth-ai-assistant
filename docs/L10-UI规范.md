@@ -124,8 +124,14 @@ draggable: false, resizable: false, constrainToSafeArea: false
 
 面板内容区默认左右留白 16px、上下留白 12px；新插件在 `createPanel` 显式传
 `contentPadding: 'default'`，由宿主统一提供。已有自管理留白面板保持缺省 `none`，不得重复叠加。
-分区之间用间距或分隔线组织，首行内容不得贴内容区左边或顶边。插件关键布局使用随包 CSS
-（Vue 优先 `<style scoped>`，其他内容使用包级根类），不只依赖宿主 Tailwind 是否收录对应工具类。
+分区之间用间距或分隔线组织，首行内容不得贴内容区左边或顶边。插件关键布局使用随包 CSS，
+独立仓必须在 `vite.config.ts` 传 `packageId`，由 `@agrsearth/vite-config` 只扫描本包 `frontend/src`
+并生成带 `[data-cap-package="<packageId>"]` 作用域的 `tool.css`，不依赖宿主扫描源码。
+
+- 样式入口只允许 `@tailwind utilities` 与本包普通 CSS；禁止 `@tailwind base`、Preflight、html/body 全局 reset。
+- `ctx.ui.createPanel` 的标准面板由宿主自动写包命名空间；自定义 Teleport/body 弹层必须在本包根元素显式写 `data-cap-package`，内部弹层放在该根下。
+- CSS 变量写在本包根（源码 `:root` 会归一到包根）；keyframes 由构建链改包级唯一名。不可隔离的全局 at-rule 不得使用。
+- deactivate 隐藏本包面板和弹层并挂起副作用；activate 恢复；destroy 移除自定义 DOM 与 window/定时器等监听，宿主同步移除本包 CSS link。
 
 ![正例占位：球端工具面板几何与主题](./images/globe-panel-good.svg)
 

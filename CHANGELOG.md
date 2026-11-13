@@ -2,6 +2,15 @@
 
 > 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
 
+## [2.5.0] - 2026-11-13
+
+主线：B1 独立构建、包级作用域 CSS 与生命周期最小闭环；不迁移存量业务包。
+
+- **共享构建**：`@agrsearth/vite-config` 1.3.0 新增 `packageId` opt-in，只扫描本包 `frontend/src`，自产 Tailwind 工具类与 `tool.css`，通过 `data-cap-package` 隔离普通规则、CSS 变量、弹层和 keyframes；未传 `packageId` 的存量构建行为不变。
+- **源码与发布闸口**：禁止 Tailwind Preflight/base、html/body 全局 reset 和不可隔离的全局 at-rule；`publish.mjs --check-only` 校验源码与已有产物，正式发布在任何 `release-prepare` 请求前校验实际 dist。
+- **骨架与生命周期**：tool 骨架演示标准面板和 body 弹层的包命名空间、deactivate 隐藏及 destroy DOM/监听清理。
+- **测试证据**：新增 `css-fixture-a/b` 纯测试夹具，覆盖相同类名、不同加载顺序、弹层和销毁；夹具不属于实际业务插件，禁止注册、提测或发布。
+
 ## [2.4.1] - 2026-11-10
 
 主线：补齐插件 PostgreSQL 开发机访问指南，并合入后端健康路径、安全依赖与持续质量闸口修复。

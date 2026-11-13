@@ -1,8 +1,9 @@
 // 文件作用：@agrsearth/vite-config 包构建脚本（TS 源码 → Node 可加载的 ESM 产物 dist/）
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-09-14
-// 版本：1.1.0
+// 版本：1.2.0
 // 修改记录：
+//   - 1.2.0 (2026-11-13) 新增 CSS 作用域/发布校验模块 css-scope.js 的 dist 转译
 //   - 1.0.0 (2026-09-14) 初始版本：esbuild 单文件转译（不打包，依赖保留 import 由消费方解析）
 //   - 1.1.0 (2026-10-22) 收编进平台仓 packages/（扁平布局，入口自 src/ 改仓根平铺）；
 //                        背景不变：Vite 5 加载 vite.config.ts 时 packages:'external'，
@@ -21,7 +22,8 @@ await build({
   entryPoints: [
     resolve(here, 'vite.base.ts'),
     resolve(here, 'vite.admin.base.ts'),
-    resolve(here, 'host-contract.js')
+    resolve(here, 'host-contract.js'),
+    resolve(here, 'css-scope.js')
   ],
   bundle: false,
   format: 'esm',

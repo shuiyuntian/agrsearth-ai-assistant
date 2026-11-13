@@ -2,8 +2,9 @@
  * 文件作用：<pkg> 球端插件入口（CapabilityPackage 默认导出契约）
  * 作者：JasonLee <shuiyuntian@foxmail.com>
  * 创建日期：2026-09-14
- * 版本：1.2.0
+ * 版本：1.3.0
  * 修改记录：
+ *   - 1.3.0 (2026-11-13) 增加包级命名空间、body 弹层及 activate/deactivate/destroy 清理示例
  *   - 1.2.0 (2026-11-09) 增加平台图标库 AppIcon 最小示例
  *   - 1.1.0 (2026-11-08) 使用宿主标准内容区留白并引入包级随包 CSS
  *   - 1.0.0 (2026-09-14) 模板仓骨架初始版本
@@ -22,6 +23,28 @@ import { manifest } from './manifest'
 import './panel.css'
 import type { CapabilityPackage, CapabilityContext } from '@agrsearth/sdk-types'
 
+let overlay: HTMLElement | null = null
+let overlayOpen = false
+
+function setOverlayVisible(visible: boolean) {
+  if (overlay) overlay.style.display = visible ? 'block' : 'none'
+}
+
+function openOverlay() {
+  overlayOpen = true
+  if (!overlay) {
+    overlay = document.createElement('div')
+    overlay.className = 'agrs-example-tool-overlay-root'
+    overlay.setAttribute('data-cap-package', manifest.id)
+    const content = document.createElement('div')
+    content.className = 'agrs-example-tool-overlay fixed'
+    content.textContent = `${manifest.name} 弹层示例`
+    overlay.appendChild(content)
+    document.body.appendChild(overlay)
+  }
+  setOverlayVisible(true)
+}
+
 // 面板内容组件骨架：实现期替换为真实面板（可参考 docs/L5-开发Recipes.md）
 const ExamplePanel = defineComponent({
   name: 'ExampleToolPanel',
@@ -33,6 +56,7 @@ const ExamplePanel = defineComponent({
           h(AppIcon, { name: 'calcite:layers', size: 18 }),
           h('span', '平台图标库 AppIcon 示例')
         ]),
+        h('button', { class: 'agrs-example-tool-action mt-2', onClick: openOverlay }, '打开包内弹层'),
         h('p', { class: 'text-gray-500 mt-2' }, '在此实现面板内容；实体/图层/事件一律经 ctx.* 入口。')
       ])
   }
@@ -55,7 +79,7 @@ function computePanelRect() {
   }
 }
 
-let panel: { show: () => void; hide: () => void; close: () => void; update: (o: object) => void } | null = null
+let panel: { show: () => void; hide: () => void; close: () => void; update: (o: object) => void; el: HTMLElement } | null = null
 
 function onWindowResize() {
   panel?.update(computePanelRect())
@@ -64,28 +88,37 @@ function onWindowResize() {
 const plugin: CapabilityPackage = {
   manifest,
   activate: (ctx: CapabilityContext) => {
-    panel = ctx.ui.createPanel({
-      id: 'example-tool-panel',
-      title: manifest.name,
-      component: ExamplePanel,
-      mode: 'native',
-      contentPadding: 'default',
-      ...computePanelRect(),
-      draggable: false,
-      resizable: false,
-      constrainToSafeArea: false
-    })
+    if (!panel || !panel.el.isConnected) {
+      panel = ctx.ui.createPanel({
+        id: 'example-tool-panel',
+        title: manifest.name,
+        component: ExamplePanel,
+        mode: 'native',
+        contentPadding: 'default',
+        ...computePanelRect(),
+        draggable: false,
+        resizable: false,
+        constrainToSafeArea: false
+      })
+    }
     panel.show()
+    setOverlayVisible(overlayOpen)
+    window.removeEventListener('resize', onWindowResize)
     window.addEventListener('resize', onWindowResize)
     ctx.notify(`${manifest.name} 已激活`, 'success')
   },
   deactivate: () => {
     panel?.hide()
+    setOverlayVisible(false)
+    window.removeEventListener('resize', onWindowResize)
   },
   destroy: () => {
     window.removeEventListener('resize', onWindowResize)
     panel?.close()
     panel = null
+    overlay?.remove()
+    overlay = null
+    overlayOpen = false
   }
 }
 

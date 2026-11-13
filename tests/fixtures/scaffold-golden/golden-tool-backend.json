@@ -10,12 +10,12 @@
     "金样后端工具",
     "--with-backend"
   ],
-  "capturedAt": "2026-11-07",
+  "capturedAt": "2026-11-13",
   "exitCode": 0,
   "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-backend\n  extensions/tool/business/golden-tool-backend/CHANGELOG.md\n  extensions/tool/business/golden-tool-backend/README.md\n  extensions/tool/business/golden-tool-backend/VERSION\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/pom.xml\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/GoldenToolBackendServerApplication.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/controller/SampleController.java\n  extensions/tool/business/golden-tool-backend/backend/golden-tool-backend-server/src/main/resources/bootstrap.yml\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/Dockerfile\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/VERSION\n  extensions/tool/business/golden-tool-backend/container/golden-tool-backend-server/build.sh\n  extensions/tool/business/golden-tool-backend/data/menu.json\n  extensions/tool/business/golden-tool-backend/deploy/k8s/10-golden-tool-backend-server.yaml\n  extensions/tool/business/golden-tool-backend/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-backend/frontend/package.json\n  extensions/tool/business/golden-tool-backend/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/index.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/panel.css\n  extensions/tool/business/golden-tool-backend/frontend/src/types.ts\n  extensions/tool/business/golden-tool-backend/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-backend/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-backend/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-backend/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-backend\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
-      "sha256": "53d35cd17fd42fe7a18b7c70a200fdc8e286b6e61349c886df105a626cc03f63",
+      "sha256": "d5106c64c9d6d0d073fc1be47932b1a27e4933a8d8f0b2b85d84707fda6287e7",
       "exec": false
     },
     "README.md": {
@@ -31,11 +31,11 @@
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/GoldenToolBackendServerApplication.java": {
-      "sha256": "a02da01a113c331e239de011137ccaa1eda2467176dcabd3134aded932fb8c30",
+      "sha256": "2ab6ff9e2e348cf422ec001f56c6a2772b5a035fc2ac8de70c171a13c1c2412c",
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/java/com/ruoyi/goldentoolbackendserver/controller/SampleController.java": {
-      "sha256": "17fd434632489152f9deca60347a740220f0dfd84f453eca13cf319b7bab0d3d",
+      "sha256": "b095c8d675dacef125e57cfc5c34d976c1156d83cc27faa33dd40c8244e4b1ee",
       "exec": false
     },
     "backend/golden-tool-backend-server/src/main/resources/bootstrap.yml": {
@@ -75,7 +75,7 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "705047a074cca35a4d48b9d29266e72f24b0163f79bb390606b821e79e76d772",
+      "sha256": "c74f2484c31ba5526120955a906cc0d19181ed3094dc5391801a3f0716dcc23e",
       "exec": false
     },
     "frontend/src/manifest.ts": {
@@ -83,7 +83,7 @@
       "exec": false
     },
     "frontend/src/panel.css": {
-      "sha256": "0eda4f13d785f3cadc7ca751333a2a0ec9fdb83ea99459f588b803d1258e05ce",
+      "sha256": "e93f18eb4fe1c36a42992d41a77286fd0756dd5121a81a3f47c854039b6419bd",
       "exec": false
     },
     "frontend/src/types.ts": {
@@ -103,7 +103,7 @@
       "exec": false
     },
     "frontend/vite.config.ts": {
-      "sha256": "d09877e80d030ede94490561ac1d46b89104a9475b58df3d81c775e7d277cf7b",
+      "sha256": "be78d6416f08aeb1cdd5314179a6b760203691d0e75f229e8c6eb406536639e8",
       "exec": false
     },
     "manifest.json": {

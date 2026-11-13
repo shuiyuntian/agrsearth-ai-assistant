@@ -15,12 +15,12 @@
     "--backend",
     "golden-gamma"
   ],
-  "capturedAt": "2026-11-07",
+  "capturedAt": "2026-11-13",
   "exitCode": 0,
   "stdout": "==========================================\n脚手架已生成：extensions/system/platform/golden-sys-plat\n  extensions/system/platform/golden-sys-plat/CHANGELOG.md\n  extensions/system/platform/golden-sys-plat/README.md\n  extensions/system/platform/golden-sys-plat/VERSION\n  extensions/system/platform/golden-sys-plat/admin-ui/README.md\n  extensions/system/platform/golden-sys-plat/admin-ui/auto-imports.d.ts\n  extensions/system/platform/golden-sys-plat/admin-ui/package.json\n  extensions/system/platform/golden-sys-plat/admin-ui/src/api/example.ts\n  extensions/system/platform/golden-sys-plat/admin-ui/src/api/index.ts\n  extensions/system/platform/golden-sys-plat/admin-ui/src/index.ts\n  extensions/system/platform/golden-sys-plat/admin-ui/src/types/index.ts\n  extensions/system/platform/golden-sys-plat/admin-ui/src/views/example/index.vue\n  extensions/system/platform/golden-sys-plat/admin-ui/tsconfig.json\n  extensions/system/platform/golden-sys-plat/admin-ui/tsconfig.node.json\n  extensions/system/platform/golden-sys-plat/admin-ui/vite.config.ts\n  extensions/system/platform/golden-sys-plat/backend/golden-alpha/pom.xml\n  extensions/system/platform/golden-sys-plat/backend/golden-alpha/src/main/java/com/ruoyi/goldenalpha/GoldenAlphaApplication.java\n  extensions/system/platform/golden-sys-plat/backend/golden-alpha/src/main/java/com/ruoyi/goldenalpha/controller/SampleController.java\n  extensions/system/platform/golden-sys-plat/backend/golden-alpha/src/main/resources/bootstrap.yml\n  extensions/system/platform/golden-sys-plat/backend/golden-beta/pom.xml\n  extensions/system/platform/golden-sys-plat/backend/golden-beta/src/main/java/com/ruoyi/goldenbeta/GoldenBetaApplication.java\n  extensions/system/platform/golden-sys-plat/backend/golden-beta/src/main/java/com/ruoyi/goldenbeta/controller/SampleController.java\n  extensions/system/platform/golden-sys-plat/backend/golden-beta/src/main/resources/bootstrap.yml\n  extensions/system/platform/golden-sys-plat/backend/golden-gamma/pom.xml\n  extensions/system/platform/golden-sys-plat/backend/golden-gamma/src/main/java/com/ruoyi/goldengamma/GoldenGammaApplication.java\n  extensions/system/platform/golden-sys-plat/backend/golden-gamma/src/main/java/com/ruoyi/goldengamma/controller/SampleController.java\n  extensions/system/platform/golden-sys-plat/backend/golden-gamma/src/main/resources/bootstrap.yml\n  extensions/system/platform/golden-sys-plat/container/golden-alpha/Dockerfile\n  extensions/system/platform/golden-sys-plat/container/golden-alpha/VERSION\n  extensions/system/platform/golden-sys-plat/container/golden-alpha/build.sh\n  extensions/system/platform/golden-sys-plat/container/golden-beta/Dockerfile\n  extensions/system/platform/golden-sys-plat/container/golden-beta/VERSION\n  extensions/system/platform/golden-sys-plat/container/golden-beta/build.sh\n  extensions/system/platform/golden-sys-plat/container/golden-gamma/Dockerfile\n  extensions/system/platform/golden-sys-plat/container/golden-gamma/VERSION\n  extensions/system/platform/golden-sys-plat/container/golden-gamma/build.sh\n  extensions/system/platform/golden-sys-plat/container/golden-sys-plat-server/Dockerfile\n  extensions/system/platform/golden-sys-plat/container/golden-sys-plat-server/README.md\n  extensions/system/platform/golden-sys-plat/container/golden-sys-plat-server/VERSION\n  extensions/system/platform/golden-sys-plat/container/golden-sys-plat-server/build.sh\n  extensions/system/platform/golden-sys-plat/data/menu.json\n  extensions/system/platform/golden-sys-plat/deploy/k8s/00-shared-configmap.yaml\n  extensions/system/platform/golden-sys-plat/deploy/k8s/10-golden-sys-plat-server.yaml\n  extensions/system/platform/golden-sys-plat/deploy/k8s/20-golden-sys-plat-worker.yaml\n  extensions/system/platform/golden-sys-plat/deploy/k8s/README.md\n  extensions/system/platform/golden-sys-plat/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/system/platform/golden-sys-plat\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
-      "sha256": "e7cebdd09bdf8b65850886ed7189ae597a0120be202bcdd72c5134edc98d1ee1",
+      "sha256": "eb3b434a0ab569929d3e16e42aff83ef2c92daf00f2ec65f5b5bd92d18cc2a13",
       "exec": false
     },
     "README.md": {
@@ -80,11 +80,11 @@
       "exec": false
     },
     "backend/golden-alpha/src/main/java/com/ruoyi/goldenalpha/GoldenAlphaApplication.java": {
-      "sha256": "2e12b7ddcabbd2070d1836533117120cfe92e942972b2fbe2e7322b4f072b339",
+      "sha256": "58a45513f03ac877f69ca2dc61bd623dd47044de0029288a20ece0c3440eb456",
       "exec": false
     },
     "backend/golden-alpha/src/main/java/com/ruoyi/goldenalpha/controller/SampleController.java": {
-      "sha256": "c87d81550cc01c1e0c78a714f474b8fd2a3067ee6acc6367a2bff1d573b5210d",
+      "sha256": "fb179ec18996b0dc95bb21b8c8148949928ca67aa2d7ead0c5b16a5c75560508",
       "exec": false
     },
     "backend/golden-alpha/src/main/resources/bootstrap.yml": {
@@ -96,11 +96,11 @@
       "exec": false
     },
     "backend/golden-beta/src/main/java/com/ruoyi/goldenbeta/GoldenBetaApplication.java": {
-      "sha256": "0b7018be14d343858fd5fbb27e6cc75e40797456efe124de891886f346504420",
+      "sha256": "16fdb4e2c265dccf6633084f28e14b9c84a1476058cdbf9c64a3817b4bb4c3d9",
       "exec": false
     },
     "backend/golden-beta/src/main/java/com/ruoyi/goldenbeta/controller/SampleController.java": {
-      "sha256": "c845ca6f52d3b5fb34af66b834b546cca032624ee8a8535c627d4c630c45fa31",
+      "sha256": "3a562a52ae8725667e0b75be79419ceb056cf6a23f9cb41d4e42a4c8372c0988",
       "exec": false
     },
     "backend/golden-beta/src/main/resources/bootstrap.yml": {
@@ -112,11 +112,11 @@
       "exec": false
     },
     "backend/golden-gamma/src/main/java/com/ruoyi/goldengamma/GoldenGammaApplication.java": {
-      "sha256": "45a955f038ea2110a155fa7580954aefff91a05e1ad93422793818851f8990b0",
+      "sha256": "8c076f07050979ea29b0a56d1e716b7765074b836c5a579ef4f65435b82787eb",
       "exec": false
     },
     "backend/golden-gamma/src/main/java/com/ruoyi/goldengamma/controller/SampleController.java": {
-      "sha256": "db78f4385b9727f3409724e2677105f3ebff00476dd89d3d582e1f0db379c6c7",
+      "sha256": "fca344335caa1b3ebb17bb2912a251fc506c736d95910cdaaa227aae89d64faf",
       "exec": false
     },
     "backend/golden-gamma/src/main/resources/bootstrap.yml": {

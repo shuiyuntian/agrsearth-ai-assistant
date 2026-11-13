@@ -1,7 +1,7 @@
 {
   "name": "@agrsearth/vite-config",
-  "version": "1.2.0",
-  "description": "能力包公共 Vite Library 配置（defineExtensionConfig/defineAdminUiConfig + host-contract 构建期硬校验）",
+  "version": "1.3.0",
+  "description": "能力包公共 Vite Library 配置（defineExtensionConfig/defineAdminUiConfig + host-contract 构建期硬校验 + 包级 CSS 作用域）",
   "type": "module",
   "private": true,
   "main": "vite.base.ts",
@@ -14,11 +14,19 @@
     "./admin": {
       "import": "./dist/vite.admin.base.js",
       "types": "./vite.admin.base.ts"
+    },
+    "./css-scope": {
+      "import": "./dist/css-scope.js"
     }
   },
   "scripts": {
     "build": "node build.mjs",
     "prepare": "npm run build"
+  },
+  "dependencies": {
+    "postcss": "8.5.32",
+    "postcss-selector-parser": "6.1.6",
+    "tailwindcss": "^3.4.19"
   },
   "peerDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",

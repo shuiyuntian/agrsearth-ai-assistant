@@ -9,12 +9,12 @@
     "--name",
     "金样业务系统"
   ],
-  "capturedAt": "2026-11-07",
+  "capturedAt": "2026-11-13",
   "exitCode": 0,
   "stdout": "==========================================\n脚手架已生成：extensions/system/business/golden-sys-biz\n  extensions/system/business/golden-sys-biz/CHANGELOG.md\n  extensions/system/business/golden-sys-biz/README.md\n  extensions/system/business/golden-sys-biz/VERSION\n  extensions/system/business/golden-sys-biz/admin-ui/README.md\n  extensions/system/business/golden-sys-biz/admin-ui/auto-imports.d.ts\n  extensions/system/business/golden-sys-biz/admin-ui/package.json\n  extensions/system/business/golden-sys-biz/admin-ui/src/api/example.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/api/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/types/index.ts\n  extensions/system/business/golden-sys-biz/admin-ui/src/views/example/index.vue\n  extensions/system/business/golden-sys-biz/admin-ui/tsconfig.json\n  extensions/system/business/golden-sys-biz/admin-ui/tsconfig.node.json\n  extensions/system/business/golden-sys-biz/admin-ui/vite.config.ts\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/pom.xml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/GoldenSysBizServerApplication.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/controller/SampleController.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-server/src/main/resources/bootstrap.yml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/pom.xml\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/GoldenSysBizWorkerApplication.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/controller/SampleController.java\n  extensions/system/business/golden-sys-biz/backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/Dockerfile\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/VERSION\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-server/build.sh\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/Dockerfile\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/VERSION\n  extensions/system/business/golden-sys-biz/container/golden-sys-biz-worker/build.sh\n  extensions/system/business/golden-sys-biz/data/menu.json\n  extensions/system/business/golden-sys-biz/deploy/k8s/00-shared-configmap.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/10-golden-sys-biz-server.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/20-golden-sys-biz-worker.yaml\n  extensions/system/business/golden-sys-biz/deploy/k8s/README.md\n  extensions/system/business/golden-sys-biz/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/system/business/golden-sys-biz\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
-      "sha256": "584d426ee434ba364b4b86403624ca334122fc21e90f851336ddf806d8e14684",
+      "sha256": "c569b1e680da7df053d0108cc35cc3c09b8f19baff68b0b32ee27b2fb0063751",
       "exec": false
     },
     "README.md": {
@@ -74,11 +74,11 @@
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/GoldenSysBizServerApplication.java": {
-      "sha256": "31143157afaf68c6a1b3d4c497214959c97a68eb685f9bc77b6ad7d92bd385e7",
+      "sha256": "a057ab88fd0537902a9653fcf62d858b53f9342e65b268108afb3e0de761b0c2",
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/java/com/ruoyi/goldensysbizserver/controller/SampleController.java": {
-      "sha256": "97316936dfa590f47b09b3e22ae406f9ef036b5dc71c8b45f2dd8e554ecedaba",
+      "sha256": "720b1cff7a2240b28434ce4b0f641bcd5b15e4104a4f8b39927b5f175d05e515",
       "exec": false
     },
     "backend/golden-sys-biz-server/src/main/resources/bootstrap.yml": {
@@ -90,11 +90,11 @@
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/GoldenSysBizWorkerApplication.java": {
-      "sha256": "2e0386a55d4f2463be86873434519964fb9f8af7cc7d2dd9343517fb25b8bcd8",
+      "sha256": "b966df3c1d3664b40e0711dcc935481b544d805dec9944a05bb860934035123a",
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/java/com/ruoyi/goldensysbizworker/controller/SampleController.java": {
-      "sha256": "4decc3f1c4d0bc03e30d93692d50d06952689da86857e05497e83b98cead3460",
+      "sha256": "ddf4722ebb3f46583aa2e7b38b66ad8848c1980b2b94a849340b568bbaf5c5c0",
       "exec": false
     },
     "backend/golden-sys-biz-worker/src/main/resources/bootstrap.yml": {

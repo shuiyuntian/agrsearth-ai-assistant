@@ -10,12 +10,12 @@
     "金样管理工具",
     "--with-admin-ui"
   ],
-  "capturedAt": "2026-11-07",
+  "capturedAt": "2026-11-13",
   "exitCode": 0,
   "stdout": "==========================================\n脚手架已生成：extensions/tool/business/golden-tool-admin\n  extensions/tool/business/golden-tool-admin/CHANGELOG.md\n  extensions/tool/business/golden-tool-admin/README.md\n  extensions/tool/business/golden-tool-admin/VERSION\n  extensions/tool/business/golden-tool-admin/admin-ui/README.md\n  extensions/tool/business/golden-tool-admin/admin-ui/auto-imports.d.ts\n  extensions/tool/business/golden-tool-admin/admin-ui/package.json\n  extensions/tool/business/golden-tool-admin/admin-ui/src/api/example.ts\n  extensions/tool/business/golden-tool-admin/admin-ui/src/api/index.ts\n  extensions/tool/business/golden-tool-admin/admin-ui/src/index.ts\n  extensions/tool/business/golden-tool-admin/admin-ui/src/types/index.ts\n  extensions/tool/business/golden-tool-admin/admin-ui/src/views/example/index.vue\n  extensions/tool/business/golden-tool-admin/admin-ui/tsconfig.json\n  extensions/tool/business/golden-tool-admin/admin-ui/tsconfig.node.json\n  extensions/tool/business/golden-tool-admin/admin-ui/vite.config.ts\n  extensions/tool/business/golden-tool-admin/data/menu.json\n  extensions/tool/business/golden-tool-admin/deploy/k8s/10-example-server.yaml\n  extensions/tool/business/golden-tool-admin/deploy/k8s/README.md\n  extensions/tool/business/golden-tool-admin/frontend/package.json\n  extensions/tool/business/golden-tool-admin/frontend/src/api/index.ts\n  extensions/tool/business/golden-tool-admin/frontend/src/index.ts\n  extensions/tool/business/golden-tool-admin/frontend/src/manifest.ts\n  extensions/tool/business/golden-tool-admin/frontend/src/panel.css\n  extensions/tool/business/golden-tool-admin/frontend/src/types.ts\n  extensions/tool/business/golden-tool-admin/frontend/src/utils/cesium.ts\n  extensions/tool/business/golden-tool-admin/frontend/tsconfig.json\n  extensions/tool/business/golden-tool-admin/frontend/tsconfig.node.json\n  extensions/tool/business/golden-tool-admin/frontend/vite.config.ts\n  extensions/tool/business/golden-tool-admin/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/business/golden-tool-admin\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
-      "sha256": "92f291a4c82c508fc0961c3b25f28e188e7c27f251a5ea6be4c87861df3ebbd9",
+      "sha256": "5c7f33f7ced8cc2c2e2e14e872aef8f0091024546fc00b5f01c7080ceaf2cd89",
       "exec": false
     },
     "README.md": {
@@ -91,7 +91,7 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "61f1d34efc65bbc786aa7766cccb989450e1580d006ffeb9366982d680d717e6",
+      "sha256": "d9fe7f16859b6f69897028716f9a59257588639c4c8002fb5dad910bd1e43d6a",
       "exec": false
     },
     "frontend/src/manifest.ts": {
@@ -99,7 +99,7 @@
       "exec": false
     },
     "frontend/src/panel.css": {
-      "sha256": "5b6c6d57842f65f11c8aaee7cdbca9bd3ab81c2caeca0744622f8f6f1996b26e",
+      "sha256": "b553a0ab4c5e018ec8746ff5154d492cce14733a64c0272600dead4a3e2eaf65",
       "exec": false
     },
     "frontend/src/types.ts": {
@@ -119,7 +119,7 @@
       "exec": false
     },
     "frontend/vite.config.ts": {
-      "sha256": "3e8a56c3c165b4801b27f6315258c58176655106fcd408ccf8b04004d7dce458",
+      "sha256": "192a94689bef225e7e890e1a53156e39b5a21fb22b6762b2f9d09dafad6ec32e",
       "exec": false
     },
     "manifest.json": {

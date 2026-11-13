@@ -15,6 +15,8 @@
 
 - [ ] `npm install && npm run check` 通过（无类型错误、无构建失败）
 - [ ] 球端产物 `tool.es.js/tool.umd.js` 存在；管理页产物 `admin.es.js/admin.umd.js` 存在（如有）
+- [ ] 新独立仓球端包在 Vite 配置传 `packageId`，自产 `tool.css`；`node tools/publish.mjs <包目录> --check-only` 的 CSS 作用域闸口通过
+- [ ] 无 Tailwind Preflight/base、html/body 全局 reset 或未作用域规则；标准面板/自定义弹层均落 `data-cap-package` 包命名空间
 - [ ] 产物 grep：仅 external import `vue`/`@/utils/request` 等，无 element-plus/cesium/echarts 被打进
 
 ## 3. 契约红线自查（源码 grep）
@@ -35,6 +37,7 @@
 ## 5. 自测证据（随提测单提交）
 
 - [ ] 测试底座实测截图：球端面板打开/交互、管理页列表/表单、关键接口 200
-- [ ] 反复激活/停用 5 次无泄漏；停用后现场整组不可见
+- [ ] 反复激活/停用 5 次无泄漏；停用后现场整组不可见，自有面板/弹层隐藏，恢复后状态正确
+- [ ] destroy 后自定义 DOM、弹层、window/定时器监听和本包 CSS link 均移除；与其他包相同类名在双向加载顺序下不串染
 - [ ] 依赖清单：跨包 dependsOn / 第三方服务与密钥注入需求 / 特殊网关需求 / 菜单资源位；标准 apiPrefix 路由由 DC 自动注册
 - [ ] 回滚说明：上一稳定版验证点；数据变更有反向 SQL 或声明不可回滚点

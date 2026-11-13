@@ -246,7 +246,7 @@ test("完整发布保持中文、协议顺序、manifest 回填与安全记录",
   const pkg = makePackage(t, { bundle: true });
   const platform = await startMockPlatform(t);
   const traceFile = path.join(pkg.dir, "trace.json");
-  fs.writeFileSync(path.join(pkg.dir, "frontend", "dist", "tool.css"), ".tool {}\n", "utf8");
+  fs.writeFileSync(path.join(pkg.dir, "frontend", "dist", "tool.css"), `[data-cap-package="${pkg.id}"] .tool {}\n`, "utf8");
   fs.writeFileSync(path.join(pkg.dir, "admin-ui", "dist", "style.css"), ".admin {}\n", "utf8");
   await runPublish([pkg.relative, "--skip-build"], runOptions(platform, traceFile));
 

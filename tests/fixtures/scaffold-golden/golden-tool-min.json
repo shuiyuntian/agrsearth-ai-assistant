@@ -9,12 +9,12 @@
     "--name",
     "金样最小工具"
   ],
-  "capturedAt": "2026-11-07",
+  "capturedAt": "2026-11-13",
   "exitCode": 0,
   "stdout": "==========================================\n脚手架已生成：extensions/tool/platform/golden-tool-min\n  extensions/tool/platform/golden-tool-min/CHANGELOG.md\n  extensions/tool/platform/golden-tool-min/README.md\n  extensions/tool/platform/golden-tool-min/VERSION\n  extensions/tool/platform/golden-tool-min/data/menu.json\n  extensions/tool/platform/golden-tool-min/deploy/k8s/10-example-server.yaml\n  extensions/tool/platform/golden-tool-min/deploy/k8s/README.md\n  extensions/tool/platform/golden-tool-min/frontend/package.json\n  extensions/tool/platform/golden-tool-min/frontend/src/api/index.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/index.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/manifest.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/panel.css\n  extensions/tool/platform/golden-tool-min/frontend/src/types.ts\n  extensions/tool/platform/golden-tool-min/frontend/src/utils/cesium.ts\n  extensions/tool/platform/golden-tool-min/frontend/tsconfig.json\n  extensions/tool/platform/golden-tool-min/frontend/tsconfig.node.json\n  extensions/tool/platform/golden-tool-min/frontend/vite.config.ts\n  extensions/tool/platform/golden-tool-min/manifest.json\n------------------------------------------\n下一步：\n  1. 完善实现（契约见 docs/L4-概念手册.md / L6-参考契约.md）\n  2. 仓根 npm install && ./tools/check-extension-versions.sh\n  3. 发布：./tools/publish.sh extensions/tool/platform/golden-tool-min\n==========================================\n",
   "files": {
     "CHANGELOG.md": {
-      "sha256": "94290d0dcca96650315e7be7466789d010d9c702b68c26f9c542bc8d7f831292",
+      "sha256": "65d25d2242071fe498ed8628a1a446a45eed2079ad8d681631ba523bcd0b7bf8",
       "exec": false
     },
     "README.md": {
@@ -46,7 +46,7 @@
       "exec": false
     },
     "frontend/src/index.ts": {
-      "sha256": "9ac71f0d31822796a60dd6e2c2c115ba87157a227efdddf92a48f9b268d65ddb",
+      "sha256": "887fdb7bf44ba9a39f4d19b34236c50f64f7cd35adbe6750be5f4a7dbccd2aa3",
       "exec": false
     },
     "frontend/src/manifest.ts": {
@@ -54,7 +54,7 @@
       "exec": false
     },
     "frontend/src/panel.css": {
-      "sha256": "49328532734c09d49a4bca7856391f654dc92ae5436125050cfc9be72e181040",
+      "sha256": "2dcc65a5c2ca169faa9a3318bf8aa8bd220d09c1f342c04031811eff70ba6e6b",
       "exec": false
     },
     "frontend/src/types.ts": {
@@ -74,7 +74,7 @@
       "exec": false
     },
     "frontend/vite.config.ts": {
-      "sha256": "6ade7cbf08b99374c249173d9fba1e6d4b9ed8adef7de01a3f61ebc370dd7dfe",
+      "sha256": "cf452e888a6bf219bd499ee1e38ff3fabb863891bd274e6e85a2f31f99583099",
       "exec": false
     },
     "manifest.json": {

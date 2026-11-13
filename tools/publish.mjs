@@ -3,8 +3,9 @@
 // 文件作用：扩展包测试底座发布器——本地校验、构建、DC 发布协议、MinIO 直传与冒烟
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-03
-// 版本：2.4.0
+// 版本：2.5.0
 // 修改记录：
+//   - 2.5.0 (2026-11-13) B1 球端 CSS 源码/产物包级作用域预检，正式发布在 release-prepare 前 fail-fast
 //   - 2.4.0 (2026-11-08) 新增 --dev-css-url，与 --dev-url 同步改写/复位 CSS 入口
 //   - 2.3.0 (2026-11-07) networkProfile 解耦：删除 100.64.* 个人拓扑硬编码与 lan/tailscale
 //                       词汇表白名单（合法性交由 RM 服务端白名单裁决，客户端仅形态校验+
@@ -32,6 +33,7 @@ import * as tar from "tar";
 import undici from "undici";
 import { socksDispatcher } from "fetch-socks";
 import { checkApiContract, formatApiContractReport } from "./check-api-contract.mjs";
+import { validateExtensionCssPackage } from "@agrsearth/vite-config/css-scope";
 
 const { fetch, FormData } = undici;
 
@@ -614,6 +616,12 @@ function npmCommand() {
   return process.platform === "win32" ? "npm.cmd" : "npm";
 }
 
+function validateCapabilityCss(context, logger) {
+  if (!context.hasFrontend || context.manifestType === "suite") return;
+  const result = validateExtensionCssPackage(context.pluginDir, context.packageId);
+  logger.log(`CSS 包级作用域预检通过：${result.sources.length} 个源码文件，${result.artifacts.length} 个产物（package=${context.packageId}）`);
+}
+
 async function ensureAndBuild(context, args, logger) {
   if (context.manifestType === "suite") {
     logger.log("[1/5] suite 虚拟聚合包：零产物，跳过构建");
@@ -967,7 +975,8 @@ export async function runPublish(argv, options = {}) {
   const apiContract = checkApiContract(context.pluginDir);
   logger.log(formatApiContractReport(apiContract));
   if (args.checkOnly) {
-    logger.log(`发布预检通过：${context.packageId}@${context.version}（目录、manifest、菜单、版本、组件版本轴与 URL 契约一致）`);
+    validateCapabilityCss(context, logger);
+    logger.log(`发布预检通过：${context.packageId}@${context.version}（目录、manifest、菜单、版本、组件版本轴、URL 契约与 CSS 作用域一致）`);
     return;
   }
   if (context.tokenFallback) logger.log("提示：RM_TOKEN 已过渡映射为 AGRSEARTH_TOKEN，请尽快改用 AGRSEARTH_TOKEN");
@@ -985,6 +994,7 @@ export async function runPublish(argv, options = {}) {
     logger.log(`控制 API：${context.dcApiBase}（networkProfile=${context.networkProfile}）`);
     logger.log("==========================================");
     await ensureAndBuild(context, args, logger);
+    validateCapabilityCss(context, logger);
 
     logger.log("[2/5] release-prepare（developer-center 注册包/版本）...");
     const prepareBody = releasePrepareBody(context, env);

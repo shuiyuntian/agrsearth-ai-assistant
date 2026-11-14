@@ -1,0 +1,236 @@
+/**
+ * 文件作用：ai-assistant-mcp 面板样式（运行时注入版，替代 SFC scoped 样式）
+ * 作者：AGRSEarth Dev
+ * 创建日期：2026-07-23
+ * 版本：1.0.1
+ * 修改记录：
+ *   - 1.0.1 (2026-10-05) 包更名收口 ai-assistant→ai-assistant-mcp：文件作用行同步新名
+ *   - 1.0.0 (2026-07-23) 宿主远程加载链下 SFC scoped CSS 不进宿主资产（dist/style.css
+ *                       需 manifest.css 字段才加载，且 shadow 面板只克隆宿主自有样式节点），
+ *                       故全部组件样式收拢为本文件，由 index.ts 在 activate 时经
+ *                       ?inline 内联为字符串注入 document.head（shadow 面板挂载时
+ *                       会被 FloatingPanelManager 克隆进 ShadowRoot；悬浮按钮在
+ *                       light DOM 同样生效）。规则与各组件原 scoped 样式一致（去 data-v 域化）。
+ *
+ * 版权所有 (C) 2026 AGRSEarth 项目
+ */
+
+/* ===== AIAssistantPanel：悬浮按钮与面板基础 ===== */
+.ai-float-btn,
+.ai-panel {
+  pointer-events: auto;
+}
+
+.ai-float-btn {
+  animation: float-pulse 3s ease-in-out infinite;
+}
+@keyframes float-pulse {
+  0%, 100% { box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+  50% { box-shadow: 0 4px 25px rgba(59, 130, 246, 0.7); }
+}
+
+/* 有待审批时悬浮按钮切换为黄色脉冲（与审批卡高亮一致） */
+.ai-float-btn-approval {
+  animation: float-pulse-approval 1.6s ease-in-out infinite;
+}
+@keyframes float-pulse-approval {
+  0%, 100% { box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4); }
+  50% { box-shadow: 0 4px 28px rgba(234, 179, 8, 0.8); }
+}
+
+/* 按钮出现动画 */
+.btn-bounce-enter-active {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+.btn-bounce-enter-from,
+.btn-bounce-leave-to {
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* 面板滑入动画 */
+.panel-slide-enter-active,
+.panel-slide-leave-active {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+.panel-slide-enter-from,
+.panel-slide-leave-to {
+  transform: translateX(30px);
+  opacity: 0;
+}
+
+/* 思考过程展开块：限高 220px + 内部滚动（与面板节奏一致的间距） */
+.reason-detail {
+  max-height: 220px;
+  overflow-y: auto;
+}
+.reason-detail::-webkit-scrollbar {
+  width: 4px;
+}
+.reason-detail::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 2px;
+}
+
+/* 暗色主题自定义滚动条 */
+.ai-panel ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.ai-panel ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ai-panel ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.ai-panel ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 消息样式 */
+.user-msg .max-w-\[85\%\] {
+  word-break: break-word;
+}
+.ai-msg {
+  word-break: break-word;
+}
+
+/* ===== ToolCallCard：状态卡 JSON 区与折叠区 ===== */
+.tool-call-card {
+  font-size: 12px;
+}
+.tool-call-json {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  padding: 4px 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow-y: auto;
+}
+/* 深色主题下压缩 el-collapse 默认样式（与面板体系对齐：header 12px/32px） */
+.tool-call-collapse {
+  --el-collapse-header-bg-color: transparent;
+  --el-collapse-content-bg-color: transparent;
+  --el-collapse-header-text-color: #cbd5e1;
+  --el-collapse-content-text-color: #cbd5e1;
+  --el-collapse-header-height: 32px;
+  padding-left: 6px;
+  border-top: none;
+  border-bottom: none;
+}
+.tool-call-collapse .el-collapse-item__header {
+  border-bottom: none;
+  font-size: 12px;
+}
+.tool-call-collapse .el-collapse-item__wrap {
+  border-bottom: none;
+}
+.tool-call-collapse .el-collapse-item__content {
+  border-top: 1px solid rgba(75, 85, 99, 0.35);
+}
+
+/* ===== ApprovalCard ===== */
+.approval-card {
+  font-size: 12px;
+}
+/* pending 高亮闪动提示（配合父组件的声音提示） */
+.approval-pending {
+  animation: approval-flash 1.6s ease-in-out infinite;
+}
+@keyframes approval-flash {
+  0%, 100% { box-shadow: 0 0 0 rgba(234, 179, 8, 0); }
+  50% { box-shadow: 0 0 12px rgba(234, 179, 8, 0.45); }
+}
+.approval-args {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  padding: 4px 6px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow-y: auto;
+  background: rgba(17, 24, 39, 0.5);
+  border-radius: 4px;
+}
+
+/* ===== CodeBlock ===== */
+.code-block {
+  background: rgba(3, 7, 18, 0.7);
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  overflow: hidden;
+}
+.code-lines {
+  padding: 6px 0;
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.code-line {
+  display: flex;
+  white-space: pre;
+  color: #d1d5db;
+}
+.code-line:hover {
+  background: rgba(55, 65, 81, 0.25);
+}
+.lineno {
+  flex-shrink: 0;
+  width: 34px;
+  text-align: right;
+  padding-right: 8px;
+  margin-right: 8px;
+  color: #4b5563;
+  border-right: 1px solid rgba(75, 85, 99, 0.4);
+  user-select: none;
+}
+.code-text {
+  flex: 1;
+  padding-right: 8px;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+.code-toggle {
+  padding: 3px 8px;
+  font-size: 10px;
+  color: #7fd4ff;
+  cursor: pointer;
+  text-align: center;
+  border-top: 1px solid rgba(75, 85, 99, 0.4);
+  background: rgba(17, 24, 39, 0.6);
+}
+.code-toggle:hover {
+  background: rgba(55, 65, 81, 0.4);
+}
+
+/* ===== MCPStatusDetail ===== */
+.mcp-status-detail {
+  font-size: 12px;
+}
+.mcp-status-detail .detail-panel {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 6px;
+  padding: 8px;
+}
+.mcp-status-detail .domain-group {
+  overflow: hidden;
+}
+.mcp-status-detail .tool-item + .tool-item {
+  border-top: 1px solid rgba(55, 65, 81, 0.2);
+}
+.mcp-status-detail ::-webkit-scrollbar {
+  width: 4px;
+}
+.mcp-status-detail ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mcp-status-detail ::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+  border-radius: 2px;
+}

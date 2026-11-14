@@ -1,0 +1,86 @@
+name: AI Assistant Quality Gates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'extensions/system/business/ai-assistant-mcp/**'
+      - 'extensions/system/business/ai-assistant-mcp/vendor/**'
+      - 'extensions/system/business/ai-assistant-mcp/tools/**'
+      - '.github/workflows/ai-assistant-mcp-quality.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'extensions/system/business/ai-assistant-mcp/**'
+      - 'extensions/system/business/ai-assistant-mcp/vendor/**'
+      - 'extensions/system/business/ai-assistant-mcp/tools/**'
+
+jobs:
+  contracts-and-pristine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/cesium-js/pnpm-lock.yaml
+            extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/geolocation-server/pnpm-lock.yaml
+      - name: Build MCP workspace
+        run: |
+          cd extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/cesium-js
+          pnpm install --frozen-lockfile
+          pnpm --filter '@cesium-mcp/gateway...' build
+      - name: Build geolocation-server
+        run: |
+          cd extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/geolocation-server
+          COREPACK_ENABLE_AUTO_PIN=0 pnpm --ignore-workspace install --frozen-lockfile --ignore-scripts
+          ./node_modules/.bin/tsc
+      - name: Tool contracts drift guard
+        timeout-minutes: 5
+        run: node extensions/system/business/ai-assistant-mcp/tools/check-tool-contracts.mjs --stdio
+      - name: MCP pristine check (vendor == upstream pin)
+        run: extensions/system/business/ai-assistant-mcp/tools/sync-mcp-upstream.sh --check
+
+  orchestrator-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extensions/system/business/ai-assistant-mcp/backend/ai-orchestrator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: extensions/system/business/ai-assistant-mcp/backend/ai-orchestrator/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: Unit tests (no external deps; MySQL/Redis tests auto-skip or use fallbacks)
+        run: pnpm test
+        env:
+          MYSQL_URL: ''
+          REDIS_URL: ''
+          AUTH_ENABLED: 'false'
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --legacy-peer-deps
+      - run: npm run test -w @agrsearth/ai-assistant-mcp
+      - run: npm run build -w @agrsearth/ai-assistant-mcp
+      - run: npm run build -w @agrsearth/ai-assistant-mcp-admin
+      - run: npm run test:s11

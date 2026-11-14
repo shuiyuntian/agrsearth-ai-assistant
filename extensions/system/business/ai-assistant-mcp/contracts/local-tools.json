@@ -1,0 +1,27 @@
+{
+  "comment": "本地附加工具（不经 MCP，由 ai-orchestrator 本地实现）。gen-tool-contracts.mjs 生成契约时 merge 进 tool-contracts.json 并标注 source:local。",
+  "tools": [
+    {
+      "name": "cesium_execute_code",
+      "domain": "codegen",
+      "side": "browser",
+      "riskLevel": "codegen",
+      "description": "当现有工具无法直接满足需求时，根据自然语言意图生成 CesiumJS 代码（经 grounding 生成、AST 安全校验、人工审批后，由前端主页面执行）。输入为用户意图描述，返回生成且通过安全校验的代码。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "intent": {
+            "type": "string",
+            "description": "要完成的任务的自然语言描述（如：以上海为中心画一个半径 50 公里的圆）"
+          },
+          "description": {
+            "type": "string",
+            "description": "可选的补充说明（上下文、样式偏好等）"
+          }
+        },
+        "required": ["intent"],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  ]
+}

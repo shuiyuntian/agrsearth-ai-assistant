@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<!--
+  test-viewer.html —— P0 真实浏览器验证页（非产品代码）。
+  同源加载本地 Cesium（/cesium/* 由 orchestrator 静态 serve），EventSource 连
+  /channel/events?sessionId=test，执行 camera_fly_to / camera_get_position / entity_list，
+  结果 POST 回 /channel/result。页面叠加显示当前相机经纬高与命令日志。
+-->
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>ai-orchestrator P0 test viewer</title>
+  <script>window.CESIUM_BASE_URL = "/cesium/";</script>
+  <script src="/cesium/Cesium.js"></script>
+  <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
+  <style>
+    html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+    #hud {
+      position: absolute; top: 10px; left: 10px; z-index: 10;
+      background: rgba(20, 24, 30, 0.85); color: #dfe6ee;
+      font: 13px/1.5 Menlo, monospace; padding: 10px 12px; border-radius: 6px;
+      max-width: 560px;
+    }
+    #hud b { color: #7fd4ff; }
+    #camPos { color: #9fe89f; }
+    #log {
+      margin-top: 8px; max-height: 220px; overflow-y: auto;
+      border-top: 1px solid #444; padding-top: 6px; white-space: pre-wrap; word-break: break-all;
+    }
+    .cmd-in { color: #ffd479; }
+    .cmd-out { color: #9fe89f; }
+    .cmd-err { color: #ff8a8a; }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="hud">
+    <div><b>P0 test viewer</b> session=<span id="sid">test</span> <span id="ready">loading…</span></div>
+    <div id="camPos">camera: —</div>
+    <div id="log"></div>
+  </div>
+
+  <script>
+    const SESSION_ID = "test";
+    const state = {
+      ready: false,
+      commands: [], // {time, direction, type|status, detail}
+      getCamera: null,
+    };
+    window.__state = state;
+
+    function ts() { return new Date().toISOString().slice(11, 19); }
+    function appendLog(cls, text) {
+      const entry = { time: ts(), cls, text };
+      state.commands.push(entry);
+      const el = document.getElementById("log");
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = `[${entry.time}] ${text}`;
+      el.prepend(line);
+    }
+
+    async function boot() {
+      // 离线内置影像（NaturalEarthII，随 Cesium build 分发，无需 ion token / 外网）
+      const imageryProvider = await Cesium.TileMapServiceImageryProvider.fromUrl(
+        Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII"),
+      );
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        baseLayer: new Cesium.ImageryLayer(imageryProvider),
+        baseLayerPicker: false, geocoder: false, animation: false, timeline: false,
+        sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false,
+        homeButton: false, infoBox: false, selectionIndicator: false,
+      });
+
+      function currentPosition() {
+        const c = viewer.camera.positionCartographic;
+        return {
+          longitude: Cesium.Math.toDegrees(c.longitude),
+          latitude: Cesium.Math.toDegrees(c.latitude),
+          height: c.height,
+        };
+      }
+      function currentOrientation() {
+        return {
+          heading: Cesium.Math.toDegrees(viewer.camera.heading),
+          pitch: Cesium.Math.toDegrees(viewer.camera.pitch),
+          roll: Cesium.Math.toDegrees(viewer.camera.roll),
+        };
+      }
+      function updateHud() {
+        const p = currentPosition();
+        document.getElementById("camPos").textContent =
+          `camera: lon=${p.longitude.toFixed(4)} lat=${p.latitude.toFixed(4)} h=${Math.round(p.height)}m`;
+      }
+      viewer.camera.moveEnd.addEventListener(updateHud);
+      setInterval(updateHud, 500);
+      updateHud();
+      state.getCamera = () => ({ position: currentPosition(), orientation: currentOrientation() });
+
+      function flyTo(cmd) {
+        return new Promise((resolve) => {
+          const d = cmd.destination;
+          viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(d.longitude, d.latitude, d.height ?? 10000),
+            orientation: cmd.orientation ? {
+              heading: Cesium.Math.toRadians(cmd.orientation.heading ?? 0),
+              pitch: Cesium.Math.toRadians(cmd.orientation.pitch ?? -45),
+              roll: Cesium.Math.toRadians(cmd.orientation.roll ?? 0),
+            } : undefined,
+            duration: cmd.duration ?? 3,
+            complete: () => resolve(),
+            cancel: () => resolve(), // P0：飞行被打断也回执（MCP 侧只认 success/actualDuration）
+          });
+        });
+      }
+
+      async function handleCommand(cmd) {
+        appendLog("cmd-in", `cmd ${cmd.type} id=${cmd.id} args=${JSON.stringify({ ...cmd, id: undefined })}`);
+        let result;
+        try {
+          switch (cmd.type) {
+            case "camera_fly_to": {
+              const t0 = performance.now();
+              await flyTo(cmd);
+              result = { success: true, actualDuration: (performance.now() - t0) / 1000 };
+              break;
+            }
+            case "camera_get_position":
+              result = { success: true, position: currentPosition(), orientation: currentOrientation() };
+              break;
+            case "entity_list":
+              result = { success: true, entities: [], count: 0 };
+              break;
+            default:
+              result = { success: false, error: `unsupported command: ${cmd.type}` };
+          }
+        } catch (e) {
+          result = { success: false, error: String(e && e.message || e) };
+        }
+        try {
+          const r = await fetch("/channel/result", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: cmd.id, result }),
+          });
+          appendLog(result.success ? "cmd-out" : "cmd-err",
+            `result ${cmd.type} id=${cmd.id} -> HTTP ${r.status} ${JSON.stringify(result).slice(0, 160)}`);
+        } catch (e) {
+          appendLog("cmd-err", `result POST failed id=${cmd.id}: ${e}`);
+        }
+      }
+
+      // 命令通道：SSE（同源）
+      const es = new EventSource(`/channel/events?sessionId=${encodeURIComponent(SESSION_ID)}`);
+      es.onmessage = (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+        if (msg.type === "command" && msg.command) void handleCommand(msg.command);
+      };
+      es.onopen = () => appendLog("cmd-out", "SSE connected");
+      es.onerror = () => appendLog("cmd-err", "SSE error (browser 会自动重连)");
+
+      state.ready = true;
+      document.getElementById("ready").textContent = "ready";
+      appendLog("cmd-out", "viewer ready");
+    }
+
+    boot().catch((e) => {
+      document.getElementById("ready").textContent = `boot failed: ${e}`;
+      appendLog("cmd-err", `boot failed: ${e && e.stack || e}`);
+    });
+  </script>
+</body>
+</html>

@@ -175,6 +175,12 @@ function backendEndpoints(pluginDir, service) {
   if (!fs.existsSync(serviceDir)) fail(`公开后端服务缺少源码目录：backend/${service.serviceId}`);
   const endpoints = new Map();
   const files = walk(path.join(serviceDir, "src"), ".java");
+  if (files.length === 0) {
+    // Node/Express 服务没有 Spring Mapping；仅按 manifest 的真实公开前缀做前缀级对账，
+    // 完整端点由运行时健康、会话和工具调用验证，不虚构 Java 控制器或端点清单。
+    endpoints.set(service.apiPrefix, ["Node/Express 公开前缀（非 Spring Mapping）"]);
+    return endpoints;
+  }
   for (const file of files) {
     const source = stripComments(readText(file));
     const classMatch = /\b(?:class|interface)\s+[A-Za-z_$][\w$]*/.exec(source);

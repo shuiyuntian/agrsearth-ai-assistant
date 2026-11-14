@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-assistant-mcp-config
+  labels:
+    app: ai-assistant-mcp
+data:
+  NODE_ENV: "production"
+  PORT: "9600"
+  LLM_BASE_URL: "https://llm.example.invalid/v1"
+  LLM_MODEL: "external-model"
+  AUTH_ENABLED: "true"
+  RATE_LIMIT_RPM: "20"
+  AGENT_MAX_STEPS: "8"
+  REDIS_URL: "redis://redis:6379"
+  MCP_HTTP_URL: "http://cesium-mcp:4010/mcp"
+  GEO_MCP_URL: "http://cesium-mcp:3008/mcp"
+  MCP_SSE_URL: "http://cesium-mcp:3010/mcp/events"
+  MCP_RESULT_URL: "http://cesium-mcp:3010/mcp/result"
+  TOOL_CONTRACTS_PATH: "/app/contracts/tool-contracts.json"
+  CODEGEN_SKILLS_DIR: "/app/skills"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-assistant-mcp
+  labels:
+    app: ai-assistant-mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: ai-assistant-mcp
+  ports:
+    - name: http
+      port: 9600
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-assistant-mcp
+  labels:
+    app: ai-assistant-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-assistant-mcp
+  template:
+    metadata:
+      labels:
+        app: ai-assistant-mcp
+    spec:
+      containers:
+        - name: ai-assistant-mcp
+          image: localhost:32000/gis-platform/system/business/ai-assistant-mcp/ai-assistant-mcp:2.1.4
+          ports:
+            - containerPort: 9600
+              name: http
+          envFrom:
+            - configMapRef:
+                name: ai-assistant-mcp-config
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dgx01-secrets
+                  key: mysql-root-password
+            - name: LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dgx01-secrets
+                  key: llm-api-key
+                  optional: true
+            - name: MYSQL_URL
+              value: "mysql://root:$(MYSQL_PASSWORD)@mysql:3306/ry_cloud"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12

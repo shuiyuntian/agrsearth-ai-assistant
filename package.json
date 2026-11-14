@@ -1,7 +1,7 @@
 {
-  "name": "agrsearth-plugin-template",
+  "name": "agrsearth-ai-assistant",
   "version": "2.5.0",
-  "description": "AGRSEarth 插件开发模板仓：@agrsearth/* 本地 workspace 共享包 + tool/system 双轨骨架 + Node 跨平台发布器 + L0-L10 分层开发指南",
+  "description": "AGRSEarth AI 助手独立能力包仓：@agrsearth/* 本地 workspace 共享包 + 独立构建/测试/发布工具",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -15,7 +15,8 @@
     "build": "npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present",
     "check:api-contract": "node --test tests/unit/api-contract.test.mjs",
     "check:agents": "node tools/check-agent-parity.mjs && node --test tests/unit/agent-parity.test.mjs",
-    "check": "npm run check:agents && npm run check:api-contract && npm run test:tools && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present && npm run test:css",
+    "check": "npm run check:agents && npm run check:api-contract && npm run test:tools && npm run build -w @agrsearth/vite-config && npm run build --workspaces --if-present && npm run test:css && npm run test:s11",
+    "test:s11": "node --test tests/unit/ai-assistant-migration.test.mjs tests/unit/pre-push-allowlist.test.mjs",
     "test:publish": "node --test tests/unit/publish.test.mjs tests/unit/publish-golden.test.mjs",
     "test:css": "node --test tests/unit/css-precheck.test.mjs",
     "test:tools": "node --test tests/unit/scaffold.test.mjs tests/unit/scaffold-golden.test.mjs tests/unit/check-versions.test.mjs tests/unit/check-versions-golden.test.mjs tests/unit/health-endpoint-contract.test.mjs",
@@ -25,5 +26,9 @@
     "fetch-socks": "^1.3.3",
     "tar": "^7.5.22",
     "undici": "^6.29.1"
+  },
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
   }
 }

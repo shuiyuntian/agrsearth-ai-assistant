@@ -1,4 +1,4 @@
-# AGENTS.md — AGRSEarth 插件开发模板仓（AI 编码工具通用契约）
+# AGENTS.md — AGRSEarth AI 助手独立能力包仓（AI 编码工具通用契约）
 
 > 本文件是**工具中立**的 AI 编码契约：Kimi Code / Codex / Claude Code / qoder 等任何
 > 打开本仓的 AI 工具都应先读本文件。Kimi Code 另有触发式技能
@@ -7,9 +7,12 @@
 
 ## 这是什么仓
 
-航遥业务中台（AGRSEarth）的**插件（能力包）开发模板仓**。你在这里开发的每个包最终会被发布到
-共享开发调试环境（aiearth01，公司网）验收，生产发布由平台管理员执行。平台侧契约唯一本体是平台仓
-`docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L0-L10` 是分层指南，
+航遥业务中台（AGRSEarth）的 **AI 助手独立能力包仓**，由模板仓 `ee49aa6` 生成。
+真实业务代码只进入 `extensions/system/business/ai-assistant-mcp/`；包版本保持 2.1.4，
+分类为 system/business（无 delivery）。cesium-mcp 组件版本轴独立，vendor pristine 禁止手改。
+模板演示和测试夹具不属于业务交付。任何注册、发布、部署、真实外部 LLM 调用、
+远程数据写入和 Git 写操作仍需用户逐次明确批准。平台侧契约唯一本体是平台仓
+`docs/插件开发指南/4-契约参考/PLUGIN_DEVELOPMENT.md`；本仓 `docs/L0-L10` 是上游开发指南，
 冲突时以契约本体为准。
 
 ## 目录速览
@@ -153,9 +156,9 @@ node tools/check-api-contract.mjs extensions/<track>/<tier>/<id>  # 前后端 UR
 
 ## 与平台仓的同步约定
 
-本仓是模板内容的**唯一事实源**（fork 模型，2026-10-22 起）：`packages/`（@agrsearth 供给物）、
+本仓业务包由本仓维护，模板内容以模板仓为唯一事实源：`packages/`（@agrsearth 供给物）、
 `backend|container/svc-placeholder/`、`tools/dev-mcp/`、`maven-repo/`
 由平台方经 `scripts/build/sync-template.sh` 单向同步下发（溯源见 `.upstream`），
 **不要在本仓改这些目录**——向平台方提 issue，源头修改后重新同步。
-`skeletons/`、`docs/`、`test-env/`、本文件等模板内容直接在本仓维护（平台管理员）。
-你自己包的目录（`extensions/<track>/<tier>/<你的id>/`）不受同步影响。
+`skeletons/`、`docs/`、`test-env/` 等上游指南不承载 AI 业务实现；本仓 AGENTS.md 只补充
+AI 包身份、版本、vendor 与审批边界。业务包目录 `extensions/system/business/ai-assistant-mcp/` 由本仓维护。

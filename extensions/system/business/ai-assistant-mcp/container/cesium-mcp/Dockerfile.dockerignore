@@ -1,0 +1,36 @@
+# cesium-mcp 镜像构建上下文裁剪（构建上下文 = 仓库根目录）
+# BuildKit 规则：Dockerfile 位于子目录时，自动加载同目录的 <Dockerfile 文件名>.dockerignore。
+# 镜像仅需：
+#   extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/cesium-js        （gateway workspace，vendor pristine）
+#   extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/geolocation-server（geolocation 工具，vendor pristine）
+#   extensions/system/business/ai-assistant-mcp/backend/geolocation-http           （HTTP 桥，本仓自有）
+
+# 顶层目录：全部排除，逐级放行到 ai-assistant-mcp
+# （dockerignore 不能重新包含已被排除父目录内的文件，须逐层 !）
+*
+!extensions/
+extensions/*
+!extensions/system/
+extensions/system/*
+!extensions/system/business/
+extensions/system/business/*
+!extensions/system/business/ai-assistant-mcp/
+
+# ai-assistant-mcp 内部：只保留 vendor/cesium-mcp 与 backend/geolocation-http
+extensions/system/business/ai-assistant-mcp/*
+!extensions/system/business/ai-assistant-mcp/vendor/
+!extensions/system/business/ai-assistant-mcp/backend/
+extensions/system/business/ai-assistant-mcp/backend/*
+!extensions/system/business/ai-assistant-mcp/backend/geolocation-http/
+
+# cesium-mcp 内部：镜像无关内容（上游参考应用不打包；容器定义自身无需入上下文）
+extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/mcp-apps/
+extensions/system/business/ai-assistant-mcp/vendor/cesium-mcp/external/
+
+# 通用噪声（编译/安装全部在镜像内重做）
+**/.git/
+**/node_modules/
+**/build/
+**/dist/
+**/*.log
+**/.DS_Store

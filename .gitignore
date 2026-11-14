@@ -1,6 +1,8 @@
 # 插件模板仓独立成仓时的本地忽略规则（位于平台仓内时由仓根 .gitignore 统一覆盖）
 node_modules/
 dist/
+build/
+**/admin-ui/auto-imports.d.ts
 docs/html/
 logs/
 target/

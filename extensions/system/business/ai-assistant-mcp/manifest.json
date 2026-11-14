@@ -1,0 +1,142 @@
+{
+  "id": "ai-assistant-mcp",
+  "name": "GIS AI 助手",
+  "version": "2.1.4",
+  "description": "基于 MCP 的自然语言 GIS 助手，支持飞到某地、添加标记、查询 POI 等操作",
+  "type": "extension",
+  "track": "system",
+  "tier": "business",
+  "domain": "ai",
+  "platformVersionRange": "^1.2.0",
+  "author": "AGRSEarth",
+  "icon": "ChatDotRound",
+  "components": {
+    "frontend": true,
+    "backend": [
+      "ai-assistant-mcp",
+      "cesium-mcp"
+    ],
+    "adminUi": true,
+    "menu": {
+      "enabled": true,
+      "menuPath": "aiassistant"
+    },
+    "data": true
+  },
+  "entries": {
+    "esm": {
+      "url": "",
+      "type": "module"
+    },
+    "umd": {
+      "url": "",
+      "type": "script"
+    },
+    "css": {
+      "url": "",
+      "type": "css"
+    }
+  },
+  "backendServices": [
+    {
+      "serviceId": "ai-assistant-mcp",
+      "name": "AI Orchestrator 服务",
+      "required": true,
+      "apiPrefix": "/ai/agent",
+      "healthEndpoint": "/ai/agent/health",
+      "imageSource": "self",
+      "image": "localhost:32000/gis-platform/system/business/ai-assistant-mcp/ai-assistant-mcp:2.1.4",
+      "dependsOn": [
+        "cesium-mcp"
+      ]
+    },
+    {
+      "serviceId": "cesium-mcp",
+      "name": "Cesium MCP 服务（vendor CesiumGS mcp + geolocation-http 桥，对 orchestrator 暴露 40+ GIS 工具）",
+      "required": true,
+      "apiPrefix": "",
+      "healthEndpoint": "/mcp/health",
+      "imageSource": "self",
+      "image": "localhost:32000/gis-platform/system/business/ai-assistant-mcp/cesium-mcp:2.1.4",
+      "comment": "第 4 成员组件（2026-09-14 归位 ai-assistant，方案 4.3-v8；2026-10-05 镜像归位 ADR-010 扩展命名空间）：vendor CesiumGS mcp pristine + geolocation-http 桥"
+    }
+  ],
+  "dependsOnPackages": [
+    {
+      "packageId": "geolocation-services",
+      "minVersion": "1.0.0",
+      "comment": "跨包依赖：cesium-mcp 的 geolocation 三工具（geocode/route/search）经 geolocation-http 桥消费本包 nominatim/osrm/overpass 三服务（18860/18861/18862）"
+    }
+  ],
+  "externalDependencies": [
+    {
+      "id": "llm-service",
+      "name": "大模型服务",
+      "kind": "platform-pluggable",
+      "required": true,
+      "description": "可插拔外部依赖（2026-09-14 裁定，方案 4.3）：自建推理节点（DGX vLLM）或第三方大模型 API，由配置驱动切换，部署不纳入本包（包内只声明契约与配置项）",
+      "configKeys": [
+        "LLM_BASE_URL",
+        "LLM_MODEL",
+        "LLM_API_KEY"
+      ]
+    }
+  ],
+  "defaultConfig": {
+    "orchestratorBaseUrl": "/dev-api/ai/agent",
+    "channelResultBaseUrl": "auto",
+    "enabledTools": [
+      "camera_fly_to",
+      "camera_set_view",
+      "camera_look_at_transform",
+      "camera_start_orbit",
+      "camera_stop_orbit",
+      "camera_get_position",
+      "camera_set_controller_options",
+      "entity_add_point",
+      "entity_add_label",
+      "entity_add_billboard",
+      "entity_add_model",
+      "entity_add_polygon",
+      "entity_add_polyline",
+      "entity_add_rectangle",
+      "entity_add_wall",
+      "entity_add_corridor",
+      "entity_add_ellipse",
+      "entity_add_cylinder",
+      "entity_add_box",
+      "entity_list",
+      "entity_remove",
+      "animation_create",
+      "animation_control",
+      "animation_remove",
+      "animation_list_active",
+      "animation_update_path",
+      "animation_camera_tracking",
+      "clock_control",
+      "globe_set_lighting",
+      "imagery_add",
+      "imagery_remove",
+      "imagery_list",
+      "tileset_add",
+      "tileset_remove",
+      "tileset_list",
+      "tileset_style",
+      "terrain_set",
+      "terrain_get",
+      "terrain_remove",
+      "cesium_list_domains",
+      "cesium_enable_domain",
+      "cesium_disable_domain",
+      "geolocation_geocode",
+      "geolocation_route",
+      "geolocation_search"
+    ],
+    "hiddenInToolbar": true,
+    "autoActivate": true
+  },
+  "adminUi": {
+    "entry": "admin-ui/dist/admin.es.js",
+    "comment": "管理端远程页面产物（ADR-007）；url/cssUrl 由 publish-extension.sh 发布时回填"
+  }
+}

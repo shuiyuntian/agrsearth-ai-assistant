@@ -1,0 +1,32 @@
+{
+  "name": "@agrsearth/ai-assistant-mcp-admin",
+  "version": "2.1.4",
+  "description": "AI 助手扩展——管理端远程页面（管理面远程化 ADR-007，版本与包 VERSION 对齐）",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "build:fast": "vite build",
+    "dev": "vite build --watch --mode development"
+  },
+  "dependencies": {
+    "@agrsearth/admin-sdk": "*",
+    "@element-plus/icons-vue": "^2.3.1",
+    "element-plus": "^2.13.1"
+  },
+  "devDependencies": {
+    "@agrsearth/vite-config": "*",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "echarts": "^6.1.0",
+    "typescript": "^5.4.5",
+    "unplugin-auto-import": "^21.1.0",
+    "unplugin-vue-setup-extend-plus": "^1.0.1",
+    "vite": "^6.4.6",
+    "vue": "^3.4.29",
+    "vue-tsc": "^3.2.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26"
+}

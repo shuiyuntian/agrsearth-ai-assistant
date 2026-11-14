@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "packageId": "ai-assistant-mcp",
+  "menus": [
+    {
+      "menuId": 3000000,
+      "menuName": "AI 助手管理",
+      "parentId": 0,
+      "orderNum": 90,
+      "path": "aiassistant",
+      "component": null,
+      "query": null,
+      "routeName": null,
+      "isFrame": 1,
+      "isCache": 0,
+      "menuType": "M",
+      "visible": "0",
+      "status": "0",
+      "perms": "",
+      "icon": "ChatDotRound",
+      "remark": "AI 助手管理目录",
+      "roleIds": [
+        1,
+        106
+      ]
+    },
+    {
+      "menuId": 3000001,
+      "menuName": "配置管理",
+      "parentId": 3000000,
+      "orderNum": 1,
+      "path": "config",
+      "component": "remote:ai-assistant-mcp/config",
+      "query": null,
+      "routeName": "AiConfig",
+      "isFrame": 1,
+      "isCache": 0,
+      "menuType": "C",
+      "visible": "0",
+      "status": "0",
+      "perms": "aiassistant:config:list",
+      "icon": "form",
+      "remark": "AI 助手模型与工具配置",
+      "roleIds": [
+        1,
+        106
+      ]
+    },
+    {
+      "menuId": 3000002,
+      "menuName": "统计看板",
+      "parentId": 3000000,
+      "orderNum": 2,
+      "path": "dashboard",
+      "component": "remote:ai-assistant-mcp/dashboard",
+      "query": null,
+      "routeName": null,
+      "isFrame": 1,
+      "isCache": 0,
+      "menuType": "C",
+      "visible": "0",
+      "status": "0",
+      "perms": "aiassistant:stats:list",
+      "icon": "chart",
+      "remark": "AI 助手用量统计与操作日志",
+      "roleIds": [
+        1,
+        106
+      ]
+    }
+  ]
+}

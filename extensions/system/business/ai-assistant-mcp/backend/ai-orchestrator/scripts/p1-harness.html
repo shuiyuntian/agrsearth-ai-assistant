@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<!--
+  p1-harness.html —— P1 联调验收 harness（非产品代码，与 test-viewer.html 并列）。
+
+  目标：不经过宿主 gis-platform-ui，直接加载 ai-assistant-mcp 前端扩展（dist/tool.umd.js），
+  以最小 mock ctx（真实 Viewer + ui.createPanel + manifest.config）驱动 activate()，
+  面板真实渲染、可对话；命令通道经 orchestrator /channel/* 与 MCP 全链路联动。
+
+  依赖（均同源）：
+  - /cesium/*            本地 Cesium build（orchestrator 静态挂载）
+  - /scripts/vendor/*    vue/element-plus/icons UMD + tool.umd.js + harness.css（tailwind 一次性构建）
+
+  自动化断言入口：window.__harness
+    .viewer                  Cesium Viewer
+    .assistant               useAIAssistant 返回对象（messages/pendingApprovals/sendMessage/respondApproval...）
+    .commands                命令通道日志 [{t,dir:'in'|'out',id,type?,success?,error?}]
+    .getCamera()             {longitude,latitude,height}
+    .entities()              [{id,name}]
+    .entityCount()
+    .send(text)              = assistant.sendMessage(text)
+    .approveFirst(approved)  = 对首个 pending 审批回执
+-->
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <title>ai-assistant-mcp P1 harness</title>
+  <script>window.CESIUM_BASE_URL = "/cesium/";</script>
+  <script src="/cesium/Cesium.js"></script>
+  <link rel="stylesheet" href="/cesium/Widgets/widgets.css" />
+  <link rel="stylesheet" href="/scripts/vendor/element-plus.css" />
+  <link rel="stylesheet" href="/scripts/vendor/harness.css" />
+  <link rel="stylesheet" href="/scripts/vendor/ext-style.css" />
+  <style>
+    html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #0b0f14; }
+    #hud {
+      position: absolute; top: 10px; left: 10px; z-index: 10;
+      background: rgba(20, 24, 30, 0.85); color: #dfe6ee;
+      font: 12px/1.5 Menlo, monospace; padding: 8px 10px; border-radius: 6px;
+      max-width: 520px; pointer-events: none;
+    }
+    #hud b { color: #7fd4ff; }
+    #log { margin-top: 6px; max-height: 200px; overflow-y: auto; border-top: 1px solid #444; padding-top: 4px; white-space: pre-wrap; word-break: break-all; }
+    .cmd-in { color: #ffd479; }
+    .cmd-out { color: #9fe89f; }
+    .cmd-err { color: #ff8a8a; }
+    /* 面板容器（模拟宿主 FloatingPanel 透明壳 + 暗色底，便于截图阅读） */
+    .harness-panel {
+      position: fixed; top: 80px; right: 64px; width: 520px;
+      z-index: 40; border-radius: 10px; overflow: hidden;
+      background: rgba(17, 24, 39, 0.92); border: 1px solid rgba(75, 85, 99, 0.6);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="hud">
+    <div><b>P1 harness</b> <span id="boot">loading…</span> session=<span id="sid">—</span></div>
+    <div id="camPos">camera: —</div>
+    <div id="log"></div>
+  </div>
+
+  <script src="/scripts/vendor/vue.global.prod.js"></script>
+  <script src="/scripts/vendor/element-plus.full.min.js"></script>
+  <script src="/scripts/vendor/icons.iife.min.js"></script>
+  <script src="/scripts/vendor/tool.umd.js"></script>
+  <script>
+    const H = {
+      viewer: null,
+      assistant: null,
+      commands: [], // {t, dir:'in'|'out', id, type?, success?, error?}
+      getCamera: null,
+      entities: null,
+      entityCount: null,
+      send: null,
+      approveFirst: null,
+    };
+    window.__harness = H;
+
+    function ts() { return new Date().toISOString().slice(11, 19); }
+    function renderLog() {
+      const el = document.getElementById("log");
+      el.innerHTML = H.commands.slice(-12).map((c) => {
+        const cls = c.dir === "in" ? "cmd-in" : (c.success === false ? "cmd-err" : "cmd-out");
+        const text = c.dir === "in"
+          ? `cmd ${c.type} id=${c.id}`
+          : `result id=${c.id} success=${c.success}${c.error ? " err=" + String(c.error).slice(0, 60) : ""}`;
+        return `<div class="${cls}">[${ts(c.t)}] ${text}</div>`;
+      }).join("");
+    }
+
+    // ── 命令通道旁路监听（自动化断言证据，不影响真实链路） ──
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = async (url, init) => {
+      const resp = await _origFetch(url, init);
+      try {
+        const u = String(url);
+        if (init && init.method === "POST" && u.indexOf("/channel/result") !== -1) {
+          const body = JSON.parse(init.body);
+          H.commands.push({ t: Date.now(), dir: "out", id: body.id, success: body.result && body.result.success, error: body.result && body.result.error });
+          renderLog();
+        }
+      } catch (e) { /* 日志失败静默 */ }
+      return resp;
+    };
+    const _OrigES = window.EventSource;
+    window.EventSource = class extends _OrigES {
+      constructor(url, cfg) {
+        super(url, cfg);
+        this.addEventListener("message", (ev) => {
+          try {
+            const m = JSON.parse(ev.data);
+            if (m.type === "command" && m.command) {
+              H.commands.push({ t: Date.now(), dir: "in", id: m.command.id, type: m.command.type });
+              renderLog();
+            }
+          } catch (e) { /* ignore */ }
+        });
+      }
+    };
+
+    async function boot() {
+      // 离线内置影像（NaturalEarthII，随 Cesium build 分发，无需 ion token / 外网）
+      const imageryProvider = await Cesium.TileMapServiceImageryProvider.fromUrl(
+        Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII"),
+      );
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        baseLayer: new Cesium.ImageryLayer(imageryProvider),
+        baseLayerPicker: false, geocoder: false, animation: false, timeline: false,
+        sceneModePicker: false, navigationHelpButton: false, fullscreenButton: false,
+        homeButton: false, infoBox: false, selectionIndicator: false,
+      });
+      H.viewer = viewer;
+
+      function currentPosition() {
+        const c = viewer.camera.positionCartographic;
+        return {
+          longitude: Cesium.Math.toDegrees(c.longitude),
+          latitude: Cesium.Math.toDegrees(c.latitude),
+          height: c.height,
+        };
+      }
+      H.getCamera = currentPosition;
+      H.entities = () => viewer.entities.values.map((e) => ({ id: e.id, name: e.name || "" }));
+      H.entityCount = () => viewer.entities.values.length;
+      function updateHud() {
+        const p = currentPosition();
+        document.getElementById("camPos").textContent =
+          `camera: lon=${p.longitude.toFixed(4)} lat=${p.latitude.toFixed(4)} h=${Math.round(p.height)}m entities=${viewer.entities.values.length}`;
+      }
+      viewer.camera.moveEnd.addEventListener(updateHud);
+      setInterval(updateHud, 500);
+      updateHud();
+
+      // ── mock ctx.ui.createPanel：把面板组件挂到右侧固定 div（模仿宿主 FloatingPanel 行为） ──
+      function createPanel(opts) {
+        const el = document.createElement("div");
+        el.id = opts.id || "harness-panel";
+        el.className = "harness-panel";
+        el.style.height = (window.innerHeight - 192) + "px";
+        document.body.appendChild(el);
+        const app = Vue.createApp(opts.component, opts.props || {});
+        app.use(ElementPlus);
+        app.mount(el);
+        // 捕获 assistant 实例（index.ts 经 props 传入 markRaw(assistant)），供自动化断言
+        if (opts.props && opts.props.assistant) {
+          H.assistant = opts.props.assistant;
+        }
+        return {
+          id: opts.id || "harness-panel",
+          el,
+          show() { el.style.display = ""; },
+          hide() { el.style.display = "none"; },
+          close() { app.unmount(); el.remove(); },
+          focus() {},
+          update() {},
+        };
+      }
+
+      const pkg = window.Capability_ai_assistant_mcp;
+      const plugin = pkg.default || pkg;
+      const manifest = Object.assign({}, pkg.manifest || plugin.manifest, {
+        config: {
+          // 同源直连 orchestrator（'' 在前端会回落 /ai/agent 网关前缀，harness 无网关，用绝对同源地址）
+          orchestratorBaseUrl: window.location.origin,
+          // enabledTools 省略 = 缺省全量（28 个浏览器侧工具）
+        },
+      });
+      const ctx = {
+        viewer,
+        container: document.getElementById("cesiumContainer"),
+        manifest,
+        ui: { createPanel },
+        cleanup() {},
+      };
+      plugin.activate(ctx);
+
+      H.send = (text) => H.assistant.sendMessage(text);
+      H.approveFirst = (approved) => {
+        const item = H.assistant.pendingApprovals.value.find((a) => a.status === "pending");
+        if (!item) return Promise.resolve(false);
+        return H.assistant.respondApproval(item, approved).then(() => true);
+      };
+
+      // 等 assistant 就绪后回填 session 显示
+      const sidTimer = setInterval(() => {
+        if (H.assistant && H.assistant.sessionId && H.assistant.sessionId.value) {
+          document.getElementById("sid").textContent = H.assistant.sessionId.value.slice(0, 18);
+          clearInterval(sidTimer);
+        }
+      }, 300);
+
+      document.getElementById("boot").textContent = "ready";
+    }
+
+    boot().catch((e) => {
+      document.getElementById("boot").textContent = "boot failed: " + e;
+      console.error("[harness] boot failed", e);
+    });
+  </script>
+</body>
+</html>

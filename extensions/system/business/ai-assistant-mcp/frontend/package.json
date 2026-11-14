@@ -1,0 +1,33 @@
+{
+  "name": "@agrsearth/ai-assistant-mcp",
+  "version": "2.1.4",
+  "description": "GIS AI 助手扩展能力包（前端）",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vue-tsc --noEmit && vite build",
+    "build:fast": "vite build",
+    "dev": "vite build --watch --mode development",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@agrsearth/sdk-types": "*",
+    "@element-plus/icons-vue": "^2.3.1",
+    "element-plus": "^2.7.6"
+  },
+  "devDependencies": {
+    "@agrsearth/vite-config": "*",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "typescript": "^5.4.5",
+    "vite": "^6.4.6",
+    "vitest": "^4.1.12",
+    "vue": "^3.4.29",
+    "vue-tsc": "^3.2.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26"
+}

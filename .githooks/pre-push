@@ -5,8 +5,9 @@
 #          命中即拒绝推送。启用：git config core.hooksPath .githooks
 # 作者：JasonLee <shuiyuntian@foxmail.com>
 # 创建日期：2026-10-22
-# 版本：1.0.0
+# 版本：1.1.0
 # 修改记录：
+#   - 1.1.0 (2026-11-15) AI 包仅放行指定 k8s YAML 的 Secret 资源名引用，其余命中仍拒绝
 #   - 1.0.0 (2026-10-22) 初版（fork 模型定版：模板仓升格为模板内容唯一事实源，
 #                       泄漏闸口自平台仓导出脚本移至本仓 pre-push）
 # 版权所有 (C) 2026 AGRSEarth 项目
@@ -14,7 +15,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-HITS="$(grep -rEn \
+RAW_HITS="$(grep -rEn \
     --exclude='.upstream' \
     --exclude='.env*' \
     --exclude='pre-push' \
@@ -26,6 +27,17 @@ HITS="$(grep -rEn \
     --exclude-dir='docs-html' \
     '192\.168\.1\.|dgx01|/Users/rsom|minioadmin' \
     "${REPO_ROOT}" 2>/dev/null || true)"
+
+ALLOWED_SECRET_FILE="${REPO_ROOT}/extensions/system/business/ai-assistant-mcp/deploy/k8s/20-ai-assistant-mcp.yaml"
+HITS="$(printf '%s\n' "${RAW_HITS}" | awk -v allowed="${ALLOWED_SECRET_FILE}" '
+{
+    if (match($0, /:[0-9]+:/)) {
+        file = substr($0, 1, RSTART - 1)
+        content = substr($0, RSTART + RLENGTH)
+        if (file == allowed && content ~ /^[[:space:]]+name: dgx01-secrets[[:space:]]*$/) next
+    }
+    print
+}')"
 
 if [ -n "${HITS}" ]; then
     echo "✗ pre-push 泄漏闸口：检出内网地址/路径/凭据引用，推送已拒绝。命中文件："

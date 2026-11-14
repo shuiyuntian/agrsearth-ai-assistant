@@ -1,0 +1,45 @@
+# ai-assistant-mcp 镜像构建上下文裁剪（构建上下文 = 仓库根目录）
+# BuildKit 规则：Dockerfile 位于子目录时，自动加载同目录的 <Dockerfile 文件名>.dockerignore。
+# 镜像仅需（S3 瘦身后 MCP 已外部化到 cesium-mcp 镜像，不再打包 vendor/cesium-mcp）：
+#   extensions/system/business/ai-assistant-mcp/backend/ai-orchestrator（orchestrator 源码）
+#   extensions/system/business/ai-assistant-mcp/contracts              （工具契约）
+#   .kimi-code/skills                                                （codegen 领域技能）
+
+# 顶层目录：排除无关大目录（extensions 只保留 ai-assistant-mcp，.kimi-code 只保留 skills）
+platform/
+docs/
+archives/
+logs/
+scripts/
+tests/
+secrets/
+.kimi-code/*
+!.kimi-code/skills
+
+# extensions 逐级放行（dockerignore 不能重新包含已被排除父目录内的文件）：
+# extensions/* → 放行 system/ → system/* → 放行 business/ → business/* → 放行 ai-assistant-mcp
+extensions/*
+!extensions/system
+extensions/system/*
+!extensions/system/business
+extensions/system/business/*
+!extensions/system/business/ai-assistant-mcp
+
+# 扩展包内部：镜像无关内容（前端/管理端 UMD 走 MinIO 远程加载，SQL 由 P4-B 另行执行，
+# vendor/cesium-mcp 与 geolocation-http 桥归 cesium-mcp 镜像）
+extensions/system/business/ai-assistant-mcp/frontend/
+extensions/system/business/ai-assistant-mcp/admin-ui/
+extensions/system/business/ai-assistant-mcp/data/
+extensions/system/business/ai-assistant-mcp/container/
+extensions/system/business/ai-assistant-mcp/vendor/
+extensions/system/business/ai-assistant-mcp/backend/geolocation-http/
+extensions/system/business/ai-assistant-mcp/backend/ai-orchestrator/scripts/
+extensions/system/business/ai-assistant-mcp/backend/ai-orchestrator/test/
+
+# 通用噪声（编译/安装全部在镜像内重做）
+**/.git/
+**/node_modules/
+**/build/
+**/dist/
+**/*.log
+**/.DS_Store

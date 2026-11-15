@@ -4,8 +4,9 @@
 //          extensions/<track>/<tier>/<id>/；tools/create-extension.sh / .cmd 为薄 shim
 // 作者：JasonLee <shuiyuntian@foxmail.com>
 // 创建日期：2026-11-07
-// 版本：2.1.0
+// 版本：2.1.1
 // 修改记录：
+//   - 2.1.1 (2026-11-15) 复制骨架时排除 admin-ui 构建生成的 auto-imports.d.ts，保证重复构建后脚手架输出稳定
 //   - 2.1.0 (2026-11-08) 随包 CSS 骨架纳入包级占位符替换
 //   - 2.0.1 (2026-11-08) menujson.py 退役连带：生成 README 的 menu.json 校验提示改指
 //     tools/publish.sh 发布期自动校验（validateMenuDocument）
@@ -156,11 +157,14 @@ function toPosix(relativePath) {
   return relativePath.split(path.sep).join("/");
 }
 
-// 复制骨架树：跳过 node_modules（本地环境污染，见文件头 2.0.0 记录）与 .DS_Store
+// 复制骨架树：跳过本地依赖、系统垃圾与 admin-ui 构建生成文件
 function copySkeleton(src, dst) {
   fs.cpSync(src, dst, {
     recursive: true,
-    filter: (source) => !source.split(path.sep).includes("node_modules") && path.basename(source) !== ".DS_Store",
+    filter: (source) => {
+      const base = path.basename(source);
+      return !source.split(path.sep).includes("node_modules") && base !== ".DS_Store" && base !== "auto-imports.d.ts";
+    },
   });
 }
 

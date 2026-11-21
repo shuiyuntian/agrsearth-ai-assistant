@@ -7,7 +7,7 @@
   "track": "system",
   "tier": "business",
   "domain": "ai",
-  "platformVersionRange": "^1.2.0",
+  "platformVersionRange": ">=1.2.0 <3.0.0",
   "author": "AGRSEarth",
   "icon": "ChatDotRound",
   "components": {

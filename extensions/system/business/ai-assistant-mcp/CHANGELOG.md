@@ -16,8 +16,7 @@
 
 - 迁移至独立仓 agrsearth-ai-assistant：frontend/admin-ui 使用 @agrsearth/* 构建契约并自产包作用域 CSS；AI 契约工具、部署资产与版本化制品归本仓。
 - 补齐悬浮入口 activate/deactivate/reactivate/destroy 清理，Entity/imagery/3D Tiles 等增删改限定本包资源；vendor pin 与公开工具契约不变。
-
-### Fixed
+- 2026-11-21：`platformVersionRange` 调整为 `>=1.2.0 <3.0.0`，覆盖平台 2.1.0；包/orchestrator 2.1.4 与 cesium-mcp 组件 2.1.4 不变，镜像 digest 不变。
 
 ### Fixed
 

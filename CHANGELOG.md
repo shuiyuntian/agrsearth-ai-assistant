@@ -1,6 +1,12 @@
-# 模板仓套件变更记录
+# 能力包仓工作区变更记录
 
-> 本文件版本 = 模板仓套件版本（VERSION），含义：skeletons + packages 供给物 + 工具链 + docs 的整体版本。平台供给物由平台仓 `scripts/build/sync-template.sh` 单向同步。
+> 本文件记录业务工作区与模板供给变化；ai-assistant-mcp 的版本化变更以包内 `CHANGELOG.md` 为准。下方 2.5.0 及更早段为模板供给历史，不代表业务包版本。
+
+## [Unreleased] - 2026-11-21
+
+- ai-assistant-mcp 2.1.4 在本仓保持 system/business，orchestrator 与 cesium-mcp 组件轴不变；双镜像 digest 不变且仍未推 registry，兼容声明覆盖平台 2.1.0。
+
+## 模板供给历史
 
 ## [2.5.0] - 2026-11-13
 
